@@ -1,0 +1,20 @@
+{
+  "summary": "Eskalator menuju peron dilaporkan rusak dan belum ada konfirmasi perbaikan petugas.",
+  "incidents": [
+    {
+      "incident_id": "escalator_link:failure",
+      "resource_id": "escalator_link",
+      "category": "failure",
+      "summary": "Eskalator menuju peron dilaporkan rusak. Gunakan akses lain yang sesuai kebutuhan pengguna.",
+      "effect": "unavailable",
+      "routing_code": 0,
+      "status": "active",
+      "last_report_at": "2026-09-07T08:00:00Z",
+      "evidence_ids": [
+        "report_001"
+      ],
+      "resolution_claimed": false
+    }
+  ],
+  "simulated": true
+}

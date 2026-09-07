@@ -1,0 +1,124 @@
+# ==============================
+# JAKRoute — project-wide ignores
+# ==============================
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+android/key.properties
+
+# Python
+**/.venv/
+**/venv/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+**/.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+*.egg-info/
+.eggs/
+dist/
+wheelhouse/
+
+# Coverage and logs
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+pytestdebug.log
+*.log
+
+# Local runtime state and databases
+backend/runtime/
+**/runtime/
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Jupyter
+**/.ipynb_checkpoints/
+.jupyter/
+
+# Flutter and Dart
+.dart_tool/
+.packages
+.pub/
+build/
+**/build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.fvm/
+
+# Keep pubspec.lock: this is an application.
+
+# Android and Gradle
+.gradle/
+**/.gradle/
+android/.cxx/
+**/android/.cxx/
+android/local.properties
+**/android/local.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+*.aab
+*.apk
+*.apks
+*.dex
+
+# iOS and macOS
+ios/Pods/
+**/ios/Pods/
+ios/.symlinks/
+**/ios/.symlinks/
+ios/Flutter/ephemeral/
+**/ios/Flutter/ephemeral/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# IDEs and editors
+.idea/
+**/.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+
+# Local copies and backups
+jakroute_backup/
+**/jakroute_backup/
+*.bak
+*.backup
+*.orig
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Generated local archives
+*.zip
+*.tar
+*.tar.gz
+*.7z

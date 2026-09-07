@@ -1,0 +1,26 @@
+[
+  {
+    "report_id": "report_001",
+    "resource_id": "escalator_link",
+    "observed_at": "2026-09-07T08:00:00Z",
+    "message": "Eskalator ke peron rusak, penumpang lewat tangga."
+  },
+  {
+    "report_id": "report_002",
+    "resource_id": "escalator_link",
+    "observed_at": "2026-09-07T08:10:00Z",
+    "message": "Eskalatornya masih mati."
+  },
+  {
+    "report_id": "report_003",
+    "resource_id": "escalator_link",
+    "observed_at": "2026-09-07T08:20:00Z",
+    "message": "Kayaknya sudah diperbaiki deh."
+  },
+  {
+    "report_id": "report_004",
+    "resource_id": "north",
+    "observed_at": "2026-09-07T08:25:00Z",
+    "message": "Ada api dan asap pekat di koridor utara, jalur tidak dapat dilewati."
+  }
+]

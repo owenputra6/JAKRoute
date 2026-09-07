@@ -1,0 +1,27 @@
+{
+  "configured": false,
+  "url": "",
+  "method": "POST",
+  "headers": {
+    "Authorization": "${api_key}"
+  },
+  "query": {},
+  "body": {
+    "origin": [
+      "${origin_lon}",
+      "${origin_lat}"
+    ],
+    "destination": [
+      "${destination_lon}",
+      "${destination_lat}"
+    ]
+  },
+  "response": {
+    "coordinates_path": "geometry.coordinates",
+    "distance_path": "distance_m",
+    "duration_path": "duration_s",
+    "distance_multiplier": 1,
+    "duration_multiplier": 1
+  },
+  "note": "Template internal, bukan klaim schema MAPID. Isi sesuai kontrak resmi akun Anda. Koordinat output harus LineString [longitude,latitude]."
+}

@@ -1,0 +1,8 @@
+{
+  "source": "dummy",
+  "simulated": true,
+  "condition": "RAIN",
+  "is_raining": true,
+  "observed_at": "2026-09-07T08:00:00Z",
+  "location_label": "Area simulasi"
+}

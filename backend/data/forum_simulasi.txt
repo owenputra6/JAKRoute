@@ -1,0 +1,7 @@
+SIMULASI — semua kejadian berikut fiktif.
+
+2026-09-07T08:00:00Z | report_001 | escalator_link | Penumpang: Eskalator ke peron rusak, penumpang lewat tangga.
+2026-09-07T08:10:00Z | report_002 | escalator_link | Penumpang: Eskalatornya masih mati.
+2026-09-07T08:20:00Z | report_003 | escalator_link | Penumpang: Kayaknya sudah diperbaiki deh.
+2026-09-07T08:25:00Z | report_004 | north | Penumpang: Ada api dan asap pekat di koridor utara, jalur tidak dapat dilewati.
+2026-09-07T08:30:00Z | PETUGAS TERVERIFIKASI (endpoint terpisah): Eskalator telah diperbaiki.
