@@ -25,4 +25,25 @@ void main() {
     await expectLater(api.catalog(), throwsA(isA<JakRouteApiException>()));
     api.close();
   });
+
+  test('parses weighted crowd snapshot without categorical condition', () async {
+    final api = JakRouteApi(baseUrl: 'https://backend.example', client: MockClient((request) async {
+      expect(request.url.path, '/crowd/snapshot');
+      return http.Response(jsonEncode({
+        'snapshot_id': 'geojson-1-100',
+        'simulated': true,
+        'observed_at': '2026-09-08T00:00:00Z',
+        'user_count': 100,
+        'total_weight': 108.5,
+        'source': {'file': 'palmerah_crowd_areas.geojson'},
+        'users': [{'id': 'crowd_001', 'weight': 1.2, 'floor': 0, 'xy': [1, 2]}],
+        'areas': [{'id': 'geo_a_2', 'label': 'A-2', 'weighted_users': 7.2, 'area_m2': 45.7}],
+      }), 200);
+    }));
+    final crowd = await api.crowdSnapshot();
+    expect(crowd.userCount, 100);
+    expect(crowd.totalWeight, 108.5);
+    expect(crowd.data.containsKey('condition'), false);
+    api.close();
+  });
 }

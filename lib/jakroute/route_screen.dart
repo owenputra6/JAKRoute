@@ -16,6 +16,7 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
   final _message = TextEditingController(text: 'Saya mau ke peron.');
   final _walkLimit = TextEditingController();
   Json? _catalog;
+  CrowdSnapshot? _crowd;
   Recommendation? _recommendation;
   RouteOption? _selected;
   String? _error;
@@ -32,12 +33,18 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final catalog = await widget.api.catalog();
+      final loaded = await Future.wait([
+        widget.api.catalog(),
+        widget.api.crowdSnapshot(),
+      ]);
+      final catalog = loaded[0] as Json;
+      final crowd = loaded[1] as CrowdSnapshot;
       if (!mounted) return;
       final places = (catalog['places'] as List).cast<Map>();
       final ids = places.map((p) => p['id'] as String).toSet();
       setState(() {
         _catalog = catalog;
+        _crowd = crowd;
         if (!ids.contains(_origin)) _origin = places.first['id'] as String;
         if (!ids.contains(_destination)) _destination = '';
         _floor = ((catalog['floors'] as List).first as Map)['id'] as int;
@@ -107,6 +114,69 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
     SizedBox(width: 30, child: Text(value.toStringAsFixed(1))),
   ]);
 
+  Widget _crowdCard(BuildContext context) {
+    final crowd = _crowd;
+    if (crowd == null) return const SizedBox.shrink();
+    final sourceFile = crowd.source['file']?.toString() ?? 'GeoJSON';
+    return Card(
+      child: ExpansionTile(
+        leading: const Icon(Icons.groups_2_outlined),
+        title: Text('Keramaian simulasi · ${crowd.userCount} titik'),
+        subtitle: Text('Total bobot ${crowd.totalWeight.toStringAsFixed(2)} · $sourceFile'),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        expandedCrossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Setiap titik memiliki bobot sendiri. Nilai area dihitung sebagai total bobot dibagi luas area asli—tanpa label low/medium/high.'),
+          const SizedBox(height: 12),
+          for (final area in crowd.areas) Padding(
+            padding: const EdgeInsets.only(bottom: 7),
+            child: Row(children: [
+              Expanded(child: Text('${area['label']} · ${area['user_count']} titik')),
+              Text('${(area['weighted_users'] as num).toStringAsFixed(2)} / ${(area['area_m2'] as num).toStringAsFixed(1)} m²'),
+            ]),
+          ),
+          Text('Snapshot: ${crowd.observedAt}', style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+
+  Widget _insightCard(BuildContext context, RouteOption route) {
+    final insight = route.insight;
+    final facts = (insight['facts'] as List? ?? []).cast<Map>();
+    final personalization = (insight['personalization'] as List? ?? []).cast<String>();
+    final generator = insight['generator']?.toString() ?? 'backend_evidence';
+    final sourceLabel = generator == 'openai_reason_selection'
+        ? 'OpenAI'
+        : generator == 'deterministic_demo' ? 'Simulasi logika' : 'Data backend';
+    return Card(
+      color: const Color(0xfff2f7ff),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.auto_awesome, color: Color(0xff176bdf)),
+            const SizedBox(width: 8),
+            const Expanded(child: Text('AI Insight', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17))),
+            Chip(label: Text(sourceLabel)),
+          ]),
+          const SizedBox(height: 8),
+          Text(insight['headline']?.toString() ?? route.label, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 6),
+          Text(insight['summary']?.toString() ?? route.explanation),
+          if (personalization.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text('Disesuaikan untuk: ${personalization.join(', ')}.'),
+          ],
+          const Divider(height: 24),
+          Wrap(spacing: 8, runSpacing: 8, children: facts.map((fact) => Chip(
+            label: Text('${fact['label']}: ${fact['value']}'),
+          )).toList()),
+        ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final catalog = _catalog;
@@ -118,7 +188,10 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
           ])))
           : SafeArea(child: ListView(padding: const EdgeInsets.all(20), children: [
             Text(catalog['label'] as String, style: Theme.of(context).textTheme.titleMedium),
+            if ((catalog['station_data'] as Map?)?['source'] == 'supabase_rest')
+              Text('Data lokasi: Supabase · ${((catalog['station_data'] as Map)['locations'] as List).length} titik'),
             if (catalog['simulated'] == true) const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('MODE DEMO · Denah dan kondisi adalah simulasi.', style: TextStyle(color: Color(0xff9a601b)))),
+            _crowdCard(context),
             const SizedBox(height: 12),
             _placeSelector('Lokasi awal', _origin, (v) => setState(() => _origin = v)),
             const SizedBox(height: 12),
@@ -161,10 +234,10 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
                 child: ListTile(onTap: route.available ? () => setState(() => _selected = route) : null,
                   leading: Icon(route.available ? Icons.alt_route : Icons.block),
                   title: Text(route.label),
-                  subtitle: Text(route.available ? '${route.walkingMeters.toStringAsFixed(0)} m berjalan · ${(route.durationSeconds / 60).toStringAsFixed(1)} menit (estimasi)' : route.explanation),
+                  subtitle: Text(route.available ? '${route.walkingMeters.toStringAsFixed(0)} m berjalan · ${(route.durationSeconds / 60).toStringAsFixed(1)} menit · crowd ${route.crowdExposure.toStringAsFixed(2)}' : route.explanation),
                   trailing: _selected?.id == route.id ? const Icon(Icons.check_circle, color: Color(0xff176bdf)) : null)),
               if (_selected != null) ...[
-                const SizedBox(height: 12), Text(_selected!.explanation),
+                const SizedBox(height: 12), _insightCard(context, _selected!),
                 for (final warning in _selected!.warnings) Padding(padding: const EdgeInsets.only(top: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   const Icon(Icons.info_outline, size: 18, color: Color(0xff9a601b)), const SizedBox(width: 8), Expanded(child: Text(warning)),
                 ])),
@@ -174,8 +247,8 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
             const SizedBox(height: 16),
             Wrap(spacing: 8, children: (catalog['floors'] as List).cast<Map>().map((f) => ChoiceChip(
                 label: Text('Lantai ${f['id']}'), selected: _floor == f['id'], onSelected: (_) => setState(() => _floor = f['id'] as int))).toList()),
-            const SizedBox(height: 8), RouteDiagram(catalog: catalog, route: _selected, floor: _floor),
-            const Padding(padding: EdgeInsets.only(top: 8), child: Text('Biru: jalur · Gelap: obstacle · Oranye: perpindahan lantai', style: TextStyle(fontSize: 12))),
+            const SizedBox(height: 8), RouteDiagram(catalog: catalog, route: _selected, crowd: _crowd, floor: _floor),
+            const Padding(padding: EdgeInsets.only(top: 8), child: Text('Biru: jalur · Merah: titik crowd berbobot · Gelap: obstacle · Oranye: perpindahan lantai', style: TextStyle(fontSize: 12))),
             if (widget.mapStyleUrl.isNotEmpty) ...[
               const SizedBox(height: 16), MapidRouteMap(styleUrl: widget.mapStyleUrl, catalog: catalog, floor: _floor, route: _selected),
             ],

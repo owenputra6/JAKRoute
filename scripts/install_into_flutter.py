@@ -58,7 +58,7 @@ def install(source,target):
                 old=backup/path.relative_to(target);old.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(path,old)
             path.parent.mkdir(parents=True,exist_ok=True);ET.indent(tree);tree.write(path,encoding='utf-8',xml_declaration=True)
     print(f'{count} files copied. Existing conflicts backed up under {backup}.')
-    print('Next, from the Flutter project: flutter pub add http maplibre_gl')
+    print('Next, from the Flutter project: flutter pub add http; flutter pub add maplibre_gl:0.26.2')
     print('Backend setup: scripts/jakroute_setup.ps1; then scripts/jakroute_run.ps1')
     print('Flutter: flutter run -t lib/main_jakroute_demo.dart --dart-define=BACKEND_URL=http://10.0.2.2:8000')
 

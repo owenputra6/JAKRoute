@@ -5,15 +5,21 @@
 | File | Isi dan provenance |
 |---|---|
 | station_demo.json | Denah dua lantai, grid, ruang jalan, obstacle, fasilitas, connector; seluruhnya simulasi |
+| palmerah_crowd_areas.geojson | 9 polygon Palmerah: `id_tool`, `area_meter_square`, `area_hectare`; sumber 100 titik crowd |
 | anggrek_source.geojson | 11 polygon diekstrak dari HTML lampiran tanpa perubahan koordinat/atribut |
-| crowd_users.json | User dummy berbobot dan posisi; satu snapshot dengan timestamp |
+| crowd_users.json | Fixture crowd lama untuk unit test kompatibilitas; runtime memakai generator GeoJSON |
 | weather_dummy.json | Snapshot hujan simulasi |
 | forum_simulasi.txt | Cerita forum simulasi yang dapat dibaca langsung |
 | forum_reports.json | Laporan simulasi terstruktur sesuai input endpoint |
 | forum_summary_seed.json | Kondisi eskalator rusak untuk awal demo |
 | mapid_contract.json | Template adapter HTTP; endpoint dan schema asli harus diisi |
 
-Sumber HTML menyebut Lantai 1 Anggrek, bukan Palmerah. Ia tidak menyediakan polygon
+GeoJSON Palmerah memiliki 9 Polygon dengan ID `Tap in`, `A-2` sampai `A-9` dan total
+luas atribut 819 m². File tidak memiliki atribut lantai, nama fasilitas lengkap,
+walkable/obstacle, pintu, atau connector. Karena itu file dipakai hanya untuk sampling
+100 titik crowd dan luas density. Network routing tetap `station_demo.json`.
+
+Sumber HTML lama menyebut Lantai 1 Anggrek, bukan Palmerah. Ia tidak menyediakan polygon
 walkable, pintu, atau connector antarlantai. Uji sumber tidak menghapus polygon
 ruang asal/tujuan agar centroid dapat dilalui. Titik uji ditempatkan di ruang bebas
 buatan dan hasil tidak dinyatakan sebagai navigasi bangunan yang terverifikasi.
@@ -58,6 +64,23 @@ dummy bukan hasil kamera atau hasil pengukuran di Palmerah.
 Saat mengganti site, gunakan DB_PATH baru agar gangguan demo tidak tercampur.
 `ForumStore` mengikat database ke ID site dan menolak site berbeda. Data crowd
 serta resource pada laporan juga harus menggunakan ID site yang baru.
+
+## Supabase `station_locations`
+
+Mode live membaca kolom berikut: `id`, `source_id`, `name`, `category`, `latitude`,
+`longitude`, `floor`, `area_m2`. Isi `.env` backend:
+
+```dotenv
+STATION_DATA_MODE=supabase
+SUPABASE_URL=https://PROJECT.supabase.co
+SUPABASE_ANON_KEY=...
+SUPABASE_STATION_TABLE=station_locations
+```
+
+`source_id` adalah penghubung ke `places[].id` dalam graph. Tanpa kecocokan tersebut,
+sebuah row tetap data koordinat nyata tetapi belum routable. Aktifkan Row Level Security
+dan kebijakan SELECT sesuai kebutuhan anon/authenticated project. Jangan menyimpan
+service-role key di Flutter.
 
 ## Adaptor MAPID
 

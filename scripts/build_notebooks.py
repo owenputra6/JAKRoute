@@ -114,7 +114,7 @@ else:
  print('SKIPPED: uji kemampuan bahasa/negasi membutuhkan Ollama asli.')
 work.cleanup()''')])
 notebook('01_forum_openai.ipynb',[
- ('md','# Phase 2A — Forum → summary dengan OpenAI API\nNotebook ini menerima satu `REPORT`, memanggil OpenAI structured output, lalu menyimpan hasilnya ke state forum. Output dibatasi `160` token dan laporan mentah tidak diteruskan ke route agent. Default fixture hanya untuk verifikasi offline; ubah `RUN_LIVE_OPENAI=True` setelah `OPENAI_API_KEY` tersedia di `backend/.env`.'),
+ ('md','# Phase 2A — Forum threaded → summary dengan OpenAI API\nNotebook ini mensimulasikan satu thread forum: laporan awal, beberapa balasan penumpang, dan laporan kondisi parah. Setiap pesan diproses berurutan dengan `previous_summary`, sehingga state forum terus diperbarui. Output tiap pemanggilan dibatasi `160` token dan klaim penumpang tidak dapat menyelesaikan insiden tanpa konfirmasi petugas.\n\n`RUN_LIVE_OPENAI=True` menjalankan satu pemanggilan OpenAI untuk setiap pesan forum. Untuk pengujian tanpa biaya, ubah ke `False` terlebih dahulu.'),
  ('code',setup+'''\nfrom dataclasses import replace
 from jakroute.forum_state import ForumStore,OpenAISummarizer,DemoSummarizer
 RUN_LIVE_OPENAI=False
@@ -124,18 +124,56 @@ if RUN_LIVE_OPENAI:
 processor=OpenAISummarizer(settings) if RUN_LIVE_OPENAI else DemoSummarizer()
 work=tempfile.TemporaryDirectory(prefix='jakroute_forum_openai_')
 store=ForumStore(Path(work.name)/'forum.sqlite3')
-REPORT={'report_id':'report_001','resource_id':'escalator_link','observed_at':'2026-09-07T08:00:00Z','message':'Eskalator ke peron rusak, penumpang harus lewat tangga.'}
-print('OPENAI LIVE — max_output_tokens=160' if RUN_LIVE_OPENAI else 'FIXTURE SIMULATION — OpenAI belum dipanggil')'''),
- ('code','''summary=processor.summarize(REPORT,store.snapshot())
-changed=store.update(REPORT,summary)
-print('changed=',changed)
-print(json.dumps(summary,ensure_ascii=False,indent=2))
+
+# Satu thread utama: setiap item setelah item pertama adalah balasan.
+# Metadata thread/parent hanya untuk simulasi forum; ForumStore tetap menyimpan
+# seluruh report mentah dan memakai summary terstruktur sebagai state routing.
+FORUM_THREAD=[
+ {'report_id':'thread_001_post','thread_id':'thread_escalator','author':'Rina','resource_id':'escalator_link','observed_at':'2026-09-07T08:00:00Z','message':'Eskalator menuju peron 1 rusak. Penumpang harus lewat tangga.'},
+ {'report_id':'thread_001_reply_01','thread_id':'thread_escalator','parent_report_id':'thread_001_post','author':'Dimas','resource_id':'escalator_link','observed_at':'2026-09-07T08:03:00Z','message':'Saya baru lewat. Benar, eskalator masih tidak bergerak dan tangga menjadi satu-satunya akses ke peron 1.'},
+ {'report_id':'thread_001_reply_02','thread_id':'thread_escalator','parent_report_id':'thread_001_reply_01','author':'Sari','resource_id':'escalator_link','observed_at':'2026-09-07T08:07:00Z','message':'Tangga cukup padat, tetapi eskalatornya masih rusak. Belum terlihat petugas memperbaiki.'},
+ {'report_id':'thread_001_reply_03','thread_id':'thread_escalator','parent_report_id':'thread_001_reply_02','author':'Bimo','resource_id':'escalator_link','observed_at':'2026-09-07T08:12:00Z','message':'Sepertinya sudah diperbaiki, saya melihat lampunya menyala. Mohon petugas mengecek karena saya belum mendapat konfirmasi resmi.'},
+ {'report_id':'thread_001_reply_04','thread_id':'thread_escalator','parent_report_id':'thread_001_reply_03','author':'Petugas lapangan','resource_id':'escalator_link','observed_at':'2026-09-07T08:20:00Z','message':'Saya cek dari bawah, eskalator masih berhenti dan penumpang tetap harus menggunakan tangga. Belum ada konfirmasi perbaikan.'},
+]
+
+# Thread kedua: contoh kondisi parah yang harus memblokir routing.
+SEVERE_REPORT={'report_id':'thread_002_post','thread_id':'thread_fire','author':'Ayu','resource_id':'north','observed_at':'2026-09-07T08:25:00Z','message':'Ada asap tebal dan api terlihat di koridor utara. Jalur harus ditutup.'}
+
+print((f'OPENAI LIVE — {len(FORUM_THREAD)+1} pemanggilan, max_output_tokens=160 each' if RUN_LIVE_OPENAI else 'FIXTURE SIMULATION — OpenAI belum dipanggil'))'''),
+ ('code','''evaluation=[]
+for index, report in enumerate(FORUM_THREAD, start=1):
+    previous=store.snapshot()
+    summary=processor.summarize(report,previous)
+    changed=store.update(report,summary)
+    current_state=store.snapshot()
+    item={'sequence':index,'author':report['author'],'report_id':report['report_id'],
+          'parent_report_id':report.get('parent_report_id'),'message':report['message'],
+          'summary':summary,'changed':changed,'state_version':current_state['version'],
+          'model_reply':current_state['summary']}
+    evaluation.append(item)
+    print(f"{report['author']}: {report['message']}")
+    print(f"model: {current_state['summary']}")
+    print()
+
+print('\\nSTATE SETELAH THREAD ESKALATOR:')
 print(json.dumps(store.snapshot(),ensure_ascii=False,indent=2))'''),
- ('md','## Menguji report lain\nEdit hanya isi `REPORT` pada cell sebelumnya. `resource_id` harus ada di katalog stasiun. Untuk report baru yang bukan fixture, gunakan `RUN_LIVE_OPENAI=True`.'),
- ('code','''assert summary['category'] in ('failure','hazard','congestion','other')
-assert summary['effect'] in ('none','caution','unavailable','blocked')
-assert store.snapshot()['version']==1
-print('PASS: report diterima, diringkas, divalidasi, lalu disimpan ke state.')'''),
+ ('code','''active=store.snapshot()['incidents']
+assert len(evaluation)==5
+assert evaluation[-1]['state_version'] >= 1
+assert any(i['resource_id']=='escalator_link' for i in active)
+# Balasan penumpang yang mengira sudah diperbaiki tidak langsung menghapus insiden.
+assert any(i['resource_id']=='escalator_link' and i['status']!='resolved' for i in active)
+print('PASS: balasan thread diproses berurutan; insiden belum resolved tanpa konfirmasi petugas.')'''),
+ ('code','''previous=store.snapshot()
+severe_summary=processor.summarize(SEVERE_REPORT,previous)
+store.update(SEVERE_REPORT,severe_summary)
+severe_incident=next(i for i in store.snapshot()['incidents'] if i['resource_id']=='north')
+print('\\nTHREAD KONDISI PARAH:')
+print(json.dumps({'report':SEVERE_REPORT,'summary':severe_summary,'incident':severe_incident},ensure_ascii=False,indent=2))
+assert severe_incident['routing_code']==-1
+assert severe_incident['status']!='resolved'
+print('PASS: kondisi parah menghasilkan routing_code=-1 dan tetap aktif.')'''),
+ ('md','## Catatan pengujian\nMode live melakukan `len(FORUM_THREAD)+1` request OpenAI. Setiap request memakai summary state sebelumnya, bukan mengirim seluruh percakapan tanpa batas. Untuk membuka insiden, tetap gunakan `store.confirm(...)` dengan otoritas petugas.'),
  ('code','''work.cleanup()''')])
 notebook('02_openai_function_calling.ipynb',[
  ('md','# Phase 2B — OpenAI function calling\nDefault menjalankan fungsi backend dengan pemilihan tool deterministik. **Ini tidak membuktikan OpenAI memahami bahasa.** Isi `OPENAI_API_KEY` dan `OPENAI_MODEL` pada `backend/.env`, kemudian ubah `RUN_LIVE_OPENAI=True` untuk pengujian API asli. Routing, cuaca dan crowd tetap memakai fixture agar hasil uji dapat dibandingkan. Jangan menaruh key di output notebook.'),
@@ -180,5 +218,70 @@ with TestClient(create_app(settings,service)) as client:
  payload=response.json()
  assert len(payload['routes'])==3
  print('Endpoint PASS; response keys:',list(payload))
+work.cleanup()''')])
+
+# Latest live conversation notebook. It intentionally overwrites the legacy
+# deterministic scenario above while keeping the old generator block readable.
+notebook('02_openai_function_calling.ipynb',[
+ ('md','# Phase 2B — Percakapan OpenAI + function calling\nNotebook ini menguji percakapan routing yang benar-benar melewati OpenAI API. Preference tidak di-hardcode ke hasil AI: setiap turn mengirim pesan natural-language, lalu preference dari respons turn sebelumnya diteruskan sebagai `conversation_preferences`.\n\nUrutan: (1) tanpa preference awal, (2) memakai preference state sebelumnya, (3) membangun preference dari bahasa natural, (4) respons berikutnya menyesuaikan preference. Semua function call dan hasil routing dicetak jelas. Isi `OPENAI_API_KEY` dan `OPENAI_MODEL` di `backend/.env`. Notebook ini sengaja live-only.'),
+ ('code',setup+'''\nfrom dataclasses import replace\nfrom jakroute.service import RouteService\nRUN_LIVE_OPENAI=True\nwork=tempfile.TemporaryDirectory(prefix='jakroute_agent_conversation_')\nsettings=replace(Settings.from_env(),db_path=str(Path(work.name)/'forum.sqlite3'),agent_mode='openai',mapid_mode='demo',weather_mode='demo',forum_mode='demo')\nassert RUN_LIVE_OPENAI\nassert settings.openai_api_key and settings.openai_model, 'Isi OPENAI_API_KEY dan OPENAI_MODEL di backend/.env dahulu.'\nservice=RouteService(settings)\nprint('OPENAI LIVE — preference state berasal dari respons turn sebelumnya')'''),
+ ('code','''def show_response(turn_name,user_message,request,response):
+    print('\\n'+'='*78)
+    print(f'TURN {turn_name}')
+    print(f'USER: {user_message}')
+    print('REQUEST PREFERENCE STATE:')
+    print(json.dumps(request.get('conversation_preferences',{}),ensure_ascii=False,indent=2))
+    print('AI INTENT:')
+    print(json.dumps(response.get('intent',{}),ensure_ascii=False,indent=2))
+    print('FUNCTION CALLS:')
+    for trace in response.get('tool_trace',[]):
+        print(f"- {trace['name']} | {json.dumps(trace['arguments'],ensure_ascii=False)} | {trace['source']} | {trace['status']}")
+    print('ROUTES:')
+    for route in response.get('routes',[]):
+        print(f"- {route.get('label')}: status={route.get('status')}, walking_m={route.get('walking_m')}, duration_s={route.get('duration_s')}, connectors={route.get('connectors_used')}")
+    print('SELECTED:',response.get('selected_route_id'))
+    print('PREFERENCES AFTER TURN:')
+    print(json.dumps(response.get('preferences',{}),ensure_ascii=False,indent=2))
+    return response
+
+def run_turn(turn_name,user_message,previous_response=None):
+    request={'origin_id':'entrance_west','message':user_message}
+    if previous_response:
+        previous_preferences=previous_response.get('preferences',{})
+        previous_intent=previous_response.get('intent',{})
+        # These are copied from the previous AI response, never hardcoded.
+        # Sending them as explicit state also keeps this notebook compatible
+        # with an older backend that does not yet read conversation_context.
+        request['preferences']=previous_preferences
+        request['conversation_preferences']=previous_preferences
+        request['conversation_context']={'intent':previous_intent}
+        for key in ('origin_id','destination_id'):
+            if previous_intent.get(key): request[key]=previous_intent[key]
+    response=service.recommend(request)
+    assert response['status']=='ok', response
+    return show_response(turn_name,user_message,request,response)
+
+responses=[]
+responses.append(run_turn('1 — tanpa preference awal','Saya mau ke peron 1.'))
+responses.append(run_turn('2 — memakai preference state sebelumnya','Tampilkan lagi rute menuju tujuan yang sama.',responses[-1]))
+responses.append(run_turn('3 — membangun preference dari bahasa natural','Saya tidak bisa naik tangga. Gunakan akses yang bebas anak tangga.',responses[-1]))
+responses.append(run_turn('4 — respons berikutnya menyesuaikan preference','Sekarang arahkan saya ke peron 1.',responses[-1]))'''),
+ ('code','''initial=responses[0]['preferences']
+retained=responses[1]['preferences']
+built=responses[2]['preferences']
+adapted=responses[3]
+assert sum(initial[key] for key in ('time_priority','walking_priority','crowd_priority'))>0
+assert built['step_free'] or built['avoid_stairs'], built
+assert all(route.get('connectors_used')==['elevator_link'] for route in adapted['routes'] if route.get('status')=='ok')
+print('\\nPASS: preference tidak wajib di awal, state dipertahankan, preference dibangun dari bahasa natural, dan turn berikutnya memakai lift.')'''),
+ ('md','## Kontrak endpoint untuk Flutter\nFlutter menyimpan `preferences` dari respons lalu mengirimkannya kembali sebagai `conversation_preferences` pada pesan berikutnya.'),
+ ('code','''from fastapi.testclient import TestClient
+from jakroute.api import create_app
+with TestClient(create_app(settings,service)) as client:
+    response=client.post('/recommend-route',json={'origin_id':'entrance_west','message':'Saya tidak bisa naik tangga.','conversation_preferences':responses[1]['preferences']})
+    assert response.status_code==200,response.text
+    payload=response.json()
+    print('ENDPOINT RESPONSE KEYS:',list(payload))
+    print('ENDPOINT STATUS:',payload['status'])
 work.cleanup()''')])
 print('Wrote 4 notebooks')

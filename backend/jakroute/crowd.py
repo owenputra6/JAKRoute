@@ -5,7 +5,9 @@ from .errors import RouteError
 
 def calculate_area_crowd_weight(areas, users):
     totals={a["id"]:0.0 for a in areas}
-    sizes={a["id"]:polygon_area(a["polygon"]) for a in areas}
+    # A source area can stay authoritative even if its polygon is transformed
+    # into the prototype floor for routing and display.
+    sizes={a["id"]:float(a.get("area_m2",polygon_area(a["polygon"]))) for a in areas}
     if any(v<=0 for v in sizes.values()):
         raise RouteError("invalid_area", "Luas area harus positif.")
     seen=set()

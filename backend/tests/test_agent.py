@@ -37,6 +37,32 @@ def test_model_cannot_relax_explicit_constraints(site):
     assert result['preferences']['step_free'] is True
     assert result['preferences']['max_walk_m']==120
 
+def test_preferences_are_optional_on_first_turn(site):
+    agent=RouteAgent(Settings())
+    result=agent.parse_user_request({'origin_id':'entrance_west','destination_id':'platform_1','message':'Mau ke peron.'}, {'places':site['places']})
+    assert result['focus_mode']=='best_fit'
+    assert sum(result['preferences'][key] for key in ('time_priority','walking_priority','crowd_priority'))>0
+
+def test_next_turn_can_add_preference_state(site):
+    agent=RouteAgent(Settings())
+    result=agent.parse_user_request({
+        'origin_id':'entrance_west','destination_id':'platform_1',
+        'message':'Jangan lewat tangga.',
+        'conversation_preferences':{'time_priority':1,'walking_priority':1,'crowd_priority':1},
+        'preferences':{'avoid_stairs':True},
+    }, {'places':site['places']})
+    assert result['preferences']['avoid_stairs'] is True
+    assert result['preferences']['time_priority']==1
+
+def test_previous_intent_resolves_same_destination(site):
+    agent=RouteAgent(Settings())
+    result=agent.parse_user_request({
+        'origin_id':'entrance_west','message':'Tampilkan lagi rute menuju tujuan yang sama.',
+        'conversation_context':{'intent':{'origin_id':'entrance_west','destination_id':'platform_1','via_indoor_ids':[],'focus_mode':'best_fit'}},
+        'conversation_preferences':{'time_priority':1,'walking_priority':1,'crowd_priority':1},
+    }, {'places':site['places']})
+    assert result['destination_id']=='platform_1'
+
 def test_only_three_tools_and_strict_schemas():
     assert len(TOOLS)==3
     for t in TOOLS:

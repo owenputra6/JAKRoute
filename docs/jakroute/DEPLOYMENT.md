@@ -25,7 +25,8 @@ transaksional bersama (misalnya PostgreSQL/Supabase) dan rate limiting bersama.
 
 ## Flutter
 
-Paket maplibre_gl 0.27.0 memerlukan Flutter 3.29+, Dart 3.7+, Android API 21+, iOS 13+.
+Paket ini mengunci `maplibre_gl` 0.26.2 karena versi tersebut sudah berhasil dibangun
+di project Android pengguna; jangan menaikkan ke 0.27.0 tanpa menyesuaikan Gradle/Kotlin.
 Periksa persyaratan platform package untuk versi project yang dipakai. Jangan
 mengubah Gradle/JDK secara acak hanya untuk menyamakan contoh; konfigurasi Android
 existing harus lolos build lebih dahulu. Sumber: dokumentasi package resmi dalam
@@ -61,3 +62,5 @@ iOS, atau web. Jangan memakai target desktop Windows untuk menguji peta native i
   metadata notebook menjelaskan metode ini; bukan hasil menjalankan model AI asli.
 - Dataset stasiun bukan denah nyata. Indoor positioning, crowd live, dan routing
   antarestasiun/jadwal KRL memerlukan input/layanan tambahan.
+- Kredensial Supabase tidak disertakan. Mode live membaca `station_locations` hanya
+  setelah `STATION_DATA_MODE=supabase` dan environment backend diisi.

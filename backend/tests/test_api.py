@@ -26,6 +26,16 @@ def test_ambiguous_platform_requires_clarification(client):
     assert result['status']=='clarification_required'
     assert result['routes']==[]
 
+def test_conversation_state_is_accepted(client):
+    r=client.post('/recommend-route',json={
+        'origin_id':'entrance_west',
+        'message':'Tampilkan rute yang sama.',
+        'preferences':{'time_priority':1,'walking_priority':1,'crowd_priority':1},
+        'conversation_preferences':{'time_priority':1,'walking_priority':1,'crowd_priority':1},
+        'conversation_context':{'intent':{'destination_id':'platform_1','origin_id':'entrance_west'}},
+    })
+    assert r.status_code==200,r.text
+
 def test_hybrid_and_rain(client):
     r=client.post('/recommend-route',json={'origin_id':'outside_west','destination_id':'platform_1'}).json()
     assert r['status']=='ok'

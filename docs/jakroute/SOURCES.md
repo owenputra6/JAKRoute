@@ -1,6 +1,6 @@
 # Sumber teknis
 
-Diperiksa saat penyusunan paket, 7 September 2026. Tidak ada kredensial dari percakapan
+Diperiksa saat penyusunan paket, 8 September 2026. Tidak ada kredensial dari percakapan
 lama yang disalin ke source code.
 
 - OpenAI Responses function calling: https://developers.openai.com/api/docs/guides/function-calling
@@ -10,6 +10,8 @@ lama yang disalin ke source code.
 - Ollama Gemma 3 fallback: https://ollama.com/library/gemma3
 - Google Weather current conditions: https://developers.google.com/maps/documentation/weather/current-conditions
 - Google Weather condition enum: https://developers.google.com/maps/documentation/weather/reference/rest/v1/WeatherCondition
+- Supabase Data REST API: https://supabase.com/docs/guides/api
+- Supabase API keys: https://supabase.com/docs/guides/getting-started/api-keys
 - FastAPI testing: https://fastapi.tiangolo.com/tutorial/testing/
 - Flutter HTTP networking: https://docs.flutter.dev/cookbook/networking/fetch-data
 - Dart http package: https://pub.dev/packages/http
@@ -24,3 +26,8 @@ pengguna. Karena itu mapid_contract.json tidak diisi endpoint hasil tebakan.
 Geometri sumber: file lampiran pengguna “indoor-routing-webgis (1)(3).html”, bagian
 const geojson. Polygon disimpan dalam anggrek_source.geojson. Peta simulasi stasiun
 adalah fixture baru, tidak menyalin interpretasi fasilitas dari polygon Anggrek.
+
+Sumber crowd: lampiran pengguna “Denah Stasiun Palmerah(3).geojson”. Sembilan polygon
+disimpan tanpa perubahan sebagai `palmerah_crowd_areas.geojson`. Properti yang tersedia
+hanya `id_tool`, `area_meter_square`, dan `area_hectare`; atribut lantai maupun graph
+routing tidak ditambahkan ke file sumber.

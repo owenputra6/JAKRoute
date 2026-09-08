@@ -5,14 +5,15 @@ import 'models.dart';
 class RouteDiagram extends StatelessWidget {
   final Json catalog;
   final RouteOption? route;
+  final CrowdSnapshot? crowd;
   final int floor;
-  const RouteDiagram({super.key, required this.catalog, this.route, required this.floor});
+  const RouteDiagram({super.key, required this.catalog, this.route, this.crowd, required this.floor});
   @override
   Widget build(BuildContext context) => ClipRRect(
     borderRadius: BorderRadius.circular(16),
     child: ColoredBox(color: const Color(0xffeff3f6), child: SizedBox(
       height: 280,
-      child: CustomPaint(painter: _StationPainter(catalog, route, floor), child: const SizedBox.expand()),
+      child: CustomPaint(painter: _StationPainter(catalog, route, crowd, floor), child: const SizedBox.expand()),
     )),
   );
 }
@@ -20,8 +21,9 @@ class RouteDiagram extends StatelessWidget {
 class _StationPainter extends CustomPainter {
   final Json catalog;
   final RouteOption? route;
+  final CrowdSnapshot? crowd;
   final int floor;
-  _StationPainter(this.catalog, this.route, this.floor);
+  _StationPainter(this.catalog, this.route, this.crowd, this.floor);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -48,8 +50,20 @@ class _StationPainter extends CustomPainter {
     for (final poly in selected['walkable'] as List) {
       canvas.drawPath(polygon(poly as List), Paint()..color = Colors.white);
     }
+    for (final area in crowd?.areas ?? <Json>[]) {
+      if (area['floor'] != floor) continue;
+      canvas.drawPath(polygon(area['polygon'] as List), Paint()
+        ..color = const Color(0x2426a269)
+        ..style = PaintingStyle.fill);
+    }
     for (final poly in selected['obstacles'] as List) {
       canvas.drawPath(polygon(poly as List), Paint()..color = const Color(0xff324354));
+    }
+    for (final user in crowd?.users ?? <Json>[]) {
+      if (user['floor'] != floor) continue;
+      final weight = (user['weight'] as num?)?.toDouble() ?? 1;
+      canvas.drawCircle(project(user['xy'] as List), 1.8 + weight * 0.65,
+          Paint()..color = const Color(0xccd04444));
     }
     final paint = Paint()..color = const Color(0xff176bdf)..strokeWidth = 3..strokeCap = StrokeCap.round;
     for (final feature in route?.features ?? <Json>[]) {
@@ -74,5 +88,6 @@ class _StationPainter extends CustomPainter {
   }
   @override
   bool shouldRepaint(covariant _StationPainter oldDelegate) =>
-      oldDelegate.route != route || oldDelegate.floor != floor || oldDelegate.catalog != catalog;
+      oldDelegate.route != route || oldDelegate.crowd != crowd ||
+      oldDelegate.floor != floor || oldDelegate.catalog != catalog;
 }

@@ -1,10 +1,10 @@
 {
   "id": "demo_station",
-  "label": "Stasiun simulasi — bukan denah Palmerah",
+  "label": "JAKRoute Palmerah — graph routing simulasi",
   "simulated": true,
   "anchor_lonlat": [
-    106.7812,
-    -6.2019
+    106.7974118,
+    -6.20749225
   ],
   "grid_step_m": 2,
   "clearance_m": 0.25,

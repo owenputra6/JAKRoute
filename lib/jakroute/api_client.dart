@@ -51,6 +51,8 @@ class JakRouteApi {
 
   Future<Json> catalog() => _request('/catalog');
   Future<Json> health() => _request('/health');
+  Future<CrowdSnapshot> crowdSnapshot() async =>
+      CrowdSnapshot(await _request('/crowd/snapshot'));
   Future<Recommendation> recommend(Json request) async =>
       Recommendation(await _request('/recommend-route', body: request));
   Future<Json> forumSummary() => _request('/forum/summary');

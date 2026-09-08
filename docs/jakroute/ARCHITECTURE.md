@@ -27,9 +27,21 @@ resolusi grid. Grid 2 m demo perlu diperhalus untuk data indoor asli.
 | best_fit | Jumlah cost berdasarkan prioritas waktu, berjalan, keramaian, akses pilihan | Sama |
 
 Keramaian per area = total bobot user / luas polygon area yang dapat digunakan (m²).
-Jangan menghitung satu user beberapa kali dalam satu snapshot. Luas memakai satuan
-meter lokal. Data sumber user mencantumkan posisi, lantai, bobot dan waktu snapshot.
-Bobot keramaian penghuni berbeda dengan bobot preferensi pengguna pencari rute.
+Jangan menghitung satu user beberapa kali dalam satu snapshot. Luas memakai
+`area_meter_square` dari GeoJSON sebagai nilai sumber. Data user mencantumkan posisi,
+lantai, bobot, area dan waktu snapshot. Bobot keramaian penghuni berbeda dengan
+bobot preferensi pengguna pencari rute.
+
+Saat backend start, `GeoJsonCrowdSimulator` mengambil tepat 100 titik deterministik
+di dalam 9 polygon Palmerah. Setiap area mendapat minimal satu titik; sisanya dibagi
+proporsional terhadap luas. Setiap titik mendapat bobot numerik sendiri. Tidak ada
+konversi menjadi label low/medium/high. Snapshot yang sama dipakai seluruh alternatif
+rute dan dikirim ke Flutter melalui `/crowd/snapshot`.
+
+GeoJSON tidak berisi lantai atau network jalur. Posisi asli `[lon,lat]` dipertahankan,
+sedangkan salinannya dirotasi dan diskalakan ke floor 0 graph demo untuk evaluasi
+weighted path. Transformasi itu tidak mengubah luas sumber dan tidak berarti polygon
+GeoJSON telah menjadi denah routing lengkap.
 
 Parameter waktu demo: berjalan dasar 1.2 m/s; perlambatan jalan = durasi dasar ×
 (1 + 1.5 × density). Elevator memakai durasi dasar × (1 + 0.5 × density) sebagai
@@ -50,6 +62,18 @@ Cuaca hanya warning outdoor. Tidak mengubah cost, jarak, atau pilihan geometri.
 Data hujan aktual yang tidak tersedia tidak diasumsikan cerah. Dalam prototype
 satu stasiun, lookup cuaca pada anchor area stasiun; perjalanan jauh memerlukan
 cakupan lokasi/waktu cuaca yang lebih luas.
+
+Koordinat cuaca berasal dari anchor site `[longitude, latitude]`. Anchor demo kini
+berada di area GeoJSON Palmerah (`106.797...`, bukan typo `107.797...`). Google key
+disimpan di backend. Cuaca tidak dipanggil untuk perjalanan indoor penuh.
+
+## Supabase station data
+
+Mode `STATION_DATA_MODE=supabase` membaca tabel `station_locations` lewat REST dari
+backend. `source_id` yang sama dengan ID graph dapat memperkaya label/metadata titik.
+Koordinat Supabase yang belum memiliki node/edge tetap dikembalikan sebagai katalog,
+tetapi tidak boleh otomatis dirutekan. Ini mencegah AI mengarang konektivitas hanya
+dari sebuah titik koordinat. Mode live tidak fallback diam-diam ke fixture.
 
 ## Forum terpisah
 
@@ -121,6 +145,7 @@ handoff. Pemetaan area/titik luar baru dilakukan pada katalog, bukan geocoding A
 |---|---|
 | GET /health | Mode layanan dan status proses |
 | GET /catalog | Site, places, fasilitas, walkable, obstacle |
+| GET /crowd/snapshot | 100 titik berbobot, statistik 9 area, provenance dan transform |
 | POST /recommend-route | Intent, tiga rute, pilihan, warning, penjelasan, tool trace |
 | GET /forum/summary | Summary aktif; tidak mengekspos laporan mentah |
 | POST /forum/reports | Proses laporan oleh pipeline forum independen |

@@ -1,0 +1,441 @@
+{
+  "id": "demo_station",
+  "label": "Stasiun simulasi — bukan denah Palmerah",
+  "simulated": true,
+  "anchor_lonlat": [
+    106.7812,
+    -6.2019
+  ],
+  "grid_step_m": 2,
+  "clearance_m": 0.25,
+  "floor_height_m": 4,
+  "floors": [
+    {
+      "id": 0,
+      "bounds": [
+        0,
+        0,
+        60,
+        32
+      ],
+      "walkable": [
+        [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              60,
+              0
+            ],
+            [
+              60,
+              32
+            ],
+            [
+              0,
+              32
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        ]
+      ],
+      "obstacles": [
+        [
+          [
+            [
+              24,
+              10
+            ],
+            [
+              36,
+              10
+            ],
+            [
+              36,
+              24
+            ],
+            [
+              24,
+              24
+            ],
+            [
+              24,
+              10
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "id": 1,
+      "bounds": [
+        0,
+        0,
+        60,
+        32
+      ],
+      "walkable": [
+        [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              60,
+              0
+            ],
+            [
+              60,
+              32
+            ],
+            [
+              0,
+              32
+            ],
+            [
+              0,
+              0
+            ]
+          ]
+        ]
+      ],
+      "obstacles": []
+    }
+  ],
+  "places": [
+    {
+      "id": "entrance_west",
+      "label": "Pintu barat",
+      "xy": [
+        2,
+        16
+      ],
+      "floor": 0,
+      "kind": "entrance",
+      "scope": "indoor"
+    },
+    {
+      "id": "entrance_east",
+      "label": "Pintu timur",
+      "xy": [
+        58,
+        16
+      ],
+      "floor": 0,
+      "kind": "entrance",
+      "scope": "indoor"
+    },
+    {
+      "id": "toilet_01",
+      "label": "Toilet",
+      "xy": [
+        8,
+        4
+      ],
+      "floor": 0,
+      "kind": "toilet",
+      "scope": "indoor"
+    },
+    {
+      "id": "mushola_01",
+      "label": "Mushola",
+      "xy": [
+        8,
+        28
+      ],
+      "floor": 0,
+      "kind": "mushola",
+      "scope": "indoor"
+    },
+    {
+      "id": "platform_1",
+      "label": "Peron 1",
+      "xy": [
+        56,
+        16
+      ],
+      "floor": 1,
+      "kind": "platform",
+      "scope": "indoor"
+    },
+    {
+      "id": "platform_2",
+      "label": "Peron 2",
+      "xy": [
+        42,
+        16
+      ],
+      "floor": 1,
+      "kind": "platform",
+      "scope": "indoor"
+    },
+    {
+      "id": "stairs_0",
+      "label": "stairs lantai 0",
+      "xy": [
+        52,
+        4
+      ],
+      "floor": 0,
+      "kind": "stairs",
+      "scope": "indoor"
+    },
+    {
+      "id": "stairs_1",
+      "label": "stairs lantai 1",
+      "xy": [
+        52,
+        4
+      ],
+      "floor": 1,
+      "kind": "stairs",
+      "scope": "indoor"
+    },
+    {
+      "id": "escalator_0",
+      "label": "escalator lantai 0",
+      "xy": [
+        52,
+        16
+      ],
+      "floor": 0,
+      "kind": "escalator",
+      "scope": "indoor"
+    },
+    {
+      "id": "escalator_1",
+      "label": "escalator lantai 1",
+      "xy": [
+        52,
+        16
+      ],
+      "floor": 1,
+      "kind": "escalator",
+      "scope": "indoor"
+    },
+    {
+      "id": "elevator_0",
+      "label": "elevator lantai 0",
+      "xy": [
+        52,
+        28
+      ],
+      "floor": 0,
+      "kind": "elevator",
+      "scope": "indoor"
+    },
+    {
+      "id": "elevator_1",
+      "label": "elevator lantai 1",
+      "xy": [
+        52,
+        28
+      ],
+      "floor": 1,
+      "kind": "elevator",
+      "scope": "indoor"
+    },
+    {
+      "id": "outside_west",
+      "label": "Titik luar barat (simulasi)",
+      "xy": [
+        -40,
+        16
+      ],
+      "floor": 0,
+      "kind": "outdoor",
+      "scope": "outdoor"
+    },
+    {
+      "id": "outside_east",
+      "label": "Titik luar timur (simulasi)",
+      "xy": [
+        100,
+        16
+      ],
+      "floor": 0,
+      "kind": "outdoor",
+      "scope": "outdoor"
+    }
+  ],
+  "crowd_areas": [
+    {
+      "id": "north",
+      "floor": 0,
+      "polygon": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            60,
+            0
+          ],
+          [
+            60,
+            10
+          ],
+          [
+            0,
+            10
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "south",
+      "floor": 0,
+      "polygon": [
+        [
+          [
+            0,
+            24
+          ],
+          [
+            60,
+            24
+          ],
+          [
+            60,
+            32
+          ],
+          [
+            0,
+            32
+          ],
+          [
+            0,
+            24
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "west",
+      "floor": 0,
+      "polygon": [
+        [
+          [
+            0,
+            10
+          ],
+          [
+            24,
+            10
+          ],
+          [
+            24,
+            24
+          ],
+          [
+            0,
+            24
+          ],
+          [
+            0,
+            10
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "east",
+      "floor": 0,
+      "polygon": [
+        [
+          [
+            36,
+            10
+          ],
+          [
+            60,
+            10
+          ],
+          [
+            60,
+            24
+          ],
+          [
+            36,
+            24
+          ],
+          [
+            36,
+            10
+          ]
+        ]
+      ]
+    },
+    {
+      "id": "platform_area",
+      "floor": 1,
+      "polygon": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            60,
+            0
+          ],
+          [
+            60,
+            32
+          ],
+          [
+            0,
+            32
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ]
+    }
+  ],
+  "connectors": [
+    {
+      "id": "stairs_link",
+      "kind": "stairs",
+      "from": "stairs_0",
+      "to": "stairs_1",
+      "duration_s": 14,
+      "walking_m": 8,
+      "bidirectional": true,
+      "available": true
+    },
+    {
+      "id": "escalator_link",
+      "kind": "escalator",
+      "from": "escalator_0",
+      "to": "escalator_1",
+      "duration_s": 12,
+      "walking_m": 0,
+      "bidirectional": false,
+      "available": true
+    },
+    {
+      "id": "elevator_link",
+      "kind": "elevator",
+      "from": "elevator_0",
+      "to": "elevator_1",
+      "duration_s": 45,
+      "walking_m": 0,
+      "bidirectional": true,
+      "available": true
+    }
+  ]
+}

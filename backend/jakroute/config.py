@@ -28,6 +28,10 @@ class Settings:
     api_token: str=''
     supabase_url: str=''
     supabase_anon_key: str=''
+    station_data_mode: str='demo'
+    supabase_station_table: str='station_locations'
+    crowd_user_count: int=100
+    crowd_seed: int=20260908
     app_env: str='development'
     cors_origins: str='http://localhost:3000,http://localhost:8080'
 
@@ -38,9 +42,14 @@ class Settings:
             key=name.upper()
             if key in os.environ: kwargs[name]=os.environ[key]
         if 'data_dir' in kwargs: kwargs['data_dir']=Path(kwargs['data_dir'])
+        for name in ('crowd_user_count','crowd_seed'):
+            if name in kwargs:
+                try: kwargs[name]=int(kwargs[name])
+                except ValueError as exc: raise RouteError('config',f'{name} harus integer.',503) from exc
         result=cls(**kwargs)
-        for name,allowed in [('agent_mode',('demo','openai')),('mapid_mode',('demo','live')),('weather_mode',('demo','google')),('forum_mode',('demo','openai','ollama')),('auth_mode',('demo','token','supabase'))]:
+        for name,allowed in [('agent_mode',('demo','openai')),('mapid_mode',('demo','live')),('weather_mode',('demo','google')),('forum_mode',('demo','openai','ollama')),('auth_mode',('demo','token','supabase')),('station_data_mode',('demo','supabase'))]:
             if getattr(result,name) not in allowed: raise RouteError('config',f'{name} tidak valid.',503)
+        if not 9<=result.crowd_user_count<=1000: raise RouteError('config','crowd_user_count harus 9–1000.',503)
         if result.app_env=='production' and (result.auth_mode=='demo' or not result.officer_token):
             raise RouteError('config','Production memerlukan autentikasi dan OFFICER_TOKEN.',503)
         return result

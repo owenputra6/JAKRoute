@@ -1,6 +1,7 @@
 """Actual HTTP integrations + explicit, never silent, simulated providers."""
 import json
 import math
+import re
 from datetime import datetime,timezone
 import httpx
 from .geometry import local_to_lonlat, distance
@@ -84,7 +85,8 @@ class WeatherClient:
     def __init__(self,settings): self.settings=settings
 
     def get_weather_status(self,lonlat):
-        if self.settings.weather_mode=='demo': return load_json(self.settings.data_dir/'weather_dummy.json')
+        if self.settings.weather_mode=='demo':
+            return {**load_json(self.settings.data_dir/'weather_dummy.json'),'location_lonlat':lonlat}
         if not self.settings.google_weather_api_key:
             return dict(source='unavailable',simulated=False,is_raining=None,condition='UNKNOWN',observed_at=None)
         try:
@@ -103,3 +105,37 @@ def create_weather_warning(weather,has_outdoor):
     if weather.get('is_raining') is None:
         return ['Data cuaca belum tersedia untuk bagian rute luar ruangan.']
     return []
+
+
+class SupabaseStationClient:
+    """Read the user's station_locations table through Supabase REST."""
+    fields='id,source_id,name,category,latitude,longitude,floor,area_m2'
+
+    def __init__(self,settings): self.settings=settings
+
+    def get_locations(self):
+        if self.settings.station_data_mode=='demo':
+            return {'source':'not_configured','simulated':False,'locations':[]}
+        if not self.settings.supabase_url or not self.settings.supabase_anon_key:
+            raise RouteError('supabase_not_configured','Isi SUPABASE_URL dan SUPABASE_ANON_KEY untuk STATION_DATA_MODE=supabase.',503)
+        table=self.settings.supabase_station_table
+        if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*',table):
+            raise RouteError('config','Nama tabel Supabase tidak valid.',503)
+        rows=json_http('GET',self.settings.supabase_url.rstrip('/')+f'/rest/v1/{table}',
+            headers={'apikey':self.settings.supabase_anon_key},
+            params={'select':self.fields,'order':'id.asc','limit':'2000'})
+        if not isinstance(rows,list):
+            raise RouteError('supabase_schema','Respons station_locations harus berupa array.',502)
+        locations=[]
+        for row in rows:
+            if not isinstance(row,dict):
+                raise RouteError('supabase_schema','Baris station_locations tidak valid.',502)
+            try:
+                lat=float(row['latitude']);lon=float(row['longitude'])
+            except (KeyError,TypeError,ValueError) as exc:
+                raise RouteError('supabase_schema','Koordinat station_locations tidak valid.',502) from exc
+            if not (-90<=lat<=90 and -180<=lon<=180):
+                raise RouteError('supabase_schema','Koordinat station_locations di luar rentang.',502)
+            locations.append({key:row.get(key) for key in self.fields.split(',')}|{
+                'latitude':lat,'longitude':lon})
+        return {'source':'supabase_rest','simulated':False,'table':table,'locations':locations}

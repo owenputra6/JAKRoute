@@ -1,5 +1,7 @@
-# Merge with your existing pubspec.yaml, or run: flutter pub add http maplibre_gl
+# Merge with your existing pubspec.yaml, or run:
+# flutter pub add http
+# flutter pub add maplibre_gl:0.26.2
 # No extra Flutter assets are required: catalog/geometry come from Python.
 dependencies:
   http: ^1.6.0
-  maplibre_gl: ^0.27.0
+  maplibre_gl: 0.26.2

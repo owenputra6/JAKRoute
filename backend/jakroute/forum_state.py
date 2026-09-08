@@ -120,8 +120,17 @@ class DemoSummarizer:
           'report_002':dict(summary='Eskalator masih rusak.',category='failure',effect='unavailable',severe=False,resolution_claimed=False),
           'report_003':dict(summary='Penumpang menduga eskalator telah diperbaiki; belum ada konfirmasi petugas.',category='failure',effect='none',severe=False,resolution_claimed=True),
           'report_004':dict(summary='Api dan asap pekat dilaporkan di koridor utara; jalur diblokir sementara.',category='hazard',effect='blocked',severe=True,resolution_claimed=False)}
-        if report['report_id'] not in by_id: raise RouteError('demo_report','Mode demo hanya menerima empat report fixture; aktifkan FORUM_MODE=openai atau ollama untuk teks baru.')
-        return by_id[report['report_id']]
+        if report['report_id'] in by_id: return by_id[report['report_id']]
+        # Deterministic fallback for the threaded notebook. This deliberately
+        # recognizes only its fixed simulation phrases; it is not NLP.
+        message=str(report.get('message','')).lower()
+        if report.get('resource_id')=='escalator_link':
+            if 'sudah diperbaiki' in message or 'lampunya menyala' in message:
+                return dict(summary='Ada klaim eskalator sudah diperbaiki; belum ada konfirmasi petugas.',category='failure',effect='none',severe=False,resolution_claimed=True)
+            return dict(summary='Eskalator menuju peron rusak; penumpang harus menggunakan tangga.',category='failure',effect='unavailable',severe=False,resolution_claimed=False)
+        if report.get('resource_id')=='north' and ('api' in message or 'asap' in message):
+            return dict(summary='Api dan asap tebal dilaporkan di koridor utara; jalur harus ditutup.',category='hazard',effect='blocked',severe=True,resolution_claimed=False)
+        raise RouteError('demo_report','Mode demo hanya menerima fixture atau thread simulasi; aktifkan FORUM_MODE=openai untuk teks baru.')
 
 class ForumStore:
     def __init__(self,path,seed=None,site_id='standalone'):

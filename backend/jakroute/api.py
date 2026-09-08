@@ -95,10 +95,16 @@ def create_app(settings=None,service=None):
     @app.get('/health')
     def health():
         return {'status':'ok','agent_mode':settings.agent_mode,'mapid_mode':settings.mapid_mode,
-                'weather_mode':settings.weather_mode,'forum_mode':settings.forum_mode,'simulated_station':service.site['simulated']}
+                'weather_mode':settings.weather_mode,'forum_mode':settings.forum_mode,
+                'station_data_mode':settings.station_data_mode,
+                'crowd_user_count':service.crowd['user_count'],
+                'simulated_station':service.site['simulated']}
 
     @app.get('/catalog')
     def catalog(identity=Depends(authenticate)): return service.catalog()
+
+    @app.get('/crowd/snapshot')
+    def crowd_snapshot(identity=Depends(authenticate)): return service.crowd_snapshot()
 
     @app.post('/recommend-route')
     def recommend(body:RouteRequest,identity=Depends(authenticate)):

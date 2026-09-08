@@ -1,7 +1,8 @@
 """One request snapshot; enumerate real entrance handoffs; return all 3 modes."""
 import copy
-from .providers import load_json,MapidClient,WeatherClient,create_weather_warning
+from .providers import load_json,MapidClient,WeatherClient,SupabaseStationClient,create_weather_warning
 from .geometry import local_to_lonlat
+from .crowd_simulation import GeoJsonCrowdSimulator
 from .schemas import Preferences,MODES,LABELS
 from .indoor_routing import IndoorRouter
 from .forum_state import ForumStore,OllamaSummarizer,OpenAISummarizer,DemoSummarizer
@@ -12,6 +13,24 @@ class RouteService:
     def __init__(self,settings,agent=None):
         self.settings=settings
         self.site=load_json(settings.data_dir/'station_demo.json')
+        self.station_data=SupabaseStationClient(settings)
+        self.station_snapshot=self.station_data.get_locations()
+        station_matches={str(row.get('source_id')):row for row in self.station_snapshot['locations'] if row.get('source_id')}
+        for place in self.site['places']:
+            row=station_matches.get(place['id'])
+            if row:
+                place['label']=row.get('name') or place['label']
+                place['station_location']=row
+        ground=next(f for f in self.site['floors'] if f['id']==0)
+        self.crowd_simulator=GeoJsonCrowdSimulator(
+            settings.data_dir/'palmerah_crowd_areas.geojson',
+            self.site['anchor_lonlat'],ground['bounds'],
+            settings.crowd_user_count,settings.crowd_seed,floor=0)
+        self.crowd=self.crowd_simulator.build_snapshot()
+        # The 9 projected GeoJSON areas replace the old hand-written crowd
+        # rectangles. The routing graph itself remains the existing demo graph.
+        self.site['crowd_areas']=[{key:area[key] for key in ('id','floor','area_m2','polygon')}
+                                  for area in self.crowd['areas']]
         self.router=IndoorRouter(self.site)
         self.places={p['id']:p for p in self.site['places']}
         seed=load_json(settings.data_dir/'forum_summary_seed.json') if self.site['simulated'] else None
@@ -22,8 +41,23 @@ class RouteService:
         self.summarizer=OpenAISummarizer(settings) if settings.forum_mode=='openai' else OllamaSummarizer(settings) if settings.forum_mode=='ollama' else DemoSummarizer()
 
     def catalog(self):
-        # Flutter uses the same catalog/geometry as the backend; no duplicate asset copy.
-        return {**self.site,'places':[{**p,'lonlat':local_to_lonlat(p['xy'],self.site['anchor_lonlat'])} for p in self.site['places']]}
+        # Supabase may enrich matching source_id values, but cannot create graph
+        # nodes merely because a coordinate row exists.
+        station_data=self.station_snapshot
+        matches={str(row.get('source_id')):row for row in station_data['locations'] if row.get('source_id')}
+        places=[]
+        for place in self.site['places']:
+            row=matches.get(place['id'])
+            enriched={**place,'lonlat':local_to_lonlat(place['xy'],self.site['anchor_lonlat'])}
+            if row:
+                enriched['label']=row.get('name') or enriched['label']
+                enriched['station_location']=row
+            places.append(enriched)
+        return {**self.site,'places':places,'station_data':station_data,
+                'crowd_source':self.crowd['source']}
+
+    def crowd_snapshot(self):
+        return copy.deepcopy(self.crowd)
 
     def _plans(self,intent,prefs):
         origin,dest=intent['origin_id'],intent['destination_id']
@@ -57,8 +91,7 @@ class RouteService:
         # One snapshot for the three alternatives; retry once if a forum update races calculation.
         for attempt in range(2):
             snapshot=self.store.snapshot()
-            crowd=load_json(self.settings.data_dir/'crowd_users.json')
-            result=self._calculate(intent,prefs,plans,snapshot,crowd)
+            result=self._calculate(intent,prefs,plans,snapshot,self.crowd)
             if snapshot['version']==self.store.snapshot()['version']:
                 return result
         raise RouteError('state_changed','Kondisi fasilitas baru saja berubah. Minta rute kembali.',409)
@@ -146,9 +179,33 @@ class RouteService:
         for r in valid:
             sig=r['geometry']['features']
             r['same_geometry_as']=[x['mode'] for x in valid if x is not r and x['geometry']['features']==sig]
+            r['insight']=self._route_insight(r,prefs,ai_selected=r is selected)
         return dict(status='ok',routes=routes,selected_route_id=selected['route_id'],intent=intent,preferences=prefs.as_dict(),
             forum_summary=snapshot,weather=weather,crowd_observed_at=crowd['observed_at'],crowd_simulated=crowd['simulated'],
-            agent_mode=self.settings.agent_mode,tool_trace=trace,station_id=self.site['id'])
+            crowd_snapshot_id=crowd['snapshot_id'],crowd_user_count=crowd['user_count'],
+            ai_insight=selected['insight'],agent_mode=self.settings.agent_mode,tool_trace=trace,station_id=self.site['id'])
+
+    def _route_insight(self,route,prefs,ai_selected=False):
+        personalized=[]
+        if prefs.step_free: personalized.append('akses bebas anak tangga')
+        elif prefs.avoid_stairs: personalized.append('menghindari tangga')
+        if prefs.preferred_access!='any': personalized.append('preferensi '+prefs.preferred_access)
+        if prefs.max_walk_m is not None: personalized.append(f'batas berjalan {prefs.max_walk_m:g} m')
+        if (prefs.time_priority,prefs.walking_priority,prefs.crowd_priority)!=(1.0,1.0,1.0):
+            personalized.append(f'prioritas waktu/jalan/crowd {prefs.time_priority:g}/{prefs.walking_priority:g}/{prefs.crowd_priority:g}')
+        return {
+            'headline':route['label'],
+            'summary':route['explanation'],
+            'personalization':personalized,
+            'facts':[
+                {'label':'Jarak berjalan','value':f"{route['walking_m']:.0f} m"},
+                {'label':'Estimasi waktu','value':f"{route['duration_s']/60:.1f} menit"},
+                {'label':'Paparan crowd berbobot','value':f"{route['crowd_exposure']:.2f}"},
+            ],
+            'generator':'openai_reason_selection' if ai_selected and self.settings.agent_mode=='openai'
+                        else 'deterministic_demo' if self.settings.agent_mode=='demo'
+                        else 'backend_evidence',
+        }
 
     def ingest_report(self,report):
         known=set(self.places)|{x['id'] for x in self.site['connectors']}|{x['id'] for x in self.site['crowd_areas']}
