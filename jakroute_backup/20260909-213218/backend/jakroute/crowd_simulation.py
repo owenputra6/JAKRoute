@@ -14,7 +14,6 @@ from .crowd import calculate_area_crowd_weight
 from .errors import RouteError
 from .geometry import in_polygon, lonlat_to_local
 from .providers import load_json
-from .geometry import local_to_lonlat
 
 
 def _slug(value):
@@ -146,91 +145,5 @@ class GeoJsonCrowdSimulator:
             'routing_transform':{
                 'purpose':'Memetakan titik crowd ke geometri routing demo, bukan mengganti network routing.',
                 'rotation_degrees':90,'target_bounds':self.target_bounds,
-            },
-        }
-
-
-class NodeCorridorCrowdSimulator:
-    """Create weighted dummy users inside corridors defined by station nodes."""
-
-    def __init__(self,corridors,anchor_lonlat,user_count=100,seed=20260908):
-        self.corridors=corridors
-        self.anchor_lonlat=anchor_lonlat
-        self.user_count=int(user_count)
-        self.seed=int(seed)
-        if not corridors:
-            raise RouteError('crowd_corridor','Crowd corridor belum tersedia.',503)
-
-    @staticmethod
-    def _area(corridor):
-        a,b=corridor['points']
-        length=math.hypot(b[0]-a[0],b[1]-a[1])
-        return length*float(corridor['width_m'])
-
-    @staticmethod
-    def _ring(corridor):
-        a,b=corridor['points'];width=float(corridor['width_m'])
-        dx,dy=b[0]-a[0],b[1]-a[1]
-        length=math.hypot(dx,dy)
-        if length<=0 or width<=0:
-            raise RouteError('crowd_corridor','Panjang dan lebar crowd corridor harus positif.',503)
-        nx,ny=-dy/length*width/2,dx/length*width/2
-        return [[a[0]+nx,a[1]+ny],[b[0]+nx,b[1]+ny],
-                [b[0]-nx,b[1]-ny],[a[0]-nx,a[1]-ny],[a[0]+nx,a[1]+ny]]
-
-    def build_snapshot(self,observed_at=None):
-        areas=[]
-        for corridor in self.corridors:
-            ring=self._ring(corridor)
-            areas.append({
-                'id':corridor['id'],'label':corridor.get('label',corridor['id']),
-                'floor':int(corridor['floor']),'area_m2':self._area(corridor),
-                'polygon':[ring],
-                'geojson_geometry':{
-                    'type':'Polygon',
-                    'coordinates':[[local_to_lonlat(point,self.anchor_lonlat) for point in ring]],
-                },
-                'width_m':float(corridor['width_m']),
-            })
-        counts=_largest_remainder(areas,self.user_count)
-        rng=random.Random(self.seed)
-        users=[]
-        by_id={corridor['id']:corridor for corridor in self.corridors}
-        for area in areas:
-            corridor=by_id[area['id']];a,b=corridor['points']
-            dx,dy=b[0]-a[0],b[1]-a[1]
-            length=math.hypot(dx,dy);nx,ny=-dy/length,dx/length
-            for _ in range(counts[area['id']]):
-                along=rng.random()
-                across=rng.uniform(-float(corridor['width_m'])/2,float(corridor['width_m'])/2)
-                xy=[a[0]+along*dx+across*nx,a[1]+along*dy+across*ny]
-                users.append({
-                    'id':f'crowd_{len(users)+1:03d}','area_id':area['id'],
-                    'floor':area['floor'],'weight':round(rng.uniform(.75,1.75),3),
-                    'lonlat':[round(value,10) for value in local_to_lonlat(xy,self.anchor_lonlat)],
-                    'xy':[round(value,5) for value in xy],
-                })
-        layer=calculate_area_crowd_weight(areas,users)
-        public_areas=[]
-        for area in areas:
-            stats=layer[area['id']]
-            public_areas.append({**area,'user_count':counts[area['id']],
-                'weighted_users':round(stats['weighted_users'],4),
-                'density':round(stats['density'],6)})
-        timestamp=observed_at or datetime.now(timezone.utc).isoformat().replace('+00:00','Z')
-        return {
-            'snapshot_id':f'node-corridor-{self.seed}-{self.user_count}',
-            'simulated':True,'observed_at':timestamp,'user_count':len(users),
-            'total_weight':round(sum(user['weight'] for user in users),4),
-            'users':users,'areas':public_areas,
-            'source':{
-                'kind':'station_node_corridor_sampling',
-                'tables':['station_blocks','station_nodes'],
-                'corridor_count':len(areas),
-                'description':'100 user dummy berbobot di koridor yang dibentuk titik 19-20.',
-            },
-            'routing_transform':{
-                'purpose':'Tidak ada transformasi: crowd dan routing memakai koordinat station_nodes yang sama.',
-                'rotation_degrees':0,
             },
         }

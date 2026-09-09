@@ -29,9 +29,7 @@ class Settings:
     supabase_url: str=''
     supabase_anon_key: str=''
     station_data_mode: str='demo'
-    supabase_blocks_table: str='station_blocks'
-    supabase_nodes_table: str='station_nodes'
-    supabase_station_id: str='palmerah'
+    supabase_station_table: str='station_locations'
     crowd_user_count: int=100
     crowd_seed: int=20260908
     app_env: str='development'

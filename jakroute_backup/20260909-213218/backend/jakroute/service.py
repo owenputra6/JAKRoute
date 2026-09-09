@@ -2,8 +2,7 @@
 import copy
 from .providers import load_json,MapidClient,WeatherClient,SupabaseStationClient,create_weather_warning
 from .geometry import local_to_lonlat
-from .crowd_simulation import GeoJsonCrowdSimulator,NodeCorridorCrowdSimulator
-from .station_source import build_station_site
+from .crowd_simulation import GeoJsonCrowdSimulator
 from .schemas import Preferences,MODES,LABELS
 from .indoor_routing import IndoorRouter
 from .forum_state import ForumStore,OllamaSummarizer,OpenAISummarizer,DemoSummarizer
@@ -13,21 +12,23 @@ from .errors import RouteError
 class RouteService:
     def __init__(self,settings,agent=None):
         self.settings=settings
+        self.site=load_json(settings.data_dir/'station_demo.json')
         self.station_data=SupabaseStationClient(settings)
-        self.station_snapshot=self.station_data.get_station_data()
-        if settings.station_data_mode=='supabase':
-            self.site=build_station_site(self.station_snapshot)
-            self.crowd_simulator=NodeCorridorCrowdSimulator(
-                self.site['crowd_corridors'],self.site['anchor_lonlat'],
-                settings.crowd_user_count,settings.crowd_seed)
-        else:
-            self.site=load_json(settings.data_dir/'station_demo.json')
-            ground=next(f for f in self.site['floors'] if f['id']==0)
-            self.crowd_simulator=GeoJsonCrowdSimulator(
-                settings.data_dir/'palmerah_crowd_areas.geojson',
-                self.site['anchor_lonlat'],ground['bounds'],
-                settings.crowd_user_count,settings.crowd_seed,floor=0)
+        self.station_snapshot=self.station_data.get_locations()
+        station_matches={str(row.get('source_id')):row for row in self.station_snapshot['locations'] if row.get('source_id')}
+        for place in self.site['places']:
+            row=station_matches.get(place['id'])
+            if row:
+                place['label']=row.get('name') or place['label']
+                place['station_location']=row
+        ground=next(f for f in self.site['floors'] if f['id']==0)
+        self.crowd_simulator=GeoJsonCrowdSimulator(
+            settings.data_dir/'palmerah_crowd_areas.geojson',
+            self.site['anchor_lonlat'],ground['bounds'],
+            settings.crowd_user_count,settings.crowd_seed,floor=0)
         self.crowd=self.crowd_simulator.build_snapshot()
+        # The 9 projected GeoJSON areas replace the old hand-written crowd
+        # rectangles. The routing graph itself remains the existing demo graph.
         self.site['crowd_areas']=[{key:area[key] for key in ('id','floor','area_m2','polygon')}
                                   for area in self.crowd['areas']]
         self.router=IndoorRouter(self.site)
@@ -40,14 +41,18 @@ class RouteService:
         self.summarizer=OpenAISummarizer(settings) if settings.forum_mode=='openai' else OllamaSummarizer(settings) if settings.forum_mode=='ollama' else DemoSummarizer()
 
     def catalog(self):
+        # Supabase may enrich matching source_id values, but cannot create graph
+        # nodes merely because a coordinate row exists.
+        station_data=self.station_snapshot
+        matches={str(row.get('source_id')):row for row in station_data['locations'] if row.get('source_id')}
         places=[]
         for place in self.site['places']:
-            enriched={**place,'lonlat':place.get('source_lonlat') or local_to_lonlat(place['xy'],self.site['anchor_lonlat'])}
+            row=matches.get(place['id'])
+            enriched={**place,'lonlat':local_to_lonlat(place['xy'],self.site['anchor_lonlat'])}
+            if row:
+                enriched['label']=row.get('name') or enriched['label']
+                enriched['station_location']=row
             places.append(enriched)
-        station_data={key:value for key,value in self.station_snapshot.items()
-                      if key not in ('blocks','nodes')}
-        station_data['counts']={'blocks':len(self.station_snapshot.get('blocks',[])),
-                                'nodes':len(self.station_snapshot.get('nodes',[]))}
         return {**self.site,'places':places,'station_data':station_data,
                 'crowd_source':self.crowd['source']}
 
@@ -161,8 +166,6 @@ class RouteService:
             if any(i['effect'] in ('unavailable','blocked') or i['routing_code']==-1 for i in snapshot['incidents']) and 'indoor_python_grid' in route['sources']: reasons['forum']='Akses yang dilaporkan tidak dapat digunakan tetap dikecualikan sampai ada konfirmasi petugas.'
             warnings=create_weather_warning(weather,has_outdoor)
             if route['simulated']: warnings.append('Hasil memakai denah/data simulasi; bukan petunjuk navigasi stasiun sebenarnya.')
-            elif self.site.get('routing_geometry_derived'):
-                warnings.append('Block dan titik berasal dari Supabase; batas walkable masih geometri turunan dan perlu divalidasi di stasiun.')
             if not any(scope=='indoor' for plan in plans for scope,_,_ in plan):
                 warnings.append('Perjalanan ini seluruhnya outdoor. Tiga kriteria belum dioptimalkan oleh mesin indoor; hasil mengikuti kandidat provider yang tersedia.')
             route.update(reasons=reasons,warnings=warnings,explanation=' '.join(reasons.values()))

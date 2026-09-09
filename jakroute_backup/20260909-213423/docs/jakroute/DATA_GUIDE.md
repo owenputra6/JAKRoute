@@ -5,8 +5,6 @@
 | File | Isi dan provenance |
 |---|---|
 | station_demo.json | Denah dua lantai, grid, ruang jalan, obstacle, fasilitas, connector; seluruhnya simulasi |
-| palmerah_lt2_blocks.geojson | 55 Polygon sumber `station_blocks`; semuanya obstacle |
-| palmerah_lt2_nodes.geojson | 20 Point sumber `station_nodes`; point 19–20 adalah batas koridor crowd |
 | palmerah_crowd_areas.geojson | 9 polygon Palmerah: `id_tool`, `area_meter_square`, `area_hectare`; sumber 100 titik crowd |
 | anggrek_source.geojson | 11 polygon diekstrak dari HTML lampiran tanpa perubahan koordinat/atribut |
 | crowd_users.json | Fixture crowd lama untuk unit test kompatibilitas; runtime memakai generator GeoJSON |
@@ -26,20 +24,7 @@ walkable, pintu, atau connector antarlantai. Uji sumber tidak menghapus polygon
 ruang asal/tujuan agar centroid dapat dilalui. Titik uji ditempatkan di ruang bebas
 buatan dan hasil tidak dinyatakan sebagai navigasi bangunan yang terverifikasi.
 
-## Mode data Supabase Lantai 2
-
-Jalankan `supabase/01_station_blocks.sql`, lalu `supabase/02_station_nodes.sql`.
-Backend membaca polygon dan point melalui REST PostgREST. Geometry dapat diterima
-sebagai GeoJSON, EWKB hex, atau WKT. Urutan koordinat selalu longitude, latitude.
-
-- Semua row `station_blocks` wajib `is_obstacle=true` dan dikeluarkan dari ruang bebas.
-- `station_nodes.is_routable=true` menjadi anchor origin/destination pada graph.
-- Point 19–20 tidak menjadi tujuan; keduanya membentuk `crowd_corridor_01` selebar 2 m.
-- Karena sumber belum memiliki polygon walkable, backend menurunkan batas sementara
-  dari convex hull seluruh block/node ditambah margin 1,5 m. Ini harus diganti dengan
-  batas walkable hasil survei sebelum dipakai sebagai navigasi operasional.
-
-## Kontrak site internal
+## Mengganti denah dengan data nyata
 
 Isi kontrak site yang sama dengan station_demo.json. Satuan geometri internal
 adalah **meter lokal**. `anchor_lonlat` berupa [longitude, latitude]; output GeoJSON
@@ -58,8 +43,8 @@ pada geometry.py untuk skala satu stasiun.
 
 Format polygon: list rings; ring pertama boundary, ring berikutnya lubang. Polygon
 sempit/pintu yang lebih kecil dari resolusi perlu grid lebih halus dan access point
-yang benar. Untuk dataset Lantai 2 ini, keputusan proyek adalah seluruh polygon block
-menjadi obstacle dan point terpisah menjadi akses routable.
+yang benar. Jangan menganggap semua polygon fasilitas sebagai ruangan terlarang.
+Klasifikasikan walkable, obstacle, fasilitas dan pintu sesuai makna datanya.
 
 Semua tempat indoor dihubungkan otomatis ke grid lantainya jika geometri valid.
 Koneksi lantai hanya lewat connector eksplisit. `step_free` membutuhkan elevator;
@@ -80,23 +65,22 @@ Saat mengganti site, gunakan DB_PATH baru agar gangguan demo tidak tercampur.
 `ForumStore` mengikat database ke ID site dan menolak site berbeda. Data crowd
 serta resource pada laporan juga harus menggunakan ID site yang baru.
 
-## Supabase `station_blocks` dan `station_nodes`
+## Supabase `station_locations`
 
-Isi `.env` backend:
+Mode live membaca kolom berikut: `id`, `source_id`, `name`, `category`, `latitude`,
+`longitude`, `floor`, `area_m2`. Isi `.env` backend:
 
 ```dotenv
 STATION_DATA_MODE=supabase
 SUPABASE_URL=https://PROJECT.supabase.co
 SUPABASE_ANON_KEY=...
-SUPABASE_BLOCKS_TABLE=station_blocks
-SUPABASE_NODES_TABLE=station_nodes
-SUPABASE_STATION_ID=palmerah
+SUPABASE_STATION_TABLE=station_locations
 ```
 
-ID `station_nodes` menjadi ID tempat pada graph. `linked_block_id` hanya metadata
-hubungan fasilitas; konektivitas berjalan tetap dihitung dari ruang bebas dan obstacle.
-Aktifkan Row Level Security dan kebijakan SELECT untuk role yang dipakai backend.
-Jangan menyimpan service-role key di Flutter.
+`source_id` adalah penghubung ke `places[].id` dalam graph. Tanpa kecocokan tersebut,
+sebuah row tetap data koordinat nyata tetapi belum routable. Aktifkan Row Level Security
+dan kebijakan SELECT sesuai kebutuhan anon/authenticated project. Jangan menyimpan
+service-role key di Flutter.
 
 ## Adaptor MAPID
 

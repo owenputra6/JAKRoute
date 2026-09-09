@@ -108,35 +108,34 @@ def create_weather_warning(weather,has_outdoor):
 
 
 class SupabaseStationClient:
-    """Read the two routing-source tables through Supabase REST."""
-    block_fields='id,station_id,floor,source_no,name,block_type,is_obstacle,geom,metadata'
-    node_fields='id,station_id,floor,source_no,name,node_type,linked_block_id,is_routable,geom,crowd_zone_id,crowd_sequence,crowd_width_m,metadata'
+    """Read the user's station_locations table through Supabase REST."""
+    fields='id,source_id,name,category,latitude,longitude,floor,area_m2'
 
     def __init__(self,settings): self.settings=settings
 
-    def _fetch(self,table,fields):
+    def get_locations(self):
+        if self.settings.station_data_mode=='demo':
+            return {'source':'not_configured','simulated':False,'locations':[]}
+        if not self.settings.supabase_url or not self.settings.supabase_anon_key:
+            raise RouteError('supabase_not_configured','Isi SUPABASE_URL dan SUPABASE_ANON_KEY untuk STATION_DATA_MODE=supabase.',503)
+        table=self.settings.supabase_station_table
         if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*',table):
             raise RouteError('config','Nama tabel Supabase tidak valid.',503)
         rows=json_http('GET',self.settings.supabase_url.rstrip('/')+f'/rest/v1/{table}',
-            headers={'apikey':self.settings.supabase_anon_key,
-                     'Authorization':'Bearer '+self.settings.supabase_anon_key},
-            params={'select':fields,'station_id':'eq.'+self.settings.supabase_station_id,
-                    'order':'floor.asc,source_no.asc','limit':'2000'})
+            headers={'apikey':self.settings.supabase_anon_key},
+            params={'select':self.fields,'order':'id.asc','limit':'2000'})
         if not isinstance(rows,list):
-            raise RouteError('supabase_schema',f'Respons {table} harus berupa array.',502)
-        return rows
-
-    def get_station_data(self):
-        if self.settings.station_data_mode=='demo':
-            return {'source':'not_configured','simulated':False,'blocks':[],'nodes':[]}
-        if not self.settings.supabase_url or not self.settings.supabase_anon_key:
-            raise RouteError('supabase_not_configured','Isi SUPABASE_URL dan SUPABASE_ANON_KEY untuk STATION_DATA_MODE=supabase.',503)
-        blocks=self._fetch(self.settings.supabase_blocks_table,self.block_fields)
-        nodes=self._fetch(self.settings.supabase_nodes_table,self.node_fields)
-        if not blocks or not nodes or any(not isinstance(row,dict) for row in blocks+nodes):
-            raise RouteError('supabase_schema','station_blocks dan station_nodes harus berisi object.',502)
-        return {'source':'supabase_rest','simulated':False,
-            'station_id':self.settings.supabase_station_id,
-            'tables':{'blocks':self.settings.supabase_blocks_table,
-                      'nodes':self.settings.supabase_nodes_table},
-            'blocks':blocks,'nodes':nodes}
+            raise RouteError('supabase_schema','Respons station_locations harus berupa array.',502)
+        locations=[]
+        for row in rows:
+            if not isinstance(row,dict):
+                raise RouteError('supabase_schema','Baris station_locations tidak valid.',502)
+            try:
+                lat=float(row['latitude']);lon=float(row['longitude'])
+            except (KeyError,TypeError,ValueError) as exc:
+                raise RouteError('supabase_schema','Koordinat station_locations tidak valid.',502) from exc
+            if not (-90<=lat<=90 and -180<=lon<=180):
+                raise RouteError('supabase_schema','Koordinat station_locations di luar rentang.',502)
+            locations.append({key:row.get(key) for key in self.fields.split(',')}|{
+                'latitude':lat,'longitude':lon})
+        return {'source':'supabase_rest','simulated':False,'table':table,'locations':locations}

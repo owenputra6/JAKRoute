@@ -31,9 +31,3 @@ Sumber crowd: lampiran pengguna “Denah Stasiun Palmerah(3).geojson”. Sembila
 disimpan tanpa perubahan sebagai `palmerah_crowd_areas.geojson`. Properti yang tersedia
 hanya `id_tool`, `area_meter_square`, dan `area_hectare`; atribut lantai maupun graph
 routing tidak ditambahkan ke file sumber.
-
-Sumber routing Lantai 2 terbaru: lampiran pengguna “Lantai 2 Palmerah Fella.geojson”
-(55 Polygon) dan “Titik Titik Penghubung LT 2.geojson” (20 Point). File dipertahankan
-di `backend/data`; SQL di `supabase/` mengubah Polygon menjadi `station_blocks` dan
-Point menjadi `station_nodes`. Keputusan proyek memperlakukan seluruh block sebagai
-obstacle dan point 19–20 sebagai pembentuk koridor crowd.

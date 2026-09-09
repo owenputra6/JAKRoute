@@ -60,8 +60,7 @@ iOS, atau web. Jangan memakai target desktop Windows untuk menguji peta native i
 - Notebook dieksekusi cell demi cell dalam proses Python karena startup kernel
   Jupyter di lingkungan pembuat paket tidak diizinkan membuat socket. Output dan
   metadata notebook menjelaskan metode ini; bukan hasil menjalankan model AI asli.
-- Block dan point Lantai 2 berasal dari GeoJSON pengguna, tetapi boundary walkable
-  masih turunan. Indoor positioning, crowd live, dan routing antarestasiun/jadwal KRL
-  memerlukan input/layanan tambahan.
-- Kredensial Supabase tidak disertakan. Mode live membaca `station_blocks` dan
-  `station_nodes` hanya setelah SQL dijalankan dan environment backend diisi.
+- Dataset stasiun bukan denah nyata. Indoor positioning, crowd live, dan routing
+  antarestasiun/jadwal KRL memerlukan input/layanan tambahan.
+- Kredensial Supabase tidak disertakan. Mode live membaca `station_locations` hanya
+  setelah `STATION_DATA_MODE=supabase` dan environment backend diisi.

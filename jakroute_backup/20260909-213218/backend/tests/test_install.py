@@ -19,5 +19,3 @@ def test_installer_preserves_existing_app_and_pubspec(tmp_path):
     assert root.find('uses-permission') is not None
     assert (tmp_path/'lib'/'main_jakroute_demo.dart').exists()
     assert (tmp_path/'test'/'jakroute'/'api_client_test.dart').exists()
-    assert (tmp_path/'supabase'/'01_station_blocks.sql').exists()
-    assert (tmp_path/'supabase'/'02_station_nodes.sql').exists()

@@ -1,16 +1,15 @@
 # JAKRoute — paket Flutter + Python
 
 Paket implementasi prototype seluruh lapisan: routing Python, tiga alternatif rute,
-summary forum OpenAI, OpenAI function calling, 100 titik crowd berbobot,
-integrasi PostGIS `station_blocks` + `station_nodes`, FastAPI, dan modul Flutter.
+summary forum OpenAI, OpenAI function calling, 100 titik crowd berbobot dari area
+GeoJSON Palmerah, integrasi `station_locations` Supabase, FastAPI, dan modul Flutter.
 Mulai melalui mode demo tanpa key. Backend Python tetap berjalan sebagai server
 terpisah walaupun foldernya diletakkan di project Flutter.
 
-**Status pengujian:** lihat `verification/TEST_REPORT.md`. Mode Supabase memakai 55
-polygon Lantai 2 sebagai obstacle dan 18 point routable sebagai anchor graph. Point
-19–20 membentuk koridor crowd; batas walkable masih diturunkan dari convex hull dan
-harus divalidasi sebelum navigasi nyata. API live dan build Flutter tetap perlu
-diverifikasi di mesinmu.
+**Status pengujian:** lihat `verification/TEST_REPORT.md`. Network routing indoor
+masih demo. Sembilan polygon Palmerah mempertahankan koordinat dan luas sumber,
+tetapi hanya digunakan untuk sampling crowd—bukan dianggap sebagai network jalan.
+API live dan build aplikasi Flutter tetap perlu diverifikasi di mesinmu.
 
 ## Jalankan di Windows
 
@@ -24,9 +23,8 @@ python scripts/install_into_flutter.py "C:\Users\owen\flutter_testing\flutter_ap
 Pemasang menyalin folder, menambahkan izin internet Android, dan mengizinkan HTTP
 untuk build **debug**. File yang bentrok dicadangkan ke `jakroute_backup`. `main.dart`
 dan `pubspec.yaml` milikmu tetap dipertahankan. Jangan mengarahkan target ke folder
-paket ini sendiri. Alternatif manual: gabungkan `backend`, `notebooks`, `lib`,
-`scripts`, dan `supabase` ke root project Flutter; ikuti pengaturan Android di
-`integration`.
+paket ini sendiri. Alternatif manual: gabungkan `backend`, `notebooks`, `lib`, dan
+`scripts` ke root project Flutter; ikuti pengaturan Android di `integration`.
 
 Pindah ke root project Flutter, lalu jalankan di terminal pertama:
 
@@ -67,8 +65,6 @@ Endpoint pengecekan: `http://localhost:8000/health`. Dokumentasi endpoint:
 - Jalur/fasilitas dengan kode `-1`: dikeluarkan dari pencarian semua mode.
 - Panel **Keramaian simulasi**: 100 titik dengan bobot per orang dan angka per area.
 - Kartu **AI Insight**: alasan route, personalisasi, waktu, jarak, dan paparan crowd.
-- Mode Supabase: titik 4 dan titik 18 langsung menjadi origin/destination graph;
-  crowd titik 19–20 memengaruhi objective tercepat.
 
 Peta dasar MAPID opsional. Diagram indoor sudah tersedia tanpa style URL. Untuk
 memakai style milikmu, tambahkan argumen berikut pada `flutter run`:
@@ -152,23 +148,22 @@ berdasarkan hujan. Data yang tidak tersedia ditampilkan sebagai tidak tersedia.
 Lookup memakai anchor Palmerah `[106.7974118, -6.20749225]` dengan kontrak urutan
 `[longitude, latitude]`; angka longitude `107.797...` dari `main2.dart` tidak dipakai.
 
-**Supabase station data:** jalankan `supabase/01_station_blocks.sql`, lalu
-`supabase/02_station_nodes.sql`. Set `STATION_DATA_MODE=supabase`, `SUPABASE_URL`,
-`SUPABASE_ANON_KEY`, `SUPABASE_BLOCKS_TABLE=station_blocks`,
-`SUPABASE_NODES_TABLE=station_nodes`, dan `SUPABASE_STATION_ID=palmerah`. Backend
-membaca kedua tabel melalui REST: semua block menjadi obstacle dan node routable
-menjadi anchor Dijkstra. Flutter dapat tetap memakai Supabase Auth melalui callback
-token; secret OpenAI/cuaca tidak masuk APK.
+**Supabase station data:** set `STATION_DATA_MODE=supabase`, `SUPABASE_URL`,
+`SUPABASE_ANON_KEY`, dan bila perlu `SUPABASE_STATION_TABLE`. Backend membaca field
+`id, source_id, name, category, latitude, longitude, floor, area_m2`. Baris dengan
+`source_id` yang cocok akan memperkaya label node routing. Baris lain tetap dikirim
+sebagai data lokasi, tetapi tidak dijadikan node karena belum memiliki koneksi graph.
+Flutter dapat tetap memakai Supabase Auth melalui callback token seperti contoh di
+bawah; secret OpenAI/cuaca tidak masuk APK.
 
-**Crowd:** pada mode Supabase, node 19–20 membuat koridor selebar `crowd_width_m`
-(default data: 2 m) dan tepat 100 user dummy ditempatkan di dalamnya saat backend
-start. `CROWD_SEED` mengontrol hasil reproducible. Setiap user memiliki bobot sendiri;
-density = jumlah bobot / luas koridor. Tidak ada label low/medium/high. Mode demo
-lama tetap memakai `palmerah_crowd_areas.geojson`.
+**Crowd GeoJSON:** `palmerah_crowd_areas.geojson` menghasilkan tepat 100 user saat
+backend start. `CROWD_SEED` mengontrol hasil yang reproducible. Setiap user memiliki
+bobot sendiri; density area = jumlah bobot / `area_meter_square`. Karena GeoJSON
+tidak memiliki floor, seluruh titik ditandai floor 0 pada prototype.
 
 **Denah nyata:** ganti dataset sesuai kontrak `docs/DATA_GUIDE.md`. Saat pindah site,
 gunakan database forum terpisah dengan `DB_PATH`; state dari site lain ditolak.
-`station_demo.json` hanya digunakan ketika `STATION_DATA_MODE=demo`.
+File `station_demo.json` tetap menjadi nama sumber konfigurasi untuk prototype ini.
 
 ## Memasukkan layar ke app milikmu
 
@@ -207,12 +202,12 @@ sesi pengguna ke Supabase; role petugas tidak diterima dari body request.
 
 Batas sistem saat ini adalah routing pejalan di luar + indoor satu stasiun. Belum
 ada routing/jadwal antarstasiun KRL, pelacakan GPS indoor, maupun data keramaian live;
-100 titik yang tampil adalah simulasi reproducible di koridor node 19–20.
+100 titik yang tampil adalah simulasi reproducible dari geometri area Palmerah.
 Katalog mengikat lokasi ke ID; untuk lokasi luar baru tambahkan titik dengan
 koordinat pada katalog. Semua tiga objective pada perjalanan outdoor murni akan
 mengikuti kandidat provider yang tersedia; tidak diklaim sebagai tiga optimasi
 outdoor independen.
 
 Dokumen detail: `docs/ARCHITECTURE.md`, `docs/DATA_GUIDE.md`, `docs/DEPLOYMENT.md`,
-`docs/FILE_INDEX.md`, `docs/UPDATE_2026-09-09.md`, dan `verification/TEST_REPORT.md`. Setelah pemasangan lewat
+`docs/FILE_INDEX.md`, `docs/UPDATE_2026-09-08.md`, dan `verification/TEST_REPORT.md`. Setelah pemasangan lewat
 skrip, dokumen `docs` ditempatkan di `docs/jakroute` dalam project existing.

@@ -44,19 +44,11 @@ def test_crowd_snapshot_endpoint_has_same_snapshot_as_routes(tmp_path):
     assert route['ai_insight']['facts'][2]['label']=='Paparan crowd berbobot'
 
 
-def test_supabase_reads_blocks_and_nodes_tables(monkeypatch):
-    block={'id':'b1','station_id':'palmerah','floor':2,'source_no':1,'name':'Block',
-           'block_type':'facility_block','is_obstacle':True,
-           'geom':{'type':'Polygon','coordinates':[[[106,-6],[106.1,-6],[106.1,-6.1],[106,-6.1],[106,-6]]]},'metadata':{}}
-    node={'id':'n1','station_id':'palmerah','floor':2,'source_no':1,'name':'Node',
-          'node_type':'destination','linked_block_id':None,'is_routable':True,
-          'geom':{'type':'Point','coordinates':[106.05,-6.05]},'crowd_zone_id':None,
-          'crowd_sequence':None,'crowd_width_m':None,'metadata':{}}
-    monkeypatch.setattr('jakroute.providers.json_http',
-        lambda method,url,**kwargs:[block] if url.endswith('/station_blocks') else [node])
+def test_supabase_station_rows_are_validated(monkeypatch):
+    rows=[{'id':1,'source_id':'platform_1','name':'Peron asli','category':'platform',
+           'latitude':-6.2074,'longitude':106.7974,'floor':1,'area_m2':112}]
+    monkeypatch.setattr('jakroute.providers.json_http',lambda *args,**kwargs:rows)
     settings=Settings(station_data_mode='supabase',supabase_url='https://example.supabase.co',supabase_anon_key='anon')
-    result=SupabaseStationClient(settings).get_station_data()
+    result=SupabaseStationClient(settings).get_locations()
     assert result['source']=='supabase_rest'
-    assert result['blocks'][0]['id']=='b1'
-    assert result['nodes'][0]['id']=='n1'
-    assert result['tables']=={'blocks':'station_blocks','nodes':'station_nodes'}
+    assert result['locations'][0]['source_id']=='platform_1'

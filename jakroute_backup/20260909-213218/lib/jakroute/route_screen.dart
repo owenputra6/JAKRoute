@@ -45,14 +45,8 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
       setState(() {
         _catalog = catalog;
         _crowd = crowd;
-        if (!ids.contains(_origin)) {
-          final preferred = places.where((p) => p['source_no'] == 4).toList();
-          _origin = (preferred.isEmpty ? places.first : preferred.first)['id'] as String;
-        }
-        if (!ids.contains(_destination)) {
-          final preferred = places.where((p) => p['source_no'] == 18).toList();
-          _destination = preferred.isEmpty ? '' : preferred.first['id'] as String;
-        }
+        if (!ids.contains(_origin)) _origin = places.first['id'] as String;
+        if (!ids.contains(_destination)) _destination = '';
         _floor = ((catalog['floors'] as List).first as Map)['id'] as int;
       });
     } catch (e) { if (mounted) setState(() => _error = e.toString()); }
@@ -123,13 +117,12 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
   Widget _crowdCard(BuildContext context) {
     final crowd = _crowd;
     if (crowd == null) return const SizedBox.shrink();
-    final sourceLabel = crowd.source['file']?.toString() ??
-        ((crowd.source['tables'] as List?)?.join(' + ') ?? 'station_nodes');
+    final sourceFile = crowd.source['file']?.toString() ?? 'GeoJSON';
     return Card(
       child: ExpansionTile(
         leading: const Icon(Icons.groups_2_outlined),
         title: Text('Keramaian simulasi · ${crowd.userCount} titik'),
-        subtitle: Text('Total bobot ${crowd.totalWeight.toStringAsFixed(2)} · $sourceLabel'),
+        subtitle: Text('Total bobot ${crowd.totalWeight.toStringAsFixed(2)} · $sourceFile'),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -196,7 +189,7 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
           : SafeArea(child: ListView(padding: const EdgeInsets.all(20), children: [
             Text(catalog['label'] as String, style: Theme.of(context).textTheme.titleMedium),
             if ((catalog['station_data'] as Map?)?['source'] == 'supabase_rest')
-              Text('Data routing: Supabase · ${((catalog['station_data'] as Map)['counts'] as Map)['blocks']} block · ${((catalog['station_data'] as Map)['counts'] as Map)['nodes']} titik'),
+              Text('Data lokasi: Supabase · ${((catalog['station_data'] as Map)['locations'] as List).length} titik'),
             if (catalog['simulated'] == true) const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('MODE DEMO · Denah dan kondisi adalah simulasi.', style: TextStyle(color: Color(0xff9a601b)))),
             _crowdCard(context),
             const SizedBox(height: 12),
@@ -257,7 +250,7 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
             const SizedBox(height: 8), RouteDiagram(catalog: catalog, route: _selected, crowd: _crowd, floor: _floor),
             const Padding(padding: EdgeInsets.only(top: 8), child: Text('Biru: jalur · Merah: titik crowd berbobot · Gelap: obstacle · Oranye: perpindahan lantai', style: TextStyle(fontSize: 12))),
             if (widget.mapStyleUrl.isNotEmpty) ...[
-              const SizedBox(height: 16), MapidRouteMap(styleUrl: widget.mapStyleUrl, catalog: catalog, floor: _floor, route: _selected, crowd: _crowd),
+              const SizedBox(height: 16), MapidRouteMap(styleUrl: widget.mapStyleUrl, catalog: catalog, floor: _floor, route: _selected),
             ],
           ])),
     );

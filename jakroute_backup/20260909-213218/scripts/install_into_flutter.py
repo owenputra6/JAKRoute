@@ -24,7 +24,7 @@ def install(source,target):
             shutil.copy2(dst,old)
         dst.parent.mkdir(parents=True,exist_ok=True)
         dst.write_bytes(data);count+=1
-    for directory in ('backend','lib','notebooks','scripts','integration','supabase'):
+    for directory in ('backend','lib','notebooks','scripts','integration'):
         for src in (source/directory).rglob('*'):
             if not src.is_file() or any(x in src.parts for x in ('__pycache__','.pytest_cache','.venv','runtime')): continue
             if src.name=='.env': continue

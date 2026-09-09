@@ -9,10 +9,9 @@ class MapidRouteMap extends StatefulWidget {
   final String styleUrl;
   final Json catalog;
   final RouteOption? route;
-  final CrowdSnapshot? crowd;
   final int floor;
   const MapidRouteMap({super.key, required this.styleUrl, required this.catalog,
-      required this.floor, this.route, this.crowd});
+      required this.floor, this.route});
   @override
   State<MapidRouteMap> createState() => _MapidRouteMapState();
 }
@@ -32,8 +31,7 @@ class _MapidRouteMapState extends State<MapidRouteMap> {
   @override
   void didUpdateWidget(covariant MapidRouteMap oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.route != widget.route || oldWidget.floor != widget.floor ||
-        oldWidget.catalog != widget.catalog || oldWidget.crowd != widget.crowd) {
+    if (oldWidget.route != widget.route || oldWidget.floor != widget.floor || oldWidget.catalog != widget.catalog) {
       unawaited(_render());
     }
   }
@@ -48,7 +46,6 @@ class _MapidRouteMapState extends State<MapidRouteMap> {
         final controller = _controller!;
         await controller.clearLines();
         await controller.clearFills();
-        await controller.clearCircles();
         if (!mounted) return;
         final selected = (widget.catalog['floors'] as List).cast<Map>()
             .firstWhere((f) => f['id'] == widget.floor);
@@ -57,18 +54,6 @@ class _MapidRouteMapState extends State<MapidRouteMap> {
               (ring as List).map((p) => _local(p as List)).toList()).toList();
           await controller.addFill(FillOptions(geometry: rings, fillColor: '#324354', fillOpacity: 0.75));
         }
-        final crowdCircles = <CircleOptions>[];
-        for (final user in widget.crowd?.users ?? <Json>[]) {
-          if (user['floor'] != widget.floor) continue;
-          final coordinates = user['lonlat'] as List;
-          final weight = (user['weight'] as num?)?.toDouble() ?? 1;
-          crowdCircles.add(CircleOptions(
-            geometry: LatLng((coordinates[1] as num).toDouble(), (coordinates[0] as num).toDouble()),
-            circleColor: '#d04444', circleOpacity: 0.78,
-            circleRadius: 2.2 + weight,
-          ));
-        }
-        if (crowdCircles.isNotEmpty) await controller.addCircles(crowdCircles);
         for (final feature in widget.route?.features ?? <Json>[]) {
           final props = feature['properties'] as Map;
           if (props['scope'] == 'indoor' && props['floor'] != widget.floor) continue;
