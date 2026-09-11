@@ -24,7 +24,7 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
   Recommendation? _recommendation;
   RouteOption? _selected;
   String? _error;
-  bool _loading = true, _busy = false, _avoidStairs = false, _stepFree = false;
+  bool _loading = true, _busy = false, _avoidStairs = false, _stepFree = false, _formExpanded = true;
   String _origin = 'entrance_west', _destination = 'platform_1', _access = 'any';
   int _floor = 0, _requestGeneration = 0;
   double _timeWeight = 1, _walkWeight = 1, _crowdWeight = 1;
@@ -94,6 +94,7 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
         _recommendation = result;
         _selected = available.isEmpty ? null : available.firstWhere(
             (r) => r.id == result.selectedId, orElse: () => available.first);
+        if (_selected != null) _formExpanded = false;
       });
     } catch (e) { if (mounted) setState(() => _error = e.toString()); }
     finally { if (mounted && generation == _requestGeneration) setState(() => _busy = false); }
@@ -101,6 +102,13 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
 
   @override
   void dispose() { _message.dispose(); _walkLimit.dispose(); super.dispose(); }
+
+  String _placeLabel(Json catalog, String id) {
+    if (id.isEmpty) return 'pesan saya';
+    final places = (catalog['places'] as List).cast<Map>();
+    final match = places.where((p) => p['id'] == id);
+    return match.isEmpty ? id : match.first['label'] as String;
+  }
 
   Widget _card({required Widget child}) => Card(
         margin: const EdgeInsets.only(bottom: Space.md),
@@ -281,45 +289,65 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
               const SizedBox(height: 4),
               _crowdCard(context),
             ])),
-            _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text('Rencana perjalanan', style: t.labelMedium),
-              const SizedBox(height: Space.sm),
-              _placeSelector('Lokasi awal', _origin, (v) => setState(() => _origin = v)),
-              const SizedBox(height: Space.sm),
-              _placeSelector('Tujuan', _destination, (v) => setState(() => _destination = v), automatic: true),
-              const SizedBox(height: Space.sm),
-              TextField(controller: _message, enabled: !_busy, maxLines: 2, maxLength: 2000,
-                decoration: const InputDecoration(labelText: 'Kebutuhan perjalanan', hintText: 'Misalnya: ke peron, jangan lewat tangga', border: OutlineInputBorder())),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Hindari tangga'), value: _avoidStairs,
-                  onChanged: _busy ? null : (v) => setState(() => _avoidStairs = v)),
-              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Akses bebas anak tangga'),
-                  subtitle: const Text('Termasuk menghindari eskalator'), value: _stepFree,
-                  onChanged: _busy ? null : (v) => setState(() => _stepFree = v)),
-              ExpansionTile(tilePadding: EdgeInsets.zero, title: const Text('Prioritas dan fasilitas'), children: [
-                DropdownButtonFormField<String>(value: _access, decoration: const InputDecoration(labelText: 'Akses pilihan'),
-                  items: const [DropdownMenuItem(value: 'any', child: Text('Otomatis')),
-                    DropdownMenuItem(value: 'elevator', child: Text('Lift')),
-                    DropdownMenuItem(value: 'escalator', child: Text('Eskalator')),
-                    DropdownMenuItem(value: 'stairs', child: Text('Tangga'))],
-                  onChanged: _busy ? null : (v) => setState(() => _access = v ?? 'any')),
-                _priority('Cepat sampai', _timeWeight, (v) => setState(() { _timeWeight = v; _prioritiesChanged = true; })),
-                _priority('Sedikit berjalan', _walkWeight, (v) => setState(() { _walkWeight = v; _prioritiesChanged = true; })),
-                _priority('Hindari kepadatan', _crowdWeight, (v) => setState(() { _crowdWeight = v; _prioritiesChanged = true; })),
-                TextField(controller: _walkLimit, keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(labelText: 'Batas berjalan (meter)', hintText: 'Kosongkan jika tidak dibatasi')),
-                Wrap(spacing: 8, children: (catalog['places'] as List).cast<Map>()
-                  .where((p) => ['toilet', 'mushola'].contains(p['kind']))
-                  .map((p) => FilterChip(label: Text('Singgah ${p['label']}'), selected: _via.contains(p['id']),
-                      onSelected: _busy ? null : (yes) => setState(() { yes ? _via.add(p['id'] as String) : _via.remove(p['id']); }))).toList()),
-              ]),
-              const SizedBox(height: Space.sm),
-              FilledButton.icon(onPressed: _busy ? null : _recommend,
-                  icon: _busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.route),
-                  label: Text(_busy ? 'Mencari rute…' : 'Bandingkan tiga rute')),
-            ])),
+            // Hero: floor plan up top, mirrors jakroute_app's route-results map.
+            ClipRRect(
+              borderRadius: BorderRadius.circular(Radii.lg),
+              child: widget.mapStyleUrl.isNotEmpty
+                  ? MapidRouteMap(styleUrl: widget.mapStyleUrl, catalog: catalog, floor: _floor, route: _selected, crowd: _crowd)
+                  : RouteDiagram(catalog: catalog, route: _selected, crowd: _crowd, floor: _floor),
+            ),
+            const Padding(padding: EdgeInsets.only(top: 8), child: Text('Biru: jalur · Merah: titik crowd berbobot · Gelap: obstacle · Oranye: perpindahan lantai', style: TextStyle(fontSize: 12))),
+            const SizedBox(height: Space.sm),
+            Wrap(spacing: 8, children: (catalog['floors'] as List).cast<Map>().map((f) => ChoiceChip(
+                label: Text('Lantai ${f['id']}'), selected: _floor == f['id'], onSelected: (_) => setState(() => _floor = f['id'] as int))).toList()),
+            const SizedBox(height: Space.md),
+            _card(child: _formExpanded
+                ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Rencana perjalanan', style: t.labelMedium),
+                    const SizedBox(height: Space.sm),
+                    _placeSelector('Lokasi awal', _origin, (v) => setState(() => _origin = v)),
+                    const SizedBox(height: Space.sm),
+                    _placeSelector('Tujuan', _destination, (v) => setState(() => _destination = v), automatic: true),
+                    const SizedBox(height: Space.sm),
+                    TextField(controller: _message, enabled: !_busy, maxLines: 2, maxLength: 2000,
+                      decoration: const InputDecoration(labelText: 'Kebutuhan perjalanan', hintText: 'Misalnya: ke peron, jangan lewat tangga', border: OutlineInputBorder())),
+                    SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Hindari tangga'), value: _avoidStairs,
+                        onChanged: _busy ? null : (v) => setState(() => _avoidStairs = v)),
+                    SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Akses bebas anak tangga'),
+                        subtitle: const Text('Termasuk menghindari eskalator'), value: _stepFree,
+                        onChanged: _busy ? null : (v) => setState(() => _stepFree = v)),
+                    ExpansionTile(tilePadding: EdgeInsets.zero, title: const Text('Prioritas dan fasilitas'), children: [
+                      DropdownButtonFormField<String>(value: _access, decoration: const InputDecoration(labelText: 'Akses pilihan'),
+                        items: const [DropdownMenuItem(value: 'any', child: Text('Otomatis')),
+                          DropdownMenuItem(value: 'elevator', child: Text('Lift')),
+                          DropdownMenuItem(value: 'escalator', child: Text('Eskalator')),
+                          DropdownMenuItem(value: 'stairs', child: Text('Tangga'))],
+                        onChanged: _busy ? null : (v) => setState(() => _access = v ?? 'any')),
+                      _priority('Cepat sampai', _timeWeight, (v) => setState(() { _timeWeight = v; _prioritiesChanged = true; })),
+                      _priority('Sedikit berjalan', _walkWeight, (v) => setState(() { _walkWeight = v; _prioritiesChanged = true; })),
+                      _priority('Hindari kepadatan', _crowdWeight, (v) => setState(() { _crowdWeight = v; _prioritiesChanged = true; })),
+                      TextField(controller: _walkLimit, keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Batas berjalan (meter)', hintText: 'Kosongkan jika tidak dibatasi')),
+                      Wrap(spacing: 8, children: (catalog['places'] as List).cast<Map>()
+                        .where((p) => ['toilet', 'mushola'].contains(p['kind']))
+                        .map((p) => FilterChip(label: Text('Singgah ${p['label']}'), selected: _via.contains(p['id']),
+                            onSelected: _busy ? null : (yes) => setState(() { yes ? _via.add(p['id'] as String) : _via.remove(p['id']); }))).toList()),
+                    ]),
+                    const SizedBox(height: Space.sm),
+                    FilledButton.icon(onPressed: _busy ? null : _recommend,
+                        icon: _busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.route),
+                        label: Text(_busy ? 'Mencari rute…' : 'Bandingkan tiga rute')),
+                  ])
+                : Row(children: [
+                    const Icon(Icons.route, color: AppColors.onSurfaceVariant),
+                    const SizedBox(width: Space.sm),
+                    Expanded(child: Text('${_placeLabel(catalog, _origin)} → ${_placeLabel(catalog, _destination)}', style: t.bodyMedium, overflow: TextOverflow.ellipsis)),
+                    TextButton(onPressed: () => setState(() => _formExpanded = true), child: const Text('Ubah')),
+                  ])),
             if (_error != null) Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(_error!, style: const TextStyle(color: AppColors.error))),
             if (_recommendation?.status == 'clarification_required') Padding(padding: const EdgeInsets.all(12), child: Text(_recommendation!.question ?? 'Lengkapi tujuan perjalanan.')),
             if (_recommendation != null) ...[
+              const SizedBox(height: Space.md),
               Text('Pilihan Rute', style: t.headlineSmall),
               const SizedBox(height: Space.sm),
               SizedBox(
@@ -343,16 +371,6 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
                 ),
               ],
               if (_recommendation!.forumSummary.isNotEmpty) Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('Kondisi fasilitas: ${_recommendation!.forumSummary}')),
-            ],
-            const SizedBox(height: Space.md),
-            Text('Denah', style: t.labelMedium),
-            const SizedBox(height: Space.xs),
-            Wrap(spacing: 8, children: (catalog['floors'] as List).cast<Map>().map((f) => ChoiceChip(
-                label: Text('Lantai ${f['id']}'), selected: _floor == f['id'], onSelected: (_) => setState(() => _floor = f['id'] as int))).toList()),
-            const SizedBox(height: 8), RouteDiagram(catalog: catalog, route: _selected, crowd: _crowd, floor: _floor),
-            const Padding(padding: EdgeInsets.only(top: 8), child: Text('Biru: jalur · Merah: titik crowd berbobot · Gelap: obstacle · Oranye: perpindahan lantai', style: TextStyle(fontSize: 12))),
-            if (widget.mapStyleUrl.isNotEmpty) ...[
-              const SizedBox(height: 16), MapidRouteMap(styleUrl: widget.mapStyleUrl, catalog: catalog, floor: _floor, route: _selected, crowd: _crowd),
             ],
           ])),
     );
