@@ -4,46 +4,13 @@ import '../api_client.dart';
 import '../models.dart';
 import 'app_theme.dart';
 import 'facility_detail_screen.dart';
-
-IconData _iconForKind(String? kind) => switch (kind) {
-      'toilet' => Icons.wc,
-      'mushola' => Icons.mosque,
-      'elevator' => Icons.elevator,
-      'escalator' => Icons.escalator,
-      'stairs' => Icons.stairs,
-      'vending_machine' => Icons.local_cafe,
-      'first_aid' => Icons.medical_services,
-      'lactation_room' => Icons.child_friendly,
-      'entrance' => Icons.door_sliding,
-      _ => Icons.place,
-    };
-
-String _kindLabel(String? kind) => switch (kind) {
-      'toilet' => 'Toilet',
-      'mushola' => 'Mushola',
-      'elevator' => 'Lift',
-      'escalator' => 'Eskalator',
-      'stairs' => 'Tangga',
-      'vending_machine' => 'Vending Machine',
-      'first_aid' => 'P3K',
-      'lactation_room' => 'Ruang Laktasi',
-      'entrance' => 'Pintu Masuk',
-      _ => kind ?? 'Lainnya',
-    };
-
-// Groups only reorganize kinds that already exist in the catalog — no
-// fabricated categories, statuses, floors, or distances.
-String _groupFor(String? kind) => switch (kind) {
-      'elevator' || 'escalator' || 'stairs' => 'Aksesibilitas',
-      'toilet' || 'mushola' || 'vending_machine' || 'first_aid' || 'lactation_room' => 'Fasilitas Umum',
-      'entrance' => 'Akses Masuk',
-      _ => 'Lainnya',
-    };
+import 'kinds.dart';
 
 Color _groupColor(String group) => switch (group) {
       'Aksesibilitas' => AppColors.secondary,
       'Fasilitas Umum' => AppColors.success,
       'Akses Masuk' => AppColors.tertiaryFixedDim,
+      'Komersial' => AppColors.warning,
       _ => AppColors.outline,
     };
 
@@ -75,17 +42,17 @@ class _FacilityListScreenState extends State<FacilityListScreen> {
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final all = ((_catalog?['places'] as List?) ?? []).cast<Map>();
-    final groups = ['Semua', ...{for (final p in all) _groupFor(p['kind']?.toString())}];
+    final groups = ['Semua', ...{for (final p in all) groupForKind(p['kind']?.toString())}];
     final visible = all.where((p) {
       final label = (p['label']?.toString() ?? '').toLowerCase();
       final kind = p['kind']?.toString() ?? '';
-      final matchesQuery = _query.isEmpty || label.contains(_query.toLowerCase()) || _kindLabel(kind).toLowerCase().contains(_query.toLowerCase());
-      final matchesGroup = _group == 'Semua' || _groupFor(kind) == _group;
+      final matchesQuery = _query.isEmpty || label.contains(_query.toLowerCase()) || kindLabel(kind).toLowerCase().contains(_query.toLowerCase());
+      final matchesGroup = _group == 'Semua' || groupForKind(kind) == _group;
       return matchesQuery && matchesGroup;
     }).toList();
     final sections = <String, List<Map>>{};
     for (final p in visible) {
-      sections.putIfAbsent(_groupFor(p['kind']?.toString()), () => []).add(p);
+      sections.putIfAbsent(groupForKind(p['kind']?.toString()), () => []).add(p);
     }
 
     return Scaffold(
@@ -165,10 +132,10 @@ class _FacilityListScreenState extends State<FacilityListScreen> {
                                 child: ListTile(
                                   leading: CircleAvatar(
                                     backgroundColor: _groupColor(entry.key).withValues(alpha: 0.12),
-                                    child: Icon(_iconForKind(p['kind']?.toString()), color: _groupColor(entry.key), size: 20),
+                                    child: Icon(iconForKind(p['kind']?.toString()), color: _groupColor(entry.key), size: 20),
                                   ),
                                   title: Text(p['label']?.toString() ?? '', style: t.labelMedium),
-                                  subtitle: Text(_kindLabel(p['kind']?.toString()), style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
+                                  subtitle: Text('${kindLabel(p['kind']?.toString())} · ${floorShort(p['floor'])}', style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
                                   trailing: const Icon(Icons.chevron_right, color: AppColors.outline),
                                   onTap: () => Navigator.of(context).push(MaterialPageRoute(
                                     builder: (_) => FacilityDetailScreen(

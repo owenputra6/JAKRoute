@@ -3,19 +3,7 @@ import 'package:flutter/material.dart';
 import '../api_client.dart';
 import 'app_theme.dart';
 import 'chat_screen.dart';
-
-IconData _iconForKind(String? kind) => switch (kind) {
-      'toilet' => Icons.wc,
-      'mushola' => Icons.mosque,
-      'elevator' => Icons.elevator,
-      'escalator' => Icons.escalator,
-      'stairs' => Icons.stairs,
-      'vending_machine' => Icons.local_cafe,
-      'first_aid' => Icons.medical_services,
-      'lactation_room' => Icons.child_friendly,
-      'entrance' => Icons.door_sliding,
-      _ => Icons.place,
-    };
+import 'kinds.dart';
 
 /// Mirrors stitch_jakroute_ui_ux_design_system/facility_detail_view, bound to
 /// a real place row from GET /catalog (Supabase station_blocks/station_nodes).
@@ -41,7 +29,7 @@ class FacilityDetailScreen extends StatelessWidget {
     final kind = place['kind']?.toString() ?? '';
 
     return Scaffold(
-      appBar: AppBar(backgroundColor: AppColors.surface, title: Text(kind)),
+      appBar: AppBar(backgroundColor: AppColors.surface, title: Text(kindLabel(kind))),
       body: ListView(
         padding: const EdgeInsets.all(Space.gutter),
         children: [
@@ -54,7 +42,7 @@ class FacilityDetailScreen extends StatelessWidget {
                   color: AppColors.surfaceContainer,
                   borderRadius: BorderRadius.circular(Radii.md),
                 ),
-                child: Icon(_iconForKind(kind), color: AppColors.primary, size: 28),
+                child: Icon(iconForKind(kind), color: AppColors.primary, size: 28),
               ),
               const SizedBox(width: Space.sm),
               Expanded(
@@ -69,7 +57,8 @@ class FacilityDetailScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: Space.md),
-          _InfoRow(label: 'Kategori', value: kind),
+          _InfoRow(label: 'Kategori', value: kindLabel(kind)),
+          if (place['floor'] != null) _InfoRow(label: 'Lantai', value: floorShort(place['floor'])),
           _InfoRow(label: 'Sumber data', value: 'Supabase — station_blocks / station_nodes (survei lapangan)'),
           if (place['id'] != null) _InfoRow(label: 'ID titik', value: place['id'].toString()),
           const SizedBox(height: Space.lg),

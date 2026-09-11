@@ -10,7 +10,8 @@ import re
 
 from shapely import wkb, wkt
 from shapely.errors import GEOSException
-from shapely.geometry import Point, Polygon, shape
+from shapely.geometry import MultiPolygon, Point, Polygon, shape
+from shapely import affinity
 from shapely.ops import nearest_points, unary_union
 
 from .errors import RouteError
@@ -57,6 +58,11 @@ def _rings(geom):
 
 
 def _kind(row):
+    # The loader (tools/load_palmerah_geojson.py) classifies each surveyed
+    # label explicitly; the name heuristics below only cover older rows.
+    explicit = (row.get('metadata') or {}).get('kind') if isinstance(row.get('metadata'), dict) else None
+    if explicit:
+        return str(explicit)
     name = str(row.get('name') or '').lower()
     node_type = row.get('node_type')
     if node_type == 'entrance_access':
@@ -70,6 +76,52 @@ def _kind(row):
         if token in name:
             return kind
     return 'access'
+
+
+FLOOR_LABELS = {1: 'Lantai 1 — Peron', 2: 'Lantai 2 — Hall'}
+
+# Travel time per floor change. Walking metres: stairs count as a walk, lifts
+# and escalators do not. Survey has no measured times; these are stated
+# assumptions, exposed on the connector so the client can show them as such.
+CONNECTOR_PARAMS = {
+    'elevator': {'duration_s': 45, 'walking_m': 0},
+    'escalator': {'duration_s': 30, 'walking_m': 0},
+    'stairs': {'duration_s': 30, 'walking_m': 8},
+}
+
+
+def _connectors(places):
+    """Pair same-named connector access points across floors.
+
+    `Eskalator Peron 1.1` on floor 1 links to `Eskalator Peron 1.1` on floor 2.
+    Escalators are one-way: `.1` runs up (low floor -> high floor), `.2` runs
+    down; lifts and stairs are bidirectional.
+    """
+    groups = {}
+    for place in places:
+        if place.get('node_type') != 'connector_access':
+            continue
+        groups.setdefault(place['label'].strip().lower(), []).append(place)
+    connectors = []
+    for key, group in sorted(groups.items()):
+        group.sort(key=lambda p: p['floor'])
+        for low, high in zip(group, group[1:]):
+            if low['floor'] == high['floor'] or low['kind'] != high['kind'] or low['kind'] not in CONNECTOR_PARAMS:
+                continue
+            kind = low['kind']
+            down = kind == 'escalator' and key.endswith('.2')
+            connectors.append({
+                'id': f"{low['id']}__{high['id']}",
+                'kind': kind,
+                'label': low['label'],
+                'from': high['id'] if down else low['id'],
+                'to': low['id'] if down else high['id'],
+                'bidirectional': kind != 'escalator',
+                'available': True,
+                'timing_assumed': True,
+                **CONNECTOR_PARAMS[kind],
+            })
+    return connectors
 
 
 def build_station_site(snapshot, grid_step_m=0.75, clearance_m=0.2,
@@ -114,7 +166,16 @@ def build_station_site(snapshot, grid_step_m=0.75, clearance_m=0.2,
         obstacle_union = unary_union([geom for _, geom in floor_blocks])
         source_geometries = [geom for _, geom in floor_blocks] + [geom for _, geom, _ in floor_nodes]
         walkable = unary_union(source_geometries).convex_hull.buffer(boundary_margin_m, join_style=2)
-        if not isinstance(walkable, Polygon) or not walkable.is_valid:
+        # A rail track splits the platform level: west and east halves are not
+        # walkable across it. The surveyed track ends at the hull edge, so a
+        # stretched copy is cut out of the walkable boundary to close the gap
+        # the margin would otherwise leave at both ends. The drawn obstacle
+        # stays the surveyed polygon.
+        tracks = [geom for row, geom in floor_blocks if row.get('block_type') == 'rail_track']
+        if tracks:
+            walkable = walkable.difference(unary_union([affinity.scale(t, 1.5, 1.5) for t in tracks]))
+        walkable_parts = list(walkable.geoms) if isinstance(walkable, MultiPolygon) else [walkable]
+        if not walkable.is_valid or any(not isinstance(part, Polygon) for part in walkable_parts):
             raise RouteError('supabase_geometry', 'Batas routing turunan tidak valid.', 502)
         free = walkable.difference(obstacle_union.buffer(clearance_m))
 
@@ -178,8 +239,9 @@ def build_station_site(snapshot, grid_step_m=0.75, clearance_m=0.2,
         bounds = walkable.bounds
         floors.append({
             'id': floor_id,
+            'label': FLOOR_LABELS.get(floor_id, f'Lantai {floor_id}'),
             'bounds': [round(value, 5) for value in bounds],
-            'walkable': [_rings(walkable)],
+            'walkable': [_rings(part) for part in walkable_parts],
             'obstacles': [_rings(geom) for _, geom in floor_blocks],
         })
 
@@ -190,7 +252,7 @@ def build_station_site(snapshot, grid_step_m=0.75, clearance_m=0.2,
 
     return {
         'id': station_id,
-        'label': 'Stasiun Palmerah — Lantai 2',
+        'label': 'Stasiun Palmerah',
         'simulated': False,
         'routing_geometry_derived': True,
         'routing_geometry_note': 'Batas walkable diturunkan dari convex hull data; block tetap obstacle keras.',
@@ -200,7 +262,7 @@ def build_station_site(snapshot, grid_step_m=0.75, clearance_m=0.2,
         'floor_height_m': 4,
         'floors': floors,
         'places': places,
-        'connectors': [],
+        'connectors': _connectors(places),
         'crowd_areas': [],
         'crowd_corridors': corridors,
         'source_counts': {'blocks': len(blocks), 'nodes': len(nodes)},

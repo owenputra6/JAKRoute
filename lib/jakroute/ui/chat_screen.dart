@@ -258,11 +258,13 @@ class _ClarificationView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Same-named access points exist on both floors (e.g. "Lift Peron 1" on
+    // LT 1 and LT 2), so the chip must carry the floor for the agent.
     final places = ((catalog?['places'] as List?) ?? [])
         .cast<Map>()
-        .map((p) => p['label']?.toString())
-        .whereType<String>()
-        .take(8)
+        .where((p) => p['label'] != null)
+        .map((p) => '${p['label']} (Lantai ${p['floor']})')
+        .take(10)
         .toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

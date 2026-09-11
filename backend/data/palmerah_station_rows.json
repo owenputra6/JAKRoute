@@ -1,0 +1,4364 @@
+{
+ "blocks": [
+  {
+   "id": "palmerah_lt1_block_001",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 1,
+   "name": "Lift Peron 1",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79718815287276,
+       -6.207694480191691
+      ],
+      [
+       106.79722655874963,
+       -6.207712750701958
+      ],
+      [
+       106.79721572028103,
+       -6.207739922230317
+      ],
+      [
+       106.79717448697619,
+       -6.207721885957298
+      ],
+      [
+       106.79718815287276,
+       -6.207694480191691
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 1 Palmerah Fella.geojson",
+    "source_feature_no": 1,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt1_block_002",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 2,
+   "name": "Lift Peron 2",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79736557389072,
+       -6.207772481213908
+      ],
+      [
+       106.7973552066598,
+       -6.207794499518187
+      ],
+      [
+       106.79739479063272,
+       -6.207816283584293
+      ],
+      [
+       106.797406100339,
+       -6.207791454433163
+      ],
+      [
+       106.79736557389072,
+       -6.207772481213908
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 1 Palmerah Fella.geojson",
+    "source_feature_no": 2,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt1_block_003",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 3,
+   "name": "Eskalator Peron 1",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79726307967536,
+       -6.207528874387876
+      ],
+      [
+       106.79722679436804,
+       -6.207619055776888
+      ],
+      [
+       106.79726520024678,
+       -6.207634749679414
+      ],
+      [
+       106.79730525545557,
+       -6.207546442192765
+      ],
+      [
+       106.79726307967536,
+       -6.207528874387876
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 1 Palmerah Fella.geojson",
+    "source_feature_no": 3,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt1_block_004",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 4,
+   "name": "Eskalator Peron 2",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79743413898638,
+       -6.207608280858523
+      ],
+      [
+       106.79739384815696,
+       -6.207694011724726
+      ],
+      [
+       106.79743908698208,
+       -6.207716498507764
+      ],
+      [
+       106.79747819971732,
+       -6.207628893745792
+      ],
+      [
+       106.79743413898638,
+       -6.207608280858523
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 1 Palmerah Fella.geojson",
+    "source_feature_no": 4,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt1_block_005",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 5,
+   "name": "Tangga Peron 1",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.7974621449626,
+       -6.207109861687684
+      ],
+      [
+       106.79750408512399,
+       -6.20712883492844
+      ],
+      [
+       106.79753235938881,
+       -6.207064419600556
+      ],
+      [
+       106.79748971237092,
+       -6.207046383307642
+      ],
+      [
+       106.7974621449626,
+       -6.207109861687684
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 1 Palmerah Fella.geojson",
+    "source_feature_no": 5,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt1_block_006",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 6,
+   "name": "Tangga Peron 2",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79765333219711,
+       -6.207118254086666
+      ],
+      [
+       106.79762972849267,
+       -6.207178131122461
+      ],
+      [
+       106.79767408717908,
+       -6.2072003827220215
+      ],
+      [
+       106.79770013264726,
+       -6.207133627920541
+      ],
+      [
+       106.79765333219711,
+       -6.207118254086666
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 1 Palmerah Fella.geojson",
+    "source_feature_no": 6,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt1_block_007",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 7,
+   "name": "Jalur Kereta",
+   "block_type": "rail_track",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79780329597406,
+       -6.206546516168615
+      ],
+      [
+       106.79713719378225,
+       -6.207987173778108
+      ],
+      [
+       106.79722109215027,
+       -6.208022558301806
+      ],
+      [
+       106.79787448246708,
+       -6.206576845842193
+      ],
+      [
+       106.79780329597406,
+       -6.206546516168615
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 1 Palmerah Fella.geojson",
+    "source_feature_no": 7,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_001",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 1,
+   "name": "Lift Peron 1",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79715542021972,
+       -6.207766230210112
+      ],
+      [
+       106.79719584608637,
+       -6.207785367745132
+      ],
+      [
+       106.79722664674796,
+       -6.207712645109382
+      ],
+      [
+       106.79718814592235,
+       -6.207694464449332
+      ],
+      [
+       106.79715542021972,
+       -6.207766230210112
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 1,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_002",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 2,
+   "name": "Tempat informasi & Lift Peron 2",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79736909980636,
+       -6.207871486642418
+      ],
+      [
+       106.79732674889686,
+       -6.207849478480327
+      ],
+      [
+       106.79736524972435,
+       -6.207772928347069
+      ],
+      [
+       106.797405675591,
+       -6.207792065881904
+      ],
+      [
+       106.79736909980636,
+       -6.207871486642418
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 2,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_003",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 3,
+   "name": "Eskalator Peron 1",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79726298464499,
+       -6.20752870939863
+      ],
+      [
+       106.79722658645824,
+       -6.20761830978617
+      ],
+      [
+       106.79726471789166,
+       -6.207634679086652
+      ],
+      [
+       106.79730458257171,
+       -6.207546801786066
+      ],
+      [
+       106.79726298464499,
+       -6.20752870939863
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 3,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_004",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 4,
+   "name": "Eskalator Peron 2",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79743457609362,
+       -6.207608832822686
+      ],
+      [
+       106.79747704064528,
+       -6.207629509834149
+      ],
+      [
+       106.79743804258857,
+       -6.207715664036428
+      ],
+      [
+       106.79739384479012,
+       -6.207693263945558
+      ],
+      [
+       106.79743457609362,
+       -6.207608832822686
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 4,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_005",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 5,
+   "name": "Booth Rica Rica",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79720153413376,
+       -6.208015027899606
+      ],
+      [
+       106.79714142818716,
+       -6.207988215441901
+      ],
+      [
+       106.79715838114646,
+       -6.207954508349914
+      ],
+      [
+       106.79721771650424,
+       -6.207979788669093
+      ],
+      [
+       106.79720153413376,
+       -6.208015027899606
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 5,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_006",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 6,
+   "name": "Tap In dan Tap Out",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79739704511428,
+       -6.207754905422192
+      ],
+      [
+       106.79722912378213,
+       -6.207685407334779
+      ],
+      [
+       106.79723272724237,
+       -6.207677526107915
+      ],
+      [
+       106.79740100892263,
+       -6.207746307720811
+      ],
+      [
+       106.79739704511428,
+       -6.207754905422192
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 6,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_007",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 7,
+   "name": "Pembatas Tap in",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79723344793649,
+       -6.20767645139496
+      ],
+      [
+       106.79722696170393,
+       -6.207694005037126
+      ],
+      [
+       106.79723272724237,
+       -6.207696154461942
+      ],
+      [
+       106.79722664674796,
+       -6.207712645109382
+      ],
+      [
+       106.79722432660611,
+       -6.207711536633738
+      ],
+      [
+       106.79722991521413,
+       -6.207697682034933
+      ],
+      [
+       106.79722446809063,
+       -6.207695220557852
+      ],
+      [
+       106.79723203747164,
+       -6.207675599069233
+      ],
+      [
+       106.79723344793649,
+       -6.20767645139496
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 7,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_008",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 8,
+   "name": "Pembatas Tap out",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79737648925817,
+       -6.207777986501171
+      ],
+      [
+       106.79738374589118,
+       -6.207762330222238
+      ],
+      [
+       106.79739053933412,
+       -6.207764786108967
+      ],
+      [
+       106.79739548001913,
+       -6.207754041604176
+      ],
+      [
+       106.79739702398444,
+       -6.207754809068248
+      ],
+      [
+       106.79739192890213,
+       -6.207766628024515
+      ],
+      [
+       106.79738467226923,
+       -6.207764479123412
+      ],
+      [
+       106.79737818761896,
+       -6.20777844698047
+      ],
+      [
+       106.79737648925817,
+       -6.207777986501171
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 8,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_009",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 9,
+   "name": "EntryExit 1",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79709465111733,
+       -6.207896452605468
+      ],
+      [
+       106.79707004813076,
+       -6.207947293754273
+      ],
+      [
+       106.79707447113879,
+       -6.207949492289941
+      ],
+      [
+       106.79709879768745,
+       -6.207898376324366
+      ],
+      [
+       106.79709465111733,
+       -6.207896452605468
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 9,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_010",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 10,
+   "name": "EntryExit2",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79730451639188,
+       -6.207998833990217
+      ],
+      [
+       106.79728046628128,
+       -6.208049949955736
+      ],
+      [
+       106.79728461285345,
+       -6.208052148492527
+      ],
+      [
+       106.79730866296188,
+       -6.20800158216116
+      ],
+      [
+       106.79730451639188,
+       -6.207998833990217
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 10,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_011",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 11,
+   "name": "Mushala",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79745358114167,
+       -6.20712489617749
+      ],
+      [
+       106.79750525899965,
+       -6.207149436864469
+      ],
+      [
+       106.79752162848169,
+       -6.207117365450635
+      ],
+      [
+       106.79753799796373,
+       -6.207085294036801
+      ],
+      [
+       106.79748773261724,
+       -6.207061097712341
+      ],
+      [
+       106.79745358114167,
+       -6.20712489617749
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 11,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_012",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 12,
+   "name": "Toilet Pria",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79756316730698,
+       -6.2070271385028235
+      ],
+      [
+       106.79751562861247,
+       -6.207006010498162
+      ],
+      [
+       106.79748773261724,
+       -6.207061097712341
+      ],
+      [
+       106.79753799796373,
+       -6.207085294036801
+      ],
+      [
+       106.79755058263535,
+       -6.207056216269812
+      ],
+      [
+       106.79756316730698,
+       -6.2070271385028235
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 12,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_013",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 13,
+   "name": "P3K",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79753716446947,
+       -6.206957047727002
+      ],
+      [
+       106.79751569917835,
+       -6.20700562904527
+      ],
+      [
+       106.79756342519732,
+       -6.2070274225326045
+      ],
+      [
+       106.7975855755518,
+       -6.206978614200551
+      ],
+      [
+       106.79753716446947,
+       -6.206957047727002
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 13,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_014",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 14,
+   "name": "Ruang Laktasi",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79771204755127,
+       -6.207023444662497
+      ],
+      [
+       106.79769935490572,
+       -6.2070513577323965
+      ],
+      [
+       106.7977370482144,
+       -6.207071623384195
+      ],
+      [
+       106.79775051011029,
+       -6.207042563203373
+      ],
+      [
+       106.79771204755127,
+       -6.207023444662497
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 14,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_015",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 15,
+   "name": "Toilet Difabel",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79769935490572,
+       -6.2070513577323965
+      ],
+      [
+       106.79768765308665,
+       -6.207076178757248
+      ],
+      [
+       106.79772534182683,
+       -6.207097588925265
+      ],
+      [
+       106.7977370482144,
+       -6.207071623384195
+      ],
+      [
+       106.79769935490572,
+       -6.2070513577323965
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 15,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_016",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 16,
+   "name": "Toilet Wanita",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79768765308665,
+       -6.207076178757248
+      ],
+      [
+       106.79766155479172,
+       -6.2071263991486205
+      ],
+      [
+       106.79770270289794,
+       -6.207147624414262
+      ],
+      [
+       106.79772534182683,
+       -6.207097588925265
+      ],
+      [
+       106.79768765308665,
+       -6.207076178757248
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 16,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_017",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 17,
+   "name": "Musala Wanita",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79766155479172,
+       -6.2071263991486205
+      ],
+      [
+       106.79762795683888,
+       -6.207195419231198
+      ],
+      [
+       106.79767205883286,
+       -6.207216748473215
+      ],
+      [
+       106.79770270289794,
+       -6.207147624414262
+      ],
+      [
+       106.79766155479172,
+       -6.2071263991486205
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 17,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_018",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 18,
+   "name": "Tangga Peron 2",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79762795683888,
+       -6.207195419231198
+      ],
+      [
+       106.79758374485317,
+       -6.207276265720239
+      ],
+      [
+       106.79763291108401,
+       -6.207301656878215
+      ],
+      [
+       106.79767205883286,
+       -6.207216748473215
+      ],
+      [
+       106.79762795683888,
+       -6.207195419231198
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 18,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_019",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 19,
+   "name": "Tangga Peron 1",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79745358114167,
+       -6.20712489617749
+      ],
+      [
+       106.79741525640281,
+       -6.207200767556927
+      ],
+      [
+       106.79747190231546,
+       -6.207229744569688
+      ],
+      [
+       106.79750525899965,
+       -6.207149436864469
+      ],
+      [
+       106.79745358114167,
+       -6.20712489617749
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 19,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_020",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 20,
+   "name": "Naruto Shippuden",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79758398530123,
+       -6.207253137448859
+      ],
+      [
+       106.79759071637443,
+       -6.207256617086514
+      ],
+      [
+       106.79759798593278,
+       -6.207244572187577
+      ],
+      [
+       106.79759125485958,
+       -6.207240824886355
+      ],
+      [
+       106.79758398530123,
+       -6.207253137448859
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 20,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_021",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 21,
+   "name": "Cuties Catz",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79759947161892,
+       -6.207227550440919
+      ],
+      [
+       106.79759350715602,
+       -6.2072374329328
+      ],
+      [
+       106.79759909883956,
+       -6.207241015335626
+      ],
+      [
+       106.79760568460131,
+       -6.207230885782394
+      ],
+      [
+       106.79759947161892,
+       -6.207227550440919
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 21,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_022",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 22,
+   "name": "Teh Pucuk Harum",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79760590414662,
+       -6.207216184038174
+      ],
+      [
+       106.79760072861814,
+       -6.207225004355806
+      ],
+      [
+       106.79760682834734,
+       -6.207228679488125
+      ],
+      [
+       106.79761292807655,
+       -6.207219124144061
+      ],
+      [
+       106.79760590414662,
+       -6.207216184038174
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 22,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_023",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 23,
+   "name": "Sprite",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79761084649783,
+       -6.207204649076914
+      ],
+      [
+       106.79760635593044,
+       -6.207213354344233
+      ],
+      [
+       106.79761421442231,
+       -6.207217372160514
+      ],
+      [
+       106.7976193785733,
+       -6.207207774045315
+      ],
+      [
+       106.79761084649783,
+       -6.207204649076914
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 23,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_024",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 24,
+   "name": "Air Minum Gratis",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79761824700262,
+       -6.207192374336316
+      ],
+      [
+       106.79761256534795,
+       -6.207201788245484
+      ],
+      [
+       106.79762014088811,
+       -6.207206118644521
+      ],
+      [
+       106.79762601193153,
+       -6.207196328178583
+      ],
+      [
+       106.79761824700262,
+       -6.207192374336316
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 24,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_025",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 25,
+   "name": "Kursi Pijat",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79758096883171,
+       -6.207256184266242
+      ],
+      [
+       106.79757437971165,
+       -6.2072677369506835
+      ],
+      [
+       106.79758336487646,
+       -6.207272262744212
+      ],
+      [
+       106.79759043320581,
+       -6.207260710059842
+      ],
+      [
+       106.79758096883171,
+       -6.207256184266242
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 25,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_026",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 26,
+   "name": "Kursi Musala Pria",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79756567991956,
+       -6.207028769250186
+      ],
+      [
+       106.79755933467325,
+       -6.207042895724399
+      ],
+      [
+       106.7975561620501,
+       -6.207049958961505
+      ],
+      [
+       106.79755298942695,
+       -6.207057022198612
+      ],
+      [
+       106.79755727917097,
+       -6.20705791065636
+      ],
+      [
+       106.79757032714446,
+       -6.207030368472161
+      ],
+      [
+       106.79756567991956,
+       -6.207028769250186
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 26,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_027",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 27,
+   "name": "Alat Pemadam Api Ringan",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79750999662997,
+       -6.20714255270677
+      ],
+      [
+       106.79750594114216,
+       -6.207149685735089
+      ],
+      [
+       106.7975106205497,
+       -6.207152476919163
+      ],
+      [
+       106.79751467603757,
+       -6.207144723628872
+      ],
+      [
+       106.79750999662997,
+       -6.20714255270677
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 27,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_028",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 28,
+   "name": "Kursi Musala Wanita",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79764322277475,
+       -6.207147387491901
+      ],
+      [
+       106.79763185405062,
+       -6.207170586488317
+      ],
+      [
+       106.79763604252753,
+       -6.207172668450127
+      ],
+      [
+       106.79764771042875,
+       -6.207149172030697
+      ],
+      [
+       106.79764322277475,
+       -6.207147387491901
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 28,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_029",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 29,
+   "name": "Sendal Pria",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79755004843196,
+       -6.207061093194071
+      ],
+      [
+       106.79754203318134,
+       -6.207079927042514
+      ],
+      [
+       106.7975459904543,
+       -6.207081061952792
+      ],
+      [
+       106.79755384023372,
+       -6.20706226806297
+      ],
+      [
+       106.79755004843196,
+       -6.207061093194071
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 29,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_030",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 30,
+   "name": "Tempat Kursi Depan Toilet Difabel",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79769332875435,
+       -6.207057359904596
+      ],
+      [
+       106.79769160788754,
+       -6.207060781462758
+      ],
+      [
+       106.79769321402875,
+       -6.207061807930515
+      ],
+      [
+       106.79769550851933,
+       -6.2070582723203955
+      ],
+      [
+       106.79769332875435,
+       -6.207057359904596
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 30,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_031",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 31,
+   "name": "Tempat Cas",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79769528216406,
+       -6.20705499918428
+      ],
+      [
+       106.79769677358183,
+       -6.207055911600079
+      ],
+      [
+       106.79769562633874,
+       -6.207057736430528
+      ],
+      [
+       106.79769390546977,
+       -6.207056709963908
+      ],
+      [
+       106.79769528216406,
+       -6.20705499918428
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 31,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_032",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 32,
+   "name": "Tempat Sampah Depan Toilet Wanita",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79766456676555,
+       -6.207114483485199
+      ],
+      [
+       106.79766349789367,
+       -6.207117033737731
+      ],
+      [
+       106.79766499431423,
+       -6.207117565040576
+      ],
+      [
+       106.79766638384666,
+       -6.207114908527487
+      ],
+      [
+       106.79766456676555,
+       -6.207114483485199
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 32,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_033",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 33,
+   "name": "Tempat Sampah Depan Peron 2 Tangga",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79740960748387,
+       -6.207212526921751
+      ],
+      [
+       106.79740469253011,
+       -6.207222543507996
+      ],
+      [
+       106.79741009897941,
+       -6.207224742271563
+      ],
+      [
+       106.79741575117652,
+       -6.207213992763002
+      ],
+      [
+       106.79740960748387,
+       -6.207212526921751
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 33,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_034",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 34,
+   "name": "ATM",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79721605274591,
+       -6.207641770110442
+      ],
+      [
+       106.79720512968004,
+       -6.207664302574784
+      ],
+      [
+       106.79721441428677,
+       -6.207668646182441
+      ],
+      [
+       106.79722479119914,
+       -6.207644213389344
+      ],
+      [
+       106.79721605274591,
+       -6.207641770110442
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 34,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_035",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 35,
+   "name": "Tempat Sampah",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79745452854144,
+       -6.207366353436981
+      ],
+      [
+       106.79744383929716,
+       -6.20738797301432
+      ],
+      [
+       106.79744899962282,
+       -6.2073909044822955
+      ],
+      [
+       106.79745895167599,
+       -6.207368552038773
+      ],
+      [
+       106.79745452854144,
+       -6.207366353436981
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 35,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_036",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 36,
+   "name": "Miniatur Palmerah",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79744143728158,
+       -6.207392238602779
+      ],
+      [
+       106.79743086064366,
+       -6.207412949230772
+      ],
+      [
+       106.79743759123187,
+       -6.207416454107161
+      ],
+      [
+       106.7974478473655,
+       -6.207393194478257
+      ],
+      [
+       106.79744143728158,
+       -6.207392238602779
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 36,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_037",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 37,
+   "name": "Kursi Ujung",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79750297137355,
+       -6.2072654731217085
+      ],
+      [
+       106.79748418885674,
+       -6.207305788531514
+      ],
+      [
+       106.79749059198747,
+       -6.20731003225886
+      ],
+      [
+       106.79750937450427,
+       -6.207268443731792
+      ],
+      [
+       106.79750297137355,
+       -6.2072654731217085
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 37,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_038",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 38,
+   "name": "Billboard Ujung",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79748204415625,
+       -6.207310170297063
+      ],
+      [
+       106.79745685850861,
+       -6.20736151939218
+      ],
+      [
+       106.797465396017,
+       -6.207365763119057
+      ],
+      [
+       106.79748887416253,
+       -6.207313989651567
+      ],
+      [
+       106.79748204415625,
+       -6.207310170297063
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 38,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_039",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 39,
+   "name": "Kursi Depan",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.7974299089588,
+       -6.207419007306612
+      ],
+      [
+       106.79743772000978,
+       -6.207422204764228
+      ],
+      [
+       106.79741382738297,
+       -6.207467882730299
+      ],
+      [
+       106.7974064758057,
+       -6.2074642284930945
+      ],
+      [
+       106.7974299089588,
+       -6.207419007306612
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 39,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_040",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 40,
+   "name": "Billboard Depan",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79740706937235,
+       -6.2074641473226535
+      ],
+      [
+       106.79741396147591,
+       -6.207467344780113
+      ],
+      [
+       106.79739466358626,
+       -6.207509368506862
+      ],
+      [
+       106.79738823095641,
+       -6.207504343930694
+      ],
+      [
+       106.79740706937235,
+       -6.2074641473226535
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 40,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_041",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 41,
+   "name": "Alfamart Express",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79740145394135,
+       -6.2072293334164215
+      ],
+      [
+       106.79744618548466,
+       -6.207249091553763
+      ],
+      [
+       106.79741341609298,
+       -6.20731893691638
+      ],
+      [
+       106.79737043213055,
+       -6.207294180688734
+      ],
+      [
+       106.79740145394135,
+       -6.2072293334164215
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 41,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_042",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 42,
+   "name": "Tempat Sampah Depan Eskalator Peron 1",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79727981304245,
+       -6.2074845557210665
+      ],
+      [
+       106.79727350791694,
+       -6.20749977838652
+      ],
+      [
+       106.79728161450572,
+       -6.207502017013752
+      ],
+      [
+       106.7972874692644,
+       -6.207487689798839
+      ],
+      [
+       106.79727981304245,
+       -6.2074845557210665
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 42,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_043",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 43,
+   "name": "Tempat Sampah Depan Peron 2 Tangga",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79762418155411,
+       -6.207304104338661
+      ],
+      [
+       106.79762159582924,
+       -6.20731001663907
+      ],
+      [
+       106.79762625013433,
+       -6.207311558978731
+      ],
+      [
+       106.7976280601415,
+       -6.207305389621325
+      ],
+      [
+       106.79762418155411,
+       -6.207304104338661
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 43,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_044",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 44,
+   "name": "Tempat Sampah Depan Musala Pria",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79755274051684,
+       -6.207057638078609
+      ],
+      [
+       106.79755150316998,
+       -6.207060192886587
+      ],
+      [
+       106.7975553103895,
+       -6.207061422978811
+      ],
+      [
+       106.79755664291696,
+       -6.207058962793468
+      ],
+      [
+       106.79755274051684,
+       -6.207057638078609
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 44,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_045",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 45,
+   "name": "Warung Teh Kocok",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79737043213055,
+       -6.207294180688734
+      ],
+      [
+       106.79741341609298,
+       -6.20731893691638
+      ],
+      [
+       106.79740364927761,
+       -6.207341360962985
+      ],
+      [
+       106.79735775804858,
+       -6.207317661130503
+      ],
+      [
+       106.79737043213055,
+       -6.207294180688734
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 45,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_046",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 46,
+   "name": "Kopi Kenangan",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79735775804858,
+       -6.207317661130503
+      ],
+      [
+       106.79734344948167,
+       -6.207348326049228
+      ],
+      [
+       106.79739154271346,
+       -6.207372475615955
+      ],
+      [
+       106.79740364927761,
+       -6.207341360962985
+      ],
+      [
+       106.79735775804858,
+       -6.207317661130503
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 46,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_047",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 47,
+   "name": "Susu Bu Darmi",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79734344948167,
+       -6.207348326049228
+      ],
+      [
+       106.79732869353444,
+       -6.207380400615534
+      ],
+      [
+       106.79737979905627,
+       -6.2074052127949955
+      ],
+      [
+       106.79739154271346,
+       -6.207372475615955
+      ],
+      [
+       106.79734344948167,
+       -6.207348326049228
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 47,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_048",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 48,
+   "name": "Creme",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79732869353444,
+       -6.207380400615534
+      ],
+      [
+       106.79731452192237,
+       -6.207410367538827
+      ],
+      [
+       106.79736781501475,
+       -6.207434670581208
+      ],
+      [
+       106.79737979905627,
+       -6.2074052127949955
+      ],
+      [
+       106.79732869353444,
+       -6.207380400615534
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 48,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_049",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 49,
+   "name": "Rayne Bakrey",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79731452192237,
+       -6.207410367538827
+      ],
+      [
+       106.79730298210967,
+       -6.207437539944067
+      ],
+      [
+       106.79735796311422,
+       -6.207461280568339
+      ],
+      [
+       106.79736781501475,
+       -6.207434670581208
+      ],
+      [
+       106.79731452192237,
+       -6.207410367538827
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 49,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_050",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 50,
+   "name": "Roti Maryam Salman",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79730298210967,
+       -6.207437539944067
+      ],
+      [
+       106.79729156336708,
+       -6.207466564801635
+      ],
+      [
+       106.79734902392852,
+       -6.2074882928212105
+      ],
+      [
+       106.79735796311422,
+       -6.207461280568339
+      ],
+      [
+       106.79730298210967,
+       -6.207437539944067
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 50,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_051",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 51,
+   "name": "Bakso Malang Oassis",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.7976231062002,
+       -6.207316114517823
+      ],
+      [
+       106.79757479687652,
+       -6.207293493530969
+      ],
+      [
+       106.79752263680922,
+       -6.207395809986039
+      ],
+      [
+       106.79757234640397,
+       -6.207420519058616
+      ],
+      [
+       106.7976231062002,
+       -6.207316114517823
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 51,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_052",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 52,
+   "name": "Indomaret Point",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79752263680922,
+       -6.207395809986039
+      ],
+      [
+       106.79747878470022,
+       -6.207483588069067
+      ],
+      [
+       106.79753166801424,
+       -6.207509476410337
+      ],
+      [
+       106.79757234640397,
+       -6.207420519058616
+      ],
+      [
+       106.79752263680922,
+       -6.207395809986039
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 52,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_053",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 53,
+   "name": "Roti'O",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79747878470022,
+       -6.207483588069067
+      ],
+      [
+       106.7974554092662,
+       -6.207530263395682
+      ],
+      [
+       106.797509291317,
+       -6.207558534406601
+      ],
+      [
+       106.79753166801424,
+       -6.207509476410337
+      ],
+      [
+       106.79747878470022,
+       -6.207483588069067
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 53,
+    "source_property": "Fasilitas"
+   }
+  },
+  {
+   "id": "palmerah_lt2_block_054",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 54,
+   "name": "Tempat Sampah Depan Eskalator Peron 2",
+   "block_type": "facility_block",
+   "is_obstacle": true,
+   "geom": {
+    "coordinates": [
+     [
+      [
+       106.79748973660742,
+       -6.20758134750379
+      ],
+      [
+       106.79748423328374,
+       -6.207594915722112
+      ],
+      [
+       106.79749347886678,
+       -6.207598636038838
+      ],
+      [
+       106.7974989821904,
+       -6.207584630136964
+      ],
+      [
+       106.79748973660742,
+       -6.20758134750379
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "metadata": {
+    "source_file": "Lantai 2 Palmerah Fella.geojson",
+    "source_feature_no": 54,
+    "source_property": "Fasilitas"
+   }
+  }
+ ],
+ "nodes": [
+  {
+   "id": "palmerah_lt1_node_001",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 1,
+   "name": "Lift Peron 1",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_001",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79719694658371,
+     -6.207697476750226
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 1,
+    "source_property": "Access To",
+    "kind": "elevator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt1_node_002",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 2,
+   "name": "Lift Peron 2",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_002",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7973967371646,
+     -6.207784146894781
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 2,
+    "source_property": "Access To",
+    "kind": "elevator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt1_node_003",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 3,
+   "name": "Eskalator Peron 1.1",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_003",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7972342091058,
+     -6.2076245342659035
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 3,
+    "source_property": "Access To",
+    "kind": "escalator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt1_node_004",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 4,
+   "name": "Eskalator Peron 1.2",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_003",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79725360972714,
+     -6.207632385204121
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 4,
+    "source_property": "Access To",
+    "kind": "escalator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt1_node_005",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 5,
+   "name": "Eskalator Peron 2.1",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_004",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7974047525305,
+     -6.207702230037782
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 5,
+    "source_property": "Access To",
+    "kind": "escalator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt1_node_006",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 6,
+   "name": "Eskalator Peron 2.2",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_004",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79742587391235,
+     -6.207712989555901
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 6,
+    "source_property": "Access To",
+    "kind": "escalator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt1_node_007",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 7,
+   "name": "Tangga Peron 1.1",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_005",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79750139555989,
+     -6.207049615965204
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 7,
+    "source_property": "Access To",
+    "kind": "stairs",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt1_node_008",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 8,
+   "name": "Tangga Peron 1.2",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_005",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79752176463245,
+     -6.207058012166939
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 8,
+    "source_property": "Access To",
+    "kind": "stairs",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt1_node_009",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 9,
+   "name": "Tangga Peron 2.1",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_006",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7976668321711,
+     -6.207121230618554
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 9,
+    "source_property": "Access To",
+    "kind": "stairs",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt1_node_010",
+   "station_id": "palmerah",
+   "floor": 1,
+   "source_no": 10,
+   "name": "Tangga Peron 2.2",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt1_block_006",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79768793772303,
+     -6.2071277238260905
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik titik penghubung Lantai 1.geojson",
+    "source_feature_no": 10,
+    "source_property": "Access To",
+    "kind": "stairs",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_001",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 1,
+   "name": "Lift Peron 1",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt2_block_001",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79720828339907,
+     -6.2077015469252785
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 1,
+    "source_property": "Access To",
+    "kind": "elevator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_002",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 2,
+   "name": "Lift Peron 2",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt2_block_002",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79739143864674,
+     -6.207781354432484
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 2,
+    "source_property": "Access To",
+    "kind": "elevator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_003",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 3,
+   "name": "Eskalator Peron 1.1",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt2_block_003",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7972855566029,
+     -6.207535270331405
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 3,
+    "source_property": "Access To",
+    "kind": "escalator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_004",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 4,
+   "name": "Eskalator Peron 2.2",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt2_block_004",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79745684299274,
+     -6.207615890585501
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 4,
+    "source_property": "Access To",
+    "kind": "escalator",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_005",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 5,
+   "name": "Tangga Peron 1.1",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt2_block_019",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7974311786947,
+     -6.207210577530603
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 5,
+    "source_property": "Access To",
+    "kind": "stairs",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_006",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 6,
+   "name": "Tangga Peron 1.2",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt2_block_019",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79745251641691,
+     -6.207221223680648
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 6,
+    "source_property": "Access To",
+    "kind": "stairs",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_007",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 7,
+   "name": "Tangga Peron 2.1",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt2_block_018",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79759706166658,
+     -6.207285188360515
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 7,
+    "source_property": "Access To",
+    "kind": "stairs",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_008",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 8,
+   "name": "Tangga Peron 2.2",
+   "node_type": "connector_access",
+   "linked_block_id": "palmerah_lt2_block_018",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79761689688195,
+     -6.207295111686051
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 8,
+    "source_property": "Access To",
+    "kind": "stairs",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_009",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 9,
+   "name": "EntryExit1",
+   "node_type": "entrance_access",
+   "linked_block_id": "palmerah_lt2_block_009",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.797090561375,
+     -6.207924462530286
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 9,
+    "source_property": "Access To",
+    "kind": "entrance",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_010",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 10,
+   "name": "EntryExit2",
+   "node_type": "entrance_access",
+   "linked_block_id": "palmerah_lt2_block_010",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79728937550055,
+     -6.2080212286619485
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 10,
+    "source_property": "Access To",
+    "kind": "entrance",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_011",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 11,
+   "name": "Pintu Masuk P3K",
+   "node_type": "facility_entrance",
+   "linked_block_id": "palmerah_lt2_block_013",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79756852216894,
+     -6.20702280184976
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 11,
+    "source_property": "Access To",
+    "kind": "first_aid",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_012",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 12,
+   "name": "Pintu Masuk Toilet Pria",
+   "node_type": "facility_entrance",
+   "linked_block_id": "palmerah_lt2_block_012",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79754130684557,
+     -6.2070830855452925
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 12,
+    "source_property": "Access To",
+    "kind": "toilet",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_013",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 13,
+   "name": "Pintu Masuk Musala Pria",
+   "node_type": "facility_entrance",
+   "linked_block_id": "palmerah_lt2_block_011",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7975383754831,
+     -6.207090046133416
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 13,
+    "source_property": "Access To",
+    "kind": "mushola",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_014",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 14,
+   "name": "Pintu Masuk Ruang Laktasi",
+   "node_type": "facility_entrance",
+   "linked_block_id": "palmerah_lt2_block_014",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7976988201525,
+     -6.207048369867493
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 14,
+    "source_property": "Access To",
+    "kind": "lactation_room",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_015",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 15,
+   "name": "Pintu Masuk Toilet Difabel",
+   "node_type": "facility_entrance",
+   "linked_block_id": "palmerah_lt2_block_015",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7976970893759,
+     -6.207053098043772
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 15,
+    "source_property": "Access To",
+    "kind": "toilet",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_016",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 16,
+   "name": "Pintu Masuk Toilet Wanita",
+   "node_type": "facility_entrance",
+   "linked_block_id": "palmerah_lt2_block_016",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79766215128308,
+     -6.207122087067688
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 16,
+    "source_property": "Access To",
+    "kind": "toilet",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_017",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 17,
+   "name": "Pintu Masuk Musala Wanita",
+   "node_type": "facility_entrance",
+   "linked_block_id": "palmerah_lt2_block_017",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79765853759784,
+     -6.207129100925528
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 17,
+    "source_property": "Access To",
+    "kind": "mushola",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_018",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 18,
+   "name": "Vending Machine 1",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_020",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79758513131884,
+     -6.207245857341647
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 18,
+    "source_property": "Access To",
+    "kind": "vending_machine",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_019",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 19,
+   "name": "Booth Rica-Rica",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_005",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7971902757995,
+     -6.207959802980895
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 19,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_020",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 20,
+   "name": "Tap In",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_006",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79730671033303,
+     -6.207723963210938
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 20,
+    "source_property": "Access To",
+    "kind": "ticket_gate",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_021",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 21,
+   "name": "Tap Out",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_006",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79731368527877,
+     -6.207706085692237
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 21,
+    "source_property": "Access To",
+    "kind": "ticket_gate",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_022",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 22,
+   "name": "ATM",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_034",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79722399053429,
+     -6.2076573741965575
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 22,
+    "source_property": "Access To",
+    "kind": "atm",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_023",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 23,
+   "name": "Tempat Sampah Depan Eskalator Peron 1",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_042",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79728816567376,
+     -6.207495509629524
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 23,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_024",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 24,
+   "name": "Tempat Sampah Depan Eskalator Peron 2",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_054",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79748225391955,
+     -6.207585567530785
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 24,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_025",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 25,
+   "name": "Roti Maryam Salman",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_050",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79735618663665,
+     -6.20747549084011
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 25,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_026",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 26,
+   "name": "Rayne Bakrey",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_049",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79736611280515,
+     -6.207449923725321
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 26,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_027",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 27,
+   "name": "Creme",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_048",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79737707074577,
+     -6.2074211911345145
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 27,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_028",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 28,
+   "name": "Susu Bu Darmi",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_047",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79738927786701,
+     -6.207389249341901
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 28,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_029",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 29,
+   "name": "Kopi Kenangan",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_046",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.797400538614,
+     -6.207357586613767
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 29,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_030",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 30,
+   "name": "Warung Teh Kocok",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_045",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79741198053068,
+     -6.207330976278456
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 30,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_031",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 31,
+   "name": "Alfamart Express",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_041",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79743266793685,
+     -6.207287966548648
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 31,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_032",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 32,
+   "name": "Tempat Sampah Depan Peron 2 Tangga",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_033",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79741442492912,
+     -6.207219646400176
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 32,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_033",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 33,
+   "name": "Bakso Malang Oassis",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_051",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79754083675778,
+     -6.207343532696598
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 33,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_034",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 34,
+   "name": "Indomaret Point",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_052",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79749588776264,
+     -6.207439774246097
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 34,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_035",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 35,
+   "name": "Roti'O",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_053",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79746399729214,
+     -6.207505062220591
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 35,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_036",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 36,
+   "name": "Kursi Ujung Barat",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_037",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7974893492036,
+     -6.207283345748024
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 36,
+    "source_property": "Access To",
+    "kind": "seating",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_037",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 37,
+   "name": "Kursi Ujung Timur",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_037",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79750416821031,
+     -6.207287955572056
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 37,
+    "source_property": "Access To",
+    "kind": "seating",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_038",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 38,
+   "name": "Tempat Sampah",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_035",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79744664690134,
+     -6.207375764852031
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 38,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_039",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 39,
+   "name": "Miniatur Palmerah",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_036",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79743345123586,
+     -6.207400900855404
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 39,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_040",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 40,
+   "name": "Kursi Depan Barat",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_039",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7974152894962,
+     -6.207436122868501
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 40,
+    "source_property": "Access To",
+    "kind": "seating",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_041",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 41,
+   "name": "Kursi Depan Timur",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_039",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79743044324891,
+     -6.207442579255897
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 41,
+    "source_property": "Access To",
+    "kind": "seating",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_042",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 42,
+   "name": "Alat Pemadam Api Ringan",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_027",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79751395648401,
+     -6.207149004110548
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 42,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_043",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 43,
+   "name": "Kursi Musala Pria",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_026",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79756635310031,
+     -6.207043977081582
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 43,
+    "source_property": "Access To",
+    "kind": "seating",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_044",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 44,
+   "name": "Tempat Sampah Depan Musala Pria",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_044",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79755703141115,
+     -6.207060386046521
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 44,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_045",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 45,
+   "name": "Sendal Pria",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_029",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79755130615922,
+     -6.207071287098131
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 45,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_046",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 46,
+   "name": "Tempat Cas",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_031",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79769403975934,
+     -6.20705533390074
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 46,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_047",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 47,
+   "name": "Tempat Kursi Depan Toilet Difabel",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_030",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79769189357665,
+     -6.207058604605606
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 47,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_048",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 48,
+   "name": "Tempat Sampah Depan Toilet Wanita",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_032",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79766301546408,
+     -6.207115432992367
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 48,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_049",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 49,
+   "name": "Kursi Musala Wanita",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_028",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7976352411631,
+     -6.207157030998559
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 49,
+    "source_property": "Access To",
+    "kind": "seating",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_050",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 50,
+   "name": "Air Minum Gratis",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_024",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79761320939264,
+     -6.207195197639535
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 50,
+    "source_property": "Access To",
+    "kind": "vending_machine",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_051",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 51,
+   "name": "Sprite",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_023",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79760714290057,
+     -6.207207705669347
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 51,
+    "source_property": "Access To",
+    "kind": "vending_machine",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_052",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 52,
+   "name": "Teh Pucuk Harum",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_022",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7976019585924,
+     -6.207219356226716
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 52,
+    "source_property": "Access To",
+    "kind": "vending_machine",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_053",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 53,
+   "name": "Cuties Catz",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_021",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79759526495496,
+     -6.207231350594668
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 53,
+    "source_property": "Access To",
+    "kind": "shop",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_054",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 54,
+   "name": "Kursi Pijat",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_025",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.79757624094998,
+     -6.20726066676751
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 54,
+    "source_property": "Access To",
+    "kind": "seating",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_055",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 55,
+   "name": "Tempat Sampah Depan Peron 2 Tangga",
+   "node_type": "destination",
+   "linked_block_id": "palmerah_lt2_block_033",
+   "is_routable": true,
+   "geom": {
+    "coordinates": [
+     106.7976215036199,
+     -6.207306437271839
+    ],
+    "type": "Point"
+   },
+   "crowd_zone_id": null,
+   "crowd_sequence": null,
+   "crowd_width_m": null,
+   "metadata": {
+    "source_file": "Titik Titik Penghubung LT 2.geojson",
+    "source_feature_no": 55,
+    "source_property": "Access To",
+    "kind": "amenity",
+    "link_method": "name_or_nearest"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_056",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 56,
+   "name": "Koridor Crowd 01 — Start",
+   "node_type": "crowd_boundary",
+   "linked_block_id": null,
+   "is_routable": false,
+   "geom": {
+    "type": "Point",
+    "coordinates": [
+     106.79746152248532,
+     -6.207399080319959
+    ]
+   },
+   "crowd_zone_id": "crowd_corridor_01",
+   "crowd_sequence": 1,
+   "crowd_width_m": 2.0,
+   "metadata": {
+    "source_file": null,
+    "source_property": null,
+    "source_value": null,
+    "link_method": null,
+    "note": "crowd simulation corridor, not a survey feature"
+   }
+  },
+  {
+   "id": "palmerah_lt2_node_057",
+   "station_id": "palmerah",
+   "floor": 2,
+   "source_no": 57,
+   "name": "Koridor Crowd 01 — End",
+   "node_type": "crowd_boundary",
+   "linked_block_id": null,
+   "is_routable": false,
+   "geom": {
+    "type": "Point",
+    "coordinates": [
+     106.79760183449002,
+     -6.207103818662631
+    ]
+   },
+   "crowd_zone_id": "crowd_corridor_01",
+   "crowd_sequence": 2,
+   "crowd_width_m": 2.0,
+   "metadata": {
+    "source_file": null,
+    "source_property": null,
+    "source_value": null,
+    "link_method": null,
+    "note": "crowd simulation corridor, not a survey feature"
+   }
+  }
+ ]
+}

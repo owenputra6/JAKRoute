@@ -50,14 +50,14 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
         _catalog = catalog;
         _crowd = crowd;
         if (!ids.contains(_origin)) {
-          final preferred = places.where((p) => p['source_no'] == 4).toList();
+          final preferred = places.where((p) => p['id'] == 'palmerah_lt2_node_004').toList();
           _origin = (preferred.isEmpty ? places.first : preferred.first)['id'] as String;
         }
         if (!ids.contains(_destination)) {
-          final preferred = places.where((p) => p['source_no'] == 18).toList();
+          final preferred = places.where((p) => p['id'] == 'palmerah_lt2_node_018').toList();
           _destination = preferred.isEmpty ? '' : preferred.first['id'] as String;
         }
-        _floor = ((catalog['floors'] as List).first as Map)['id'] as int;
+        _floor = ((catalog['floors'] as List).last as Map)['id'] as int;
       });
     } catch (e) { if (mounted) setState(() => _error = e.toString()); }
     finally { if (mounted) setState(() => _loading = false); }
@@ -149,7 +149,7 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
       items: [
         if (automatic) const DropdownMenuItem(value: '', child: Text('Dari pesan saya')),
         ...places.map((p) => DropdownMenuItem(value: p['id'] as String,
-            child: Text(p['label'] as String, overflow: TextOverflow.ellipsis))),
+            child: Text('${p['label']} · LT ${p['floor']}', overflow: TextOverflow.ellipsis))),
       ],
       onChanged: _busy ? null : (v) { if (v != null) changed(v); },
     );
@@ -318,7 +318,7 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
             ])),
             const SizedBox(height: Space.sm),
             Wrap(spacing: 8, children: (catalog['floors'] as List).cast<Map>().map((f) => ChoiceChip(
-                label: Text('Lantai ${f['id']}'), selected: _floor == f['id'], onSelected: (_) => setState(() => _floor = f['id'] as int))).toList()),
+                label: Text(f['label']?.toString() ?? 'Lantai ${f['id']}'), selected: _floor == f['id'], onSelected: (_) => setState(() => _floor = f['id'] as int))).toList()),
             const SizedBox(height: Space.md),
             _card(child: _formExpanded
                 ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

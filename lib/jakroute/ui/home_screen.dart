@@ -6,6 +6,7 @@ import '../models.dart';
 import 'app_theme.dart';
 import 'chat_screen.dart';
 import 'facility_detail_screen.dart';
+import 'kinds.dart';
 
 /// Mirrors stitch_jakroute_ui_ux_design_system/home_search_route: full-screen
 /// map, pill search bar, floor badge, draggable facility sheet. Basemap is
@@ -25,6 +26,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Json? _catalog;
   String? _error;
+  // Selected floor id. Defaults to the last (highest) floor in the catalog —
+  // the hall, where most surveyed facilities are.
+  int? _floor;
 
   @override
   void initState() {
@@ -58,26 +62,23 @@ class _HomeScreenState extends State<HomeScreen> {
     ));
   }
 
-  int get _floor {
-    final floors = (_catalog?['floors'] as List?) ?? [];
-    if (floors.isEmpty) return 0;
-    return (floors.first as Map)['id'] as int? ?? 0;
-  }
+  List<Map> get _floors => ((_catalog?['floors'] as List?) ?? []).cast<Map>();
+  int get _activeFloor => _floor ?? (_floors.isEmpty ? 0 : (_floors.last['id'] as int? ?? 0));
 
   @override
   Widget build(BuildContext context) {
-    final places = ((_catalog?['places'] as List?) ?? []).cast<Map>();
+    final places = ((_catalog?['places'] as List?) ?? []).cast<Map>().where((p) => p['floor'] == _activeFloor).toList();
     return Scaffold(
       body: Stack(
         children: [
           if (_catalog != null)
-            Positioned.fill(child: RouteDiagram(catalog: _catalog!, floor: _floor))
+            Positioned.fill(child: RouteDiagram(catalog: _catalog!, floor: _activeFloor))
           else
             Container(color: AppColors.surfaceContainer),
           _SearchBar(onTap: () => _openChat(), label: _catalog?['label']?.toString()),
-          const _FloorBadge(),
+          _FloorBadge(floors: _floors, active: _activeFloor, onChanged: (f) => setState(() => _floor = f)),
           _BottomSheetPanel(
-            label: _catalog?['label']?.toString() ?? 'Memuat stasiun…',
+            label: _catalog == null ? 'Memuat stasiun…' : '${_catalog!['label']} — ${floorLabel(_catalog!, _activeFloor)}',
             places: places,
             error: _error,
             onFacilityTap: _openFacility,
@@ -137,38 +138,46 @@ class _SearchBar extends StatelessWidget {
 }
 
 class _FloorBadge extends StatelessWidget {
-  const _FloorBadge();
+  const _FloorBadge({required this.floors, required this.active, required this.onChanged});
+  final List<Map> floors;
+  final int active;
+  final ValueChanged<int> onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.labelMedium;
     return Positioned(
       right: Space.gutter,
       top: MediaQuery.of(context).size.height * 0.22,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: Space.sm, vertical: Space.xs),
         decoration: BoxDecoration(
-          color: AppColors.primary,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(Radii.md),
           boxShadow: const [kSurfaceShadow],
         ),
-        child: Text('LT 2', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.white)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final f in floors.reversed)
+              InkWell(
+                borderRadius: BorderRadius.circular(Radii.md),
+                onTap: () => onChanged(f['id'] as int),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: Space.sm, vertical: Space.xs),
+                  decoration: BoxDecoration(
+                    color: f['id'] == active ? AppColors.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(Radii.md),
+                  ),
+                  child: Text(floorShort(f['id']),
+                      style: style?.copyWith(color: f['id'] == active ? Colors.white : AppColors.primary)),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 }
-
-IconData _iconForKind(String? kind) => switch (kind) {
-      'toilet' => Icons.wc,
-      'mushola' => Icons.mosque,
-      'elevator' => Icons.elevator,
-      'escalator' => Icons.escalator,
-      'stairs' => Icons.stairs,
-      'vending_machine' => Icons.local_cafe,
-      'first_aid' => Icons.medical_services,
-      'lactation_room' => Icons.child_friendly,
-      'entrance' => Icons.door_sliding,
-      _ => Icons.place,
-    };
 
 class _BottomSheetPanel extends StatelessWidget {
   const _BottomSheetPanel({required this.label, required this.places, required this.error, required this.onFacilityTap});
@@ -213,10 +222,10 @@ class _BottomSheetPanel extends StatelessWidget {
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
                   backgroundColor: AppColors.surfaceContainer,
-                  child: Icon(_iconForKind(p['kind']?.toString()), color: AppColors.primary, size: 20),
+                  child: Icon(iconForKind(p['kind']?.toString()), color: AppColors.primary, size: 20),
                 ),
                 title: Text(p['label']?.toString() ?? '', style: t.labelMedium),
-                subtitle: Text(p['kind']?.toString() ?? '', style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
+                subtitle: Text(kindLabel(p['kind']?.toString()), style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
                 trailing: const Icon(Icons.chevron_right, color: AppColors.outline),
                 onTap: () => onFacilityTap(p),
               ),

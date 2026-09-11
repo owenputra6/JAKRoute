@@ -79,6 +79,9 @@ class _StationPainter extends CustomPainter {
       if (place['scope'] != 'indoor' || place['floor'] != floor) continue;
       final p = project(place['xy'] as List);
       canvas.drawCircle(p, 3.5, Paint()..color = const Color(0xff127465));
+      // Furniture/bins are real survey points but labelling all of them makes
+      // the plan unreadable; they stay as dots and are listed in the sheet.
+      if (place['kind'] == 'amenity' || place['kind'] == 'seating') continue;
       final label = TextPainter(
         text: TextSpan(text: place['label'] as String, style: const TextStyle(fontSize: 9, color: Color(0xff223344))),
         textDirection: TextDirection.ltr, maxLines: 1,

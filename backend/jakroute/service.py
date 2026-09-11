@@ -157,7 +157,10 @@ class RouteService:
                 'best_fit':'Pilihan ini menyeimbangkan prioritas waktu, jarak berjalan, keramaian, dan preferensi akses yang diberikan.'}[mode]}
             if prefs.step_free: reasons['step_free']='Rute menggunakan akses bebas anak tangga sesuai kebutuhan pengguna.'
             if prefs.avoid_stairs: reasons['avoid_stairs']='Tangga dikeluarkan dari pilihan sesuai permintaan pengguna.'
-            if 'elevator_link' in route['connectors_used']: reasons['uses_lift']='Perpindahan lantai menggunakan lift.'
+            used_kinds={c['kind'] for c in self.site['connectors'] if c['id'] in route['connectors_used']}
+            if 'elevator' in used_kinds: reasons['uses_lift']='Perpindahan lantai menggunakan lift.'
+            if 'escalator' in used_kinds: reasons['uses_escalator']='Perpindahan lantai menggunakan eskalator.'
+            if 'stairs' in used_kinds: reasons['uses_stairs']='Perpindahan lantai menggunakan tangga.'
             if 'stairs_link' in route['connectors_used']: reasons['uses_stairs']='Perpindahan lantai menggunakan tangga.'
             if 'escalator_link' in route['connectors_used']: reasons['uses_escalator']='Perpindahan lantai menggunakan eskalator.'
             if any(i['effect'] in ('unavailable','blocked') or i['routing_code']==-1 for i in snapshot['incidents']) and 'indoor_python_grid' in route['sources']: reasons['forum']='Akses yang dilaporkan tidak dapat digunakan tetap dikecualikan sampai ada konfirmasi petugas.'
