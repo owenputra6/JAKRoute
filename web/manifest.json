@@ -1,11 +1,11 @@
 {
-    "name": "jakroute",
-    "short_name": "jakroute",
+    "name": "JAKRoute",
+    "short_name": "JAKRoute",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#002045",
+    "theme_color": "#002045",
+    "description": "Navigasi indoor Stasiun Palmerah dengan AI routing.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

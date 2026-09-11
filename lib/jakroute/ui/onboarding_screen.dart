@@ -51,14 +51,9 @@ class OnboardingScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Spacer(),
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(Radii.lg),
-                ),
-                child: const Icon(Icons.route, color: Colors.white, size: 40),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(Radii.lg),
+                child: Image.asset('assets/logo.png', width: 72, height: 72),
               ),
               const SizedBox(height: Space.lg),
               Text('JAKRoute', style: t.displayLarge),
