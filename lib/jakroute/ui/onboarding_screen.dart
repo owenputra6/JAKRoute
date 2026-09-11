@@ -4,6 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../api_client.dart';
 import 'app_shell.dart';
 import 'app_theme.dart';
+import 'login_screen.dart';
+import 'signup_screen.dart';
 
 /// Mirrors stitch_jakroute_ui_ux_design_system/onboarding_permissions.
 class OnboardingScreen extends StatelessWidget {
@@ -12,7 +14,7 @@ class OnboardingScreen extends StatelessWidget {
   final JakRouteApi api;
   final String mapStyleUrl;
 
-  Future<void> _enter(BuildContext context) async {
+  Future<void> _enterDemo(BuildContext context) async {
     try {
       if (Supabase.instance.client.auth.currentSession == null) {
         await Supabase.instance.client.auth.signInAnonymously();
@@ -23,6 +25,18 @@ class OnboardingScreen extends StatelessWidget {
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => AppShell(api: api, mapStyleUrl: mapStyleUrl)),
+    );
+  }
+
+  void _goLogin(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => LoginScreen(api: api, mapStyleUrl: mapStyleUrl)),
+    );
+  }
+
+  void _goSignup(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => SignupScreen(api: api, mapStyleUrl: mapStyleUrl)),
     );
   }
 
@@ -71,13 +85,18 @@ class OnboardingScreen extends StatelessWidget {
               ),
               const Spacer(),
               FilledButton(
-                onPressed: () => _enter(context),
-                child: const Text('Izinkan & Mulai'),
+                onPressed: () => _goLogin(context),
+                child: const Text('Masuk'),
+              ),
+              const SizedBox(height: Space.xs),
+              OutlinedButton(
+                onPressed: () => _goSignup(context),
+                child: const Text('Daftar'),
               ),
               const SizedBox(height: Space.xs),
               TextButton(
-                onPressed: () => _enter(context),
-                child: const Text('Nanti saja'),
+                onPressed: () => _enterDemo(context),
+                child: const Text('Coba akun demo'),
               ),
             ],
           ),
