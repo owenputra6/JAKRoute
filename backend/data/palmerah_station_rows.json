@@ -498,7 +498,7 @@
    "floor": 2,
    "source_no": 6,
    "name": "Tap In dan Tap Out",
-   "block_type": "facility_block",
+   "block_type": "gate_barrier",
    "is_obstacle": true,
    "geom": {
     "coordinates": [
@@ -539,7 +539,7 @@
    "floor": 2,
    "source_no": 7,
    "name": "Pembatas Tap in",
-   "block_type": "facility_block",
+   "block_type": "gate_barrier",
    "is_obstacle": true,
    "geom": {
     "coordinates": [
@@ -596,7 +596,7 @@
    "floor": 2,
    "source_no": 8,
    "name": "Pembatas Tap out",
-   "block_type": "facility_block",
+   "block_type": "gate_barrier",
    "is_obstacle": true,
    "geom": {
     "coordinates": [

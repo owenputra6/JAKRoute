@@ -59,6 +59,15 @@ def classify(name):
     return 'destination', 'amenity'
 
 
+def block_type(name):
+    n = norm(name)
+    if n == 'jalur kereta':
+        return 'rail_track'        # splits the platform level
+    if n.startswith('tap in') or n.startswith('pembatas tap'):
+        return 'gate_barrier'      # paid/unpaid line, passable only at the tap gates
+    return 'facility_block'
+
+
 def link_block(name, point, blocks):
     """Exact name match, else nearest block within 3 m (~2.7e-5 deg), else a
     loose name containment. Points are surveyed on their block's edge, so
@@ -86,7 +95,7 @@ def build_rows(geojson_dir):
             name = f['properties']['Fasilitas'].strip()
             row = {
                 'id': f'{STATION}_lt{floor}_block_{no:03d}', 'station_id': STATION, 'floor': floor, 'source_no': no,
-                'name': name, 'block_type': 'rail_track' if norm(name) == 'jalur kereta' else 'facility_block',
+                'name': name, 'block_type': block_type(name),
                 'is_obstacle': True, 'geom': f['geometry'],
                 'metadata': {'source_file': poly_file.split('/')[-1], 'source_feature_no': no, 'source_property': 'Fasilitas'},
             }

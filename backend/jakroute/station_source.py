@@ -6,11 +6,12 @@ Because the current source has no explicit walkable-boundary polygon, a marked
 prototype boundary is derived from the convex hull of the supplied geometry.
 """
 import json
+import math
 import re
 
 from shapely import wkb, wkt
 from shapely.errors import GEOSException
-from shapely.geometry import MultiPolygon, Point, Polygon, shape
+from shapely.geometry import LineString, MultiPolygon, Point, Polygon, shape
 from shapely import affinity
 from shapely.ops import nearest_points, unary_union
 
@@ -79,6 +80,71 @@ def _kind(row):
 
 
 FLOOR_LABELS = {1: 'Lantai 1 — Peron', 2: 'Lantai 2 — Hall'}
+
+
+def _paid_boundary(gates, lift_blocks, entrances, extra_m):
+    """Wall between the unpaid and paid hall.
+
+    The surveyed gate + pembatas polygons end at the two lift shafts. The lift
+    doors are on the paid side (site knowledge, the survey put the access
+    points on the unpaid face), so the wall is modelled as: the gate line
+    between the shafts, the shafts themselves, and from each shaft's far
+    (unpaid) face onward to the outer wall. Everything on the entrance side
+    of that chain is unpaid.
+    """
+    # Axis and thickness come from the turnstile row itself (the largest
+    # gate polygon); the short pembatas stubs would skew the rectangle.
+    gate = max(gates, key=lambda g: g.area)
+    rect = gate.minimum_rotated_rectangle
+    coords = list(rect.exterior.coords)[:4]
+    edges = [(coords[i], coords[(i + 1) % 4]) for i in range(4)]
+    (ax, ay), (bx, by) = max(edges, key=lambda e: Point(e[0]).distance(Point(e[1])))
+    length = math.hypot(bx - ax, by - ay)
+    ux, uy = (bx - ax) / length, (by - ay) / length
+    nx, ny = -uy, ux
+    cx, cy = rect.centroid.x, rect.centroid.y
+    # Orient the normal towards the paid side (away from the entrances).
+    if entrances and sum(nx * (p.x - cx) + ny * (p.y - cy) for p in entrances) > 0:
+        nx, ny = -nx, -ny
+    def s_of(x, y): return ux * (x - cx) + uy * (y - cy)
+    def t_of(x, y): return nx * (x - cx) + ny * (y - cy)
+    def box(s0, s1, t0, t1):
+        return Polygon([(cx + ux * s + nx * t, cy + uy * s + ny * t) for s, t in ((s0, t0), (s1, t0), (s1, t1), (s0, t1))])
+    thickness = max(0.3, max(abs(t_of(*v)) for v in coords))
+    far = length / 2 + extra_m
+    pieces = list(gates)
+    west_edge, east_edge = -far, far
+    for block in lift_blocks:
+        verts = list(block.exterior.coords)
+        ss = [s_of(*v) for v in verts]
+        ts = [t_of(*v) for v in verts]
+        s0, s1, t_min = min(ss), max(ss), min(ts)
+        pieces.append(block)
+        if (s0 + s1) / 2 < 0:
+            west_edge = max(west_edge, s1)
+            pieces.append(box(-far, s0, t_min - thickness, t_min))
+        else:
+            east_edge = min(east_edge, s0)
+            pieces.append(box(s1, far, t_min - thickness, t_min))
+    # Straight gate line only between the shafts (or to the outer wall when a
+    # side has no shaft).
+    pieces.append(box(west_edge, east_edge, -thickness, thickness))
+    return unary_union(pieces)
+
+
+def _stretch_along_axis(geom, extra_m):
+    """Extend a thin, elongated shape by `extra_m` at both ends of its long
+    axis without changing its thickness."""
+    rect = geom.minimum_rotated_rectangle
+    coords = list(rect.exterior.coords)[:4]
+    edges = [(coords[i], coords[(i + 1) % 4]) for i in range(4)]
+    (ax, ay), (bx, by) = max(edges, key=lambda e: Point(e[0]).distance(Point(e[1])))
+    length = math.hypot(bx - ax, by - ay)
+    angle = math.degrees(math.atan2(by - ay, bx - ax))
+    centre = rect.centroid
+    aligned = affinity.rotate(geom, -angle, origin=centre)
+    factor = (length + 2 * extra_m) / length
+    return affinity.rotate(affinity.scale(aligned, factor, 1, origin=centre), angle, origin=centre)
 
 # Travel time per floor change. Walking metres: stairs count as a walk, lifts
 # and escalators do not. Survey has no measured times; these are stated
@@ -174,6 +240,25 @@ def build_station_site(snapshot, grid_step_m=0.75, clearance_m=0.2,
         tracks = [geom for row, geom in floor_blocks if row.get('block_type') == 'rail_track']
         if tracks:
             walkable = walkable.difference(unary_union([affinity.scale(t, 1.5, 1.5) for t in tracks]))
+        # The tap-gate line separates the paid and unpaid halls. It is drawn as
+        # short polygons, but in reality it runs wall to wall and can only be
+        # crossed at the turnstiles: stretch it across the hall, then open a
+        # passage between the surveyed Tap In / Tap Out points.
+        gates = [geom for row, geom in floor_blocks if row.get('block_type') == 'gate_barrier']
+        gate_nodes = [point for row, point, _ in floor_nodes if _kind(row) == 'ticket_gate']
+        passage = None
+        if gates:
+            entrances = [point for row, point, _ in floor_nodes if row.get('node_type') == 'entrance_access']
+            lifts = [geom for row, geom in floor_blocks
+                     if row.get('block_type') != 'gate_barrier' and 'lift' in str(row.get('name', '')).lower()]
+            walkable = walkable.difference(_paid_boundary(gates, lifts, entrances, 80))
+            if len(gate_nodes) >= 2:
+                passage = LineString([gate_nodes[0], gate_nodes[1]]).buffer(1.0)
+                walkable = unary_union([walkable, passage])
+        if passage is not None:
+            floor_blocks = [(row, geom.difference(passage) if row.get('block_type') == 'gate_barrier' else geom)
+                            for row, geom in floor_blocks]
+            obstacle_union = unary_union([geom for _, geom in floor_blocks])
         walkable_parts = list(walkable.geoms) if isinstance(walkable, MultiPolygon) else [walkable]
         if not walkable.is_valid or any(not isinstance(part, Polygon) for part in walkable_parts):
             raise RouteError('supabase_geometry', 'Batas routing turunan tidak valid.', 502)
@@ -242,7 +327,8 @@ def build_station_site(snapshot, grid_step_m=0.75, clearance_m=0.2,
             'label': FLOOR_LABELS.get(floor_id, f'Lantai {floor_id}'),
             'bounds': [round(value, 5) for value in bounds],
             'walkable': [_rings(part) for part in walkable_parts],
-            'obstacles': [_rings(geom) for _, geom in floor_blocks],
+            'obstacles': [_rings(part) for _, geom in floor_blocks
+                          for part in (geom.geoms if isinstance(geom, MultiPolygon) else [geom])],
         })
 
     if len({place['id'] for place in places}) != len(places):

@@ -94,3 +94,26 @@ def test_explicit_kind_metadata_wins(site):
     assert kinds['Tap In'] == 'ticket_gate'
     assert kinds['Kursi Musala Pria'] == 'seating'  # not 'mushola'
     assert kinds['Tempat Sampah Depan Toilet Wanita'] == 'amenity'  # not 'toilet'
+
+
+ENTRY_1 = 'palmerah_lt2_node_009'
+TOILET_DIFABEL = 'palmerah_lt2_node_015'
+LIFT_P1_L2 = 'palmerah_lt2_node_001'
+
+
+def _visits_turnstile(router, result):
+    from shapely.geometry import LineString, Point
+    places = {p['label']: p for p in router.site['places'] if p['floor'] == 2}
+    passage = LineString([places['Tap In']['xy'], places['Tap Out']['xy']]).buffer(1.5)
+    return any(passage.contains(Point(router.nodes[s['to']]['xy'])) for s in result['steps'])
+
+
+def test_entrance_to_paid_hall_goes_through_the_tap_gate(router):
+    result = router.route(ENTRY_1, TOILET_DIFABEL, 'min_walk', Preferences())
+    assert floors_visited(router, result) == [2]
+    assert _visits_turnstile(router, result), 'rute harus lewat Tap In/Tap Out, bukan memutar sisi luar'
+
+
+def test_lifts_are_on_the_paid_side(router):
+    result = router.route(ENTRY_1, LIFT_P1_L2, 'min_walk', Preferences())
+    assert _visits_turnstile(router, result)
