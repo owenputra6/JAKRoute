@@ -171,3 +171,5 @@ Desktop.ini
 *.tar
 *.tar.gz
 *.7z
+.vercel
+.env*

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../api_client.dart';
 import '../route_screen.dart';
 import 'app_theme.dart';
-import 'chat_screen.dart';
+import 'home_screen.dart';
 
 /// Bottom-nav shell: AI chat (primary, chatbot rubric) + advanced form
 /// (existing route_screen.dart — sliders/switches for power users, kept as-is
@@ -24,7 +24,7 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      ChatScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
+      HomeScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
       JakRouteScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
     ];
     return Scaffold(
@@ -35,7 +35,7 @@ class _AppShellState extends State<AppShell> {
         backgroundColor: AppColors.surfaceContainerLowest,
         indicatorColor: AppColors.secondaryContainer.withValues(alpha: 0.18),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.auto_awesome_outlined), selectedIcon: Icon(Icons.auto_awesome), label: 'Asisten AI'),
+          NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map), label: 'Peta'),
           NavigationDestination(icon: Icon(Icons.tune_outlined), selectedIcon: Icon(Icons.tune), label: 'Rute Lanjutan'),
         ],
       ),

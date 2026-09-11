@@ -24,10 +24,11 @@ class _Entry {
 /// clarification -> tappable place chips, ok -> tappable route cards that
 /// open the map/diagram for that specific route.
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.api, required this.mapStyleUrl});
+  const ChatScreen({super.key, required this.api, required this.mapStyleUrl, this.initialMessage});
 
   final JakRouteApi api;
   final String mapStyleUrl;
+  final String? initialMessage;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -46,6 +47,10 @@ class _ChatScreenState extends State<ChatScreen> {
     _entries.add(_Entry.text(_Role.system,
         'Ceritakan kebutuhanmu — misalnya "saya bawa stroller, mau ke toilet, hindari tangga".'));
     widget.api.catalog().then((c) => setState(() => _catalog = c)).catchError((_) {});
+    final initial = widget.initialMessage;
+    if (initial != null && initial.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _send(initial));
+    }
   }
 
   @override
