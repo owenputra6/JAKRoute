@@ -50,7 +50,7 @@ def create_app(settings=None,service=None):
     service=service or RouteService(settings)
     app=FastAPI(title='JAKRoute API',version='1.0.0')
     app.state.service=service
-    app.add_middleware(CORSMiddleware,allow_origins=[x.strip() for x in settings.cors_origins.split(',') if x.strip()],allow_credentials=False,allow_methods=['GET','POST'],allow_headers=['Authorization','Content-Type','X-Officer-Token'])
+    app.add_middleware(CORSMiddleware,allow_origins=[x.strip() for x in settings.cors_origins.split(',') if x.strip()],allow_origin_regex=settings.cors_origin_regex or None,allow_credentials=False,allow_methods=['GET','POST'],allow_headers=['Authorization','Content-Type','X-Officer-Token'])
     limits=defaultdict(deque); lock=threading.Lock()
 
     @app.exception_handler(RouteError)

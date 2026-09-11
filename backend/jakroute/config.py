@@ -36,6 +36,7 @@ class Settings:
     crowd_seed: int=20260908
     app_env: str='development'
     cors_origins: str='http://localhost:3000,http://localhost:8080'
+    cors_origin_regex: str=''
 
     @classmethod
     def from_env(cls):
