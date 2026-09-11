@@ -5,6 +5,7 @@ import '../route_diagram.dart';
 import '../models.dart';
 import 'app_theme.dart';
 import 'chat_screen.dart';
+import 'facility_detail_screen.dart';
 
 /// Mirrors stitch_jakroute_ui_ux_design_system/home_search_route: full-screen
 /// map, pill search bar, floor badge, draggable facility sheet. Basemap is
@@ -46,6 +47,17 @@ class _HomeScreenState extends State<HomeScreen> {
     ));
   }
 
+  void _openFacility(Map place) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => FacilityDetailScreen(
+        place: place,
+        api: widget.api,
+        mapStyleUrl: widget.mapStyleUrl,
+        stationLabel: _catalog?['label']?.toString() ?? 'Stasiun Palmerah',
+      ),
+    ));
+  }
+
   int get _floor {
     final floors = (_catalog?['floors'] as List?) ?? [];
     if (floors.isEmpty) return 0;
@@ -68,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
             label: _catalog?['label']?.toString() ?? 'Memuat stasiun…',
             places: places,
             error: _error,
-            onFacilityTap: (label) => _openChat(initialMessage: 'Saya mau ke $label.'),
+            onFacilityTap: _openFacility,
           ),
         ],
       ),
@@ -163,7 +175,7 @@ class _BottomSheetPanel extends StatelessWidget {
   final String label;
   final List<Map> places;
   final String? error;
-  final ValueChanged<String> onFacilityTap;
+  final ValueChanged<Map> onFacilityTap;
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +218,7 @@ class _BottomSheetPanel extends StatelessWidget {
                 title: Text(p['label']?.toString() ?? '', style: t.labelMedium),
                 subtitle: Text(p['kind']?.toString() ?? '', style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
                 trailing: const Icon(Icons.chevron_right, color: AppColors.outline),
-                onTap: () => onFacilityTap(p['label']?.toString() ?? ''),
+                onTap: () => onFacilityTap(p),
               ),
           ],
         ),

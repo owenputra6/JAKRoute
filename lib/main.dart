@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'jakroute/api_client.dart';
-import 'jakroute/ui/app_shell.dart';
+import 'jakroute/ui/onboarding_screen.dart';
 import 'jakroute/ui/app_theme.dart';
 import 'jakroute/ui/mobile_frame.dart';
 
@@ -65,7 +65,7 @@ class _JakRouteAppState extends State<JakRouteApp> {
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
       builder: (context, child) => MobileFrame(child: child ?? const SizedBox.shrink()),
-      home: AppShell(api: api, mapStyleUrl: _mapStyleUrl),
+      home: OnboardingScreen(api: api, mapStyleUrl: _mapStyleUrl),
     );
   }
 }

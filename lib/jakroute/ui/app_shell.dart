@@ -4,6 +4,7 @@ import '../api_client.dart';
 import '../route_screen.dart';
 import 'app_theme.dart';
 import 'home_screen.dart';
+import 'profile_screen.dart';
 
 /// Bottom-nav shell: AI chat (primary, chatbot rubric) + advanced form
 /// (existing route_screen.dart — sliders/switches for power users, kept as-is
@@ -26,6 +27,7 @@ class _AppShellState extends State<AppShell> {
     final pages = [
       HomeScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
       JakRouteScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
+      const ProfileScreen(),
     ];
     return Scaffold(
       body: IndexedStack(index: _index, children: pages),
@@ -37,6 +39,7 @@ class _AppShellState extends State<AppShell> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map), label: 'Peta'),
           NavigationDestination(icon: Icon(Icons.tune_outlined), selectedIcon: Icon(Icons.tune), label: 'Rute Lanjutan'),
+          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
     );
