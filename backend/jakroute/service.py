@@ -1,7 +1,7 @@
 """One request snapshot; enumerate real entrance handoffs; return all 3 modes."""
 import copy
-from .providers import load_json,MapidClient,WeatherClient,SupabaseStationClient,create_weather_warning
-from .geometry import local_to_lonlat
+from .providers import OsmPoiClient,load_json,MapidClient,WeatherClient,SupabaseStationClient,create_weather_warning
+from .geometry import local_to_lonlat, lonlat_to_local
 from .crowd_simulation import GeoJsonCrowdSimulator,NodeCorridorCrowdSimulator
 from .station_source import build_station_site
 from .schemas import Preferences,MODES,LABELS
@@ -27,6 +27,13 @@ class RouteService:
                 settings.data_dir/'palmerah_crowd_areas.geojson',
                 self.site['anchor_lonlat'],ground['bounds'],
                 settings.crowd_user_count,settings.crowd_seed,floor=0)
+        # Outdoor destinations around the station (OpenStreetMap). Local xy
+        # is derived from the real lon/lat so the outdoor router can join them.
+        self.outdoor_meta={'source':'not_configured','count':0}
+        if settings.outdoor_poi_mode=='osm':
+            pois,self.outdoor_meta=OsmPoiClient(settings).fetch(self.site['anchor_lonlat'])
+            for p in pois: p['xy']=[round(v,5) for v in lonlat_to_local(p['source_lonlat'],self.site['anchor_lonlat'])]
+            self.site['places']=[p for p in self.site['places'] if p.get('scope')!='outdoor' or not p['id'].startswith('osm_')]+pois
         self.crowd=self.crowd_simulator.build_snapshot()
         self.site['crowd_areas']=[{key:area[key] for key in ('id','floor','area_m2','polygon')}
                                   for area in self.crowd['areas']]
@@ -49,7 +56,7 @@ class RouteService:
         station_data['counts']={'blocks':len(self.station_snapshot.get('blocks',[])),
                                 'nodes':len(self.station_snapshot.get('nodes',[]))}
         return {**self.site,'places':places,'station_data':station_data,
-                'crowd_source':self.crowd['source']}
+                'crowd_source':self.crowd['source'],'outdoor_pois':self.outdoor_meta}
 
     def crowd_snapshot(self):
         return copy.deepcopy(self.crowd)

@@ -13,6 +13,8 @@ class Settings:
     db_path: str=str(ROOT/'runtime'/'forum.sqlite3')
     agent_mode: str='demo'
     mapid_mode: str='demo'
+    outdoor_poi_mode: str='demo'
+    outdoor_poi_radius_m: int=350
     weather_mode: str='demo'
     forum_mode: str='demo'
     openai_api_key: str=''
@@ -45,12 +47,12 @@ class Settings:
             key=name.upper()
             if key in os.environ: kwargs[name]=os.environ[key]
         if 'data_dir' in kwargs: kwargs['data_dir']=Path(kwargs['data_dir'])
-        for name in ('crowd_user_count','crowd_seed'):
+        for name in ('crowd_user_count','crowd_seed','outdoor_poi_radius_m'):
             if name in kwargs:
                 try: kwargs[name]=int(kwargs[name])
                 except ValueError as exc: raise RouteError('config',f'{name} harus integer.',503) from exc
         result=cls(**kwargs)
-        for name,allowed in [('agent_mode',('demo','openai')),('mapid_mode',('demo','live')),('weather_mode',('demo','google')),('forum_mode',('demo','openai','ollama')),('auth_mode',('demo','token','supabase')),('station_data_mode',('demo','supabase'))]:
+        for name,allowed in [('agent_mode',('demo','openai')),('mapid_mode',('demo','live','osrm')),('weather_mode',('demo','google')),('forum_mode',('demo','openai','ollama')),('auth_mode',('demo','token','supabase')),('station_data_mode',('demo','supabase')),('outdoor_poi_mode',('demo','osm'))]:
             if getattr(result,name) not in allowed: raise RouteError('config',f'{name} tidak valid.',503)
         if not 9<=result.crowd_user_count<=1000: raise RouteError('config','crowd_user_count harus 9–1000.',503)
         if result.app_env=='production' and (result.auth_mode=='demo' or not result.officer_token):

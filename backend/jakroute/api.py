@@ -98,7 +98,8 @@ def create_app(settings=None,service=None):
                 'weather_mode':settings.weather_mode,'forum_mode':settings.forum_mode,
                 'station_data_mode':settings.station_data_mode,
                 'crowd_user_count':service.crowd['user_count'],
-                'simulated_station':service.site['simulated']}
+                'simulated_station':service.site['simulated'],
+                'outdoor_poi_mode':settings.outdoor_poi_mode,'outdoor_poi_count':service.outdoor_meta.get('count',0)}
 
     @app.get('/catalog')
     def catalog(identity=Depends(authenticate)): return service.catalog()
