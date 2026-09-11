@@ -3,6 +3,8 @@ import 'api_client.dart';
 import 'models.dart';
 import 'route_diagram.dart';
 import 'mapid_route_map.dart';
+import 'ui/app_theme.dart';
+import 'ui/route_detail_screen.dart';
 
 class JakRouteScreen extends StatefulWidget {
   final JakRouteApi api;
@@ -11,6 +13,8 @@ class JakRouteScreen extends StatefulWidget {
   @override
   State<JakRouteScreen> createState() => _JakRouteScreenState();
 }
+
+const _routeAccents = [AppColors.secondary, AppColors.success, AppColors.tertiaryFixedDim];
 
 class _JakRouteScreenState extends State<JakRouteScreen> {
   final _message = TextEditingController(text: 'Saya mau ke peron.');
@@ -98,6 +102,11 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
   @override
   void dispose() { _message.dispose(); _walkLimit.dispose(); super.dispose(); }
 
+  Widget _card({required Widget child}) => Card(
+        margin: const EdgeInsets.only(bottom: Space.md),
+        child: Padding(padding: const EdgeInsets.all(Space.md), child: child),
+      );
+
   Widget _placeSelector(String label, String value, ValueChanged<String> changed, {bool automatic = false}) {
     final places = (_catalog!['places'] as List).cast<Map>();
     return DropdownButtonFormField<String>(
@@ -125,25 +134,77 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
     if (crowd == null) return const SizedBox.shrink();
     final sourceLabel = crowd.source['file']?.toString() ??
         ((crowd.source['tables'] as List?)?.join(' + ') ?? 'station_nodes');
-    return Card(
-      child: ExpansionTile(
-        leading: const Icon(Icons.groups_2_outlined),
-        title: Text('Keramaian simulasi · ${crowd.userCount} titik'),
-        subtitle: Text('Total bobot ${crowd.totalWeight.toStringAsFixed(2)} · $sourceLabel'),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Setiap titik memiliki bobot sendiri. Nilai area dihitung sebagai total bobot dibagi luas area asli—tanpa label low/medium/high.'),
-          const SizedBox(height: 12),
-          for (final area in crowd.areas) Padding(
-            padding: const EdgeInsets.only(bottom: 7),
-            child: Row(children: [
-              Expanded(child: Text('${area['label']} · ${area['user_count']} titik')),
-              Text('${(area['weighted_users'] as num).toStringAsFixed(2)} / ${(area['area_m2'] as num).toStringAsFixed(1)} m²'),
+    return ExpansionTile(
+      tilePadding: EdgeInsets.zero,
+      leading: const Icon(Icons.groups_2_outlined),
+      title: Text('Keramaian simulasi · ${crowd.userCount} titik'),
+      subtitle: Text('Total bobot ${crowd.totalWeight.toStringAsFixed(2)} · $sourceLabel'),
+      childrenPadding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+      expandedCrossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Setiap titik memiliki bobot sendiri. Nilai area dihitung sebagai total bobot dibagi luas area asli—tanpa label low/medium/high.'),
+        const SizedBox(height: 12),
+        for (final area in crowd.areas) Padding(
+          padding: const EdgeInsets.only(bottom: 7),
+          child: Row(children: [
+            Expanded(child: Text('${area['label']} · ${area['user_count']} titik')),
+            Text('${(area['weighted_users'] as num).toStringAsFixed(2)} / ${(area['area_m2'] as num).toStringAsFixed(1)} m²'),
+          ]),
+        ),
+        Text('Snapshot: ${crowd.observedAt}', style: Theme.of(context).textTheme.bodySmall),
+      ],
+    );
+  }
+
+  Widget _routeCard(RouteOption route, Color accent, bool selected) {
+    return GestureDetector(
+      onTap: route.available ? () => setState(() => _selected = route) : null,
+      child: Container(
+        width: 220,
+        margin: const EdgeInsets.only(right: Space.sm),
+        padding: const EdgeInsets.all(Space.md),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(Radii.lg),
+          border: Border.all(color: selected ? accent : AppColors.hairline, width: selected ? 2 : 1),
+          boxShadow: const [kSurfaceShadow],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
+              Container(width: 8, height: 8, decoration: BoxDecoration(
+                  color: route.available ? accent : AppColors.outline, shape: BoxShape.circle)),
+              const SizedBox(width: Space.xs),
+              Expanded(child: Text(route.label, style: Theme.of(context).textTheme.labelMedium,
+                  maxLines: 1, overflow: TextOverflow.ellipsis)),
             ]),
-          ),
-          Text('Snapshot: ${crowd.observedAt}', style: Theme.of(context).textTheme.bodySmall),
-        ],
+            const SizedBox(height: 4),
+            if (!route.available)
+              Text(route.explanation, style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: AppColors.onSurfaceVariant), maxLines: 2, overflow: TextOverflow.ellipsis)
+            else ...[
+              const SizedBox(height: 8),
+              Row(children: [
+                Icon(Icons.schedule, size: 16, color: AppColors.onSurfaceVariant),
+                const SizedBox(width: 4),
+                Text('${(route.durationSeconds / 60).toStringAsFixed(1)} mnt', style: Theme.of(context).textTheme.labelSmall),
+              ]),
+              const SizedBox(height: 4),
+              Row(children: [
+                Icon(Icons.straighten, size: 16, color: AppColors.onSurfaceVariant),
+                const SizedBox(width: 4),
+                Text('${route.walkingMeters.toStringAsFixed(0)} m', style: Theme.of(context).textTheme.labelSmall),
+              ]),
+              const SizedBox(height: 4),
+              Row(children: [
+                Icon(Icons.groups, size: 16, color: AppColors.onSurfaceVariant),
+                const SizedBox(width: 4),
+                Text('crowd ${route.crowdExposure.toStringAsFixed(2)}', style: Theme.of(context).textTheme.labelSmall),
+              ]),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -156,102 +217,136 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
     final sourceLabel = generator == 'openai_reason_selection'
         ? 'OpenAI'
         : generator == 'deterministic_demo' ? 'Simulasi logika' : 'Data backend';
-    return Card(
-      color: const Color(0xfff2f7ff),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            const Icon(Icons.auto_awesome, color: Color(0xff176bdf)),
-            const SizedBox(width: 8),
-            const Expanded(child: Text('AI Insight', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17))),
-            Chip(label: Text(sourceLabel)),
-          ]),
-          const SizedBox(height: 8),
-          Text(insight['headline']?.toString() ?? route.label, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 6),
-          Text(insight['summary']?.toString() ?? route.explanation),
-          if (personalization.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text('Disesuaikan untuk: ${personalization.join(', ')}.'),
-          ],
-          const Divider(height: 24),
-          Wrap(spacing: 8, runSpacing: 8, children: facts.map((fact) => Chip(
-            label: Text('${fact['label']}: ${fact['value']}'),
-          )).toList()),
+    final t = Theme.of(context).textTheme;
+    return Container(
+      padding: const EdgeInsets.all(Space.md),
+      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(Radii.lg)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+          const SizedBox(width: Space.xs),
+          Expanded(child: Text('Insight AI', style: t.labelMedium?.copyWith(color: Colors.white))),
+          Chip(label: Text(sourceLabel), visualDensity: VisualDensity.compact,
+              backgroundColor: AppColors.primaryContainer,
+              labelStyle: const TextStyle(color: Colors.white, fontSize: 11)),
         ]),
-      ),
+        const SizedBox(height: Space.xs),
+        Text(insight['headline']?.toString() ?? route.label,
+            style: t.labelMedium?.copyWith(color: Colors.white)),
+        const SizedBox(height: 6),
+        Text(insight['summary']?.toString() ?? route.explanation,
+            style: t.labelSmall?.copyWith(color: AppColors.onPrimaryContainer)),
+        if (personalization.isNotEmpty) ...[
+          const SizedBox(height: 6),
+          Text('Disesuaikan untuk: ${personalization.join(', ')}.',
+              style: t.labelSmall?.copyWith(color: AppColors.onPrimaryContainer)),
+        ],
+        if (facts.isNotEmpty) ...[
+          const SizedBox(height: Space.xs),
+          Wrap(spacing: 8, runSpacing: 8, children: facts.map((fact) => Chip(
+            label: Text('${fact['label']}: ${fact['value']}', style: const TextStyle(fontSize: 11)),
+            backgroundColor: AppColors.primaryContainer,
+            labelStyle: const TextStyle(color: Colors.white),
+            visualDensity: VisualDensity.compact,
+          )).toList()),
+        ],
+        const SizedBox(height: Space.xs),
+        Text('Perhitungan jalur tetap dilakukan fungsi GIS (A*), bukan AI.',
+            style: t.labelSmall?.copyWith(color: AppColors.onPrimaryContainer)),
+      ]),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final catalog = _catalog;
+    final t = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('JAKRoute'), actions: [IconButton(onPressed: _busy ? null : _load, icon: const Icon(Icons.refresh), tooltip: 'Muat ulang')]),
+      backgroundColor: AppColors.surface,
+      appBar: AppBar(backgroundColor: AppColors.surface, title: const Text('Rute'),
+          actions: [IconButton(onPressed: _busy ? null : _load, icon: const Icon(Icons.refresh), tooltip: 'Muat ulang')]),
       body: _loading ? const Center(child: CircularProgressIndicator()) : catalog == null
           ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
             Text(_error ?? 'Katalog belum tersedia.'), const SizedBox(height: 16), FilledButton(onPressed: _load, child: const Text('Coba lagi')),
           ])))
-          : SafeArea(child: ListView(padding: const EdgeInsets.all(20), children: [
-            Text(catalog['label'] as String, style: Theme.of(context).textTheme.titleMedium),
-            if ((catalog['station_data'] as Map?)?['source'] == 'supabase_rest')
-              Text('Data routing: Supabase · ${((catalog['station_data'] as Map)['counts'] as Map)['blocks']} block · ${((catalog['station_data'] as Map)['counts'] as Map)['nodes']} titik'),
-            if (catalog['simulated'] == true) const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('MODE DEMO · Denah dan kondisi adalah simulasi.', style: TextStyle(color: Color(0xff9a601b)))),
-            _crowdCard(context),
-            const SizedBox(height: 12),
-            _placeSelector('Lokasi awal', _origin, (v) => setState(() => _origin = v)),
-            const SizedBox(height: 12),
-            _placeSelector('Tujuan', _destination, (v) => setState(() => _destination = v), automatic: true),
-            const SizedBox(height: 12),
-            TextField(controller: _message, enabled: !_busy, maxLines: 2, maxLength: 2000,
-              decoration: const InputDecoration(labelText: 'Kebutuhan perjalanan', hintText: 'Misalnya: ke peron, jangan lewat tangga', border: OutlineInputBorder())),
-            SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Hindari tangga'), value: _avoidStairs,
-                onChanged: _busy ? null : (v) => setState(() => _avoidStairs = v)),
-            SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Akses bebas anak tangga'),
-                subtitle: const Text('Termasuk menghindari eskalator'), value: _stepFree,
-                onChanged: _busy ? null : (v) => setState(() => _stepFree = v)),
-            ExpansionTile(tilePadding: EdgeInsets.zero, title: const Text('Prioritas dan fasilitas'), children: [
-              DropdownButtonFormField<String>(value: _access, decoration: const InputDecoration(labelText: 'Akses pilihan'),
-                items: const [DropdownMenuItem(value: 'any', child: Text('Otomatis')),
-                  DropdownMenuItem(value: 'elevator', child: Text('Lift')),
-                  DropdownMenuItem(value: 'escalator', child: Text('Eskalator')),
-                  DropdownMenuItem(value: 'stairs', child: Text('Tangga'))],
-                onChanged: _busy ? null : (v) => setState(() => _access = v ?? 'any')),
-              _priority('Cepat sampai', _timeWeight, (v) => setState(() { _timeWeight = v; _prioritiesChanged = true; })),
-              _priority('Sedikit berjalan', _walkWeight, (v) => setState(() { _walkWeight = v; _prioritiesChanged = true; })),
-              _priority('Hindari kepadatan', _crowdWeight, (v) => setState(() { _crowdWeight = v; _prioritiesChanged = true; })),
-              TextField(controller: _walkLimit, keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'Batas berjalan (meter)', hintText: 'Kosongkan jika tidak dibatasi')),
-              Wrap(spacing: 8, children: (catalog['places'] as List).cast<Map>()
-                .where((p) => ['toilet', 'mushola'].contains(p['kind']))
-                .map((p) => FilterChip(label: Text('Singgah ${p['label']}'), selected: _via.contains(p['id']),
-                    onSelected: _busy ? null : (yes) => setState(() { yes ? _via.add(p['id'] as String) : _via.remove(p['id']); }))).toList()),
-            ]),
-            const SizedBox(height: 12),
-            FilledButton.icon(onPressed: _busy ? null : _recommend,
-                icon: _busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.route),
-                label: Text(_busy ? 'Mencari rute…' : 'Bandingkan tiga rute')),
-            if (_error != null) Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(_error!, style: const TextStyle(color: Colors.red))),
+          : SafeArea(child: ListView(padding: const EdgeInsets.all(Space.gutter), children: [
+            _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(catalog['label'] as String, style: t.headlineSmall),
+              if ((catalog['station_data'] as Map?)?['source'] == 'supabase_rest')
+                Padding(padding: const EdgeInsets.only(top: 4), child: Text(
+                    'Data routing: Supabase · ${((catalog['station_data'] as Map)['counts'] as Map)['blocks']} block · ${((catalog['station_data'] as Map)['counts'] as Map)['nodes']} titik',
+                    style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant))),
+              if (catalog['simulated'] == true) Padding(padding: const EdgeInsets.only(top: 8),
+                  child: Text('MODE DEMO · Denah dan kondisi adalah simulasi.', style: t.labelSmall?.copyWith(color: AppColors.warning))),
+              const SizedBox(height: 4),
+              _crowdCard(context),
+            ])),
+            _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Rencana perjalanan', style: t.labelMedium),
+              const SizedBox(height: Space.sm),
+              _placeSelector('Lokasi awal', _origin, (v) => setState(() => _origin = v)),
+              const SizedBox(height: Space.sm),
+              _placeSelector('Tujuan', _destination, (v) => setState(() => _destination = v), automatic: true),
+              const SizedBox(height: Space.sm),
+              TextField(controller: _message, enabled: !_busy, maxLines: 2, maxLength: 2000,
+                decoration: const InputDecoration(labelText: 'Kebutuhan perjalanan', hintText: 'Misalnya: ke peron, jangan lewat tangga', border: OutlineInputBorder())),
+              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Hindari tangga'), value: _avoidStairs,
+                  onChanged: _busy ? null : (v) => setState(() => _avoidStairs = v)),
+              SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Akses bebas anak tangga'),
+                  subtitle: const Text('Termasuk menghindari eskalator'), value: _stepFree,
+                  onChanged: _busy ? null : (v) => setState(() => _stepFree = v)),
+              ExpansionTile(tilePadding: EdgeInsets.zero, title: const Text('Prioritas dan fasilitas'), children: [
+                DropdownButtonFormField<String>(value: _access, decoration: const InputDecoration(labelText: 'Akses pilihan'),
+                  items: const [DropdownMenuItem(value: 'any', child: Text('Otomatis')),
+                    DropdownMenuItem(value: 'elevator', child: Text('Lift')),
+                    DropdownMenuItem(value: 'escalator', child: Text('Eskalator')),
+                    DropdownMenuItem(value: 'stairs', child: Text('Tangga'))],
+                  onChanged: _busy ? null : (v) => setState(() => _access = v ?? 'any')),
+                _priority('Cepat sampai', _timeWeight, (v) => setState(() { _timeWeight = v; _prioritiesChanged = true; })),
+                _priority('Sedikit berjalan', _walkWeight, (v) => setState(() { _walkWeight = v; _prioritiesChanged = true; })),
+                _priority('Hindari kepadatan', _crowdWeight, (v) => setState(() { _crowdWeight = v; _prioritiesChanged = true; })),
+                TextField(controller: _walkLimit, keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: 'Batas berjalan (meter)', hintText: 'Kosongkan jika tidak dibatasi')),
+                Wrap(spacing: 8, children: (catalog['places'] as List).cast<Map>()
+                  .where((p) => ['toilet', 'mushola'].contains(p['kind']))
+                  .map((p) => FilterChip(label: Text('Singgah ${p['label']}'), selected: _via.contains(p['id']),
+                      onSelected: _busy ? null : (yes) => setState(() { yes ? _via.add(p['id'] as String) : _via.remove(p['id']); }))).toList()),
+              ]),
+              const SizedBox(height: Space.sm),
+              FilledButton.icon(onPressed: _busy ? null : _recommend,
+                  icon: _busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.route),
+                  label: Text(_busy ? 'Mencari rute…' : 'Bandingkan tiga rute')),
+            ])),
+            if (_error != null) Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(_error!, style: const TextStyle(color: AppColors.error))),
             if (_recommendation?.status == 'clarification_required') Padding(padding: const EdgeInsets.all(12), child: Text(_recommendation!.question ?? 'Lengkapi tujuan perjalanan.')),
             if (_recommendation != null) ...[
-              const SizedBox(height: 16),
-              for (final route in _recommendation!.routes) Card(
-                color: _selected?.id == route.id ? const Color(0xffe9f1ff) : null,
-                child: ListTile(onTap: route.available ? () => setState(() => _selected = route) : null,
-                  leading: Icon(route.available ? Icons.alt_route : Icons.block),
-                  title: Text(route.label),
-                  subtitle: Text(route.available ? '${route.walkingMeters.toStringAsFixed(0)} m berjalan · ${(route.durationSeconds / 60).toStringAsFixed(1)} menit · crowd ${route.crowdExposure.toStringAsFixed(2)}' : route.explanation),
-                  trailing: _selected?.id == route.id ? const Icon(Icons.check_circle, color: Color(0xff176bdf)) : null)),
+              Text('Pilihan Rute', style: t.headlineSmall),
+              const SizedBox(height: Space.sm),
+              SizedBox(
+                height: 168,
+                child: ListView(scrollDirection: Axis.horizontal,
+                    children: [
+                      for (var i = 0; i < _recommendation!.routes.length; i++)
+                        _routeCard(_recommendation!.routes[i], _routeAccents[i % _routeAccents.length], _selected?.id == _recommendation!.routes[i].id),
+                    ]),
+              ),
               if (_selected != null) ...[
-                const SizedBox(height: 12), _insightCard(context, _selected!),
+                const SizedBox(height: Space.md), _insightCard(context, _selected!),
                 for (final warning in _selected!.warnings) Padding(padding: const EdgeInsets.only(top: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Icon(Icons.info_outline, size: 18, color: Color(0xff9a601b)), const SizedBox(width: 8), Expanded(child: Text(warning)),
+                  const Icon(Icons.info_outline, size: 18, color: AppColors.warning), const SizedBox(width: 8), Expanded(child: Text(warning)),
                 ])),
+                const SizedBox(height: Space.md),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => RouteDetailScreen(route: _selected!, catalog: catalog, mapStyleUrl: widget.mapStyleUrl))),
+                  child: const Text('Mulai Rute'),
+                ),
               ],
               if (_recommendation!.forumSummary.isNotEmpty) Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('Kondisi fasilitas: ${_recommendation!.forumSummary}')),
             ],
-            const SizedBox(height: 16),
+            const SizedBox(height: Space.md),
+            Text('Denah', style: t.labelMedium),
+            const SizedBox(height: Space.xs),
             Wrap(spacing: 8, children: (catalog['floors'] as List).cast<Map>().map((f) => ChoiceChip(
                 label: Text('Lantai ${f['id']}'), selected: _floor == f['id'], onSelected: (_) => setState(() => _floor = f['id'] as int))).toList()),
             const SizedBox(height: 8), RouteDiagram(catalog: catalog, route: _selected, crowd: _crowd, floor: _floor),
