@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../api_client.dart';
 import '../route_screen.dart';
 import 'app_theme.dart';
+import 'facility_list_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 
@@ -27,6 +28,7 @@ class _AppShellState extends State<AppShell> {
     final pages = [
       HomeScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
       JakRouteScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
+      FacilityListScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
       const ProfileScreen(),
     ];
     return Scaffold(
@@ -37,8 +39,9 @@ class _AppShellState extends State<AppShell> {
         backgroundColor: AppColors.surfaceContainerLowest,
         indicatorColor: AppColors.secondaryContainer.withValues(alpha: 0.18),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map), label: 'Peta'),
-          NavigationDestination(icon: Icon(Icons.tune_outlined), selectedIcon: Icon(Icons.tune), label: 'Rute Lanjutan'),
+          NavigationDestination(icon: Icon(Icons.explore_outlined), selectedIcon: Icon(Icons.explore), label: 'Peta'),
+          NavigationDestination(icon: Icon(Icons.directions_outlined), selectedIcon: Icon(Icons.directions), label: 'Rute'),
+          NavigationDestination(icon: Icon(Icons.home_work_outlined), selectedIcon: Icon(Icons.home_work), label: 'Fasilitas'),
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
         ],
       ),
