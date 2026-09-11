@@ -45,4 +45,7 @@ class Recommendation {
       (data['forum_summary'] as Json?)?['summary'] as String? ?? '';
   String get agentMode => data['agent_mode'] as String? ?? 'unknown';
   Json get aiInsight => Map<String, dynamic>.from(data['ai_insight'] as Map? ?? {});
+  /// Backend-resolved intent (origin/destination/prefs). Client-owned
+  /// conversation state: send it back on the next turn so the agent remembers.
+  Json get intent => Map<String, dynamic>.from(data['intent'] as Map? ?? {});
 }

@@ -80,7 +80,9 @@ class RouteService:
         context={'places':self.site['places'],'station_label':self.site['label']}
         intent=self.agent.parse_user_request(request,context)
         if intent.get('clarification') or not intent.get('origin_id') or not intent.get('destination_id'):
-            return dict(status='clarification_required',question=intent.get('clarification') or 'Pilih asal dan tujuan.',routes=[],intent=intent,agent_mode=self.settings.agent_mode)
+            fallback=('Kamu sekarang berada di mana di stasiun?' if not intent.get('origin_id') and intent.get('destination_id')
+                      else 'Mau menuju ke mana?' if intent.get('origin_id') and not intent.get('destination_id') else 'Pilih asal dan tujuan.')
+            return dict(status='clarification_required',question=intent.get('clarification') or fallback,routes=[],intent=intent,agent_mode=self.settings.agent_mode)
         prefs=Preferences.parse(intent['preferences'])
         plans=self._plans(intent,prefs)
         # One snapshot for the three alternatives; retry once if a forum update races calculation.

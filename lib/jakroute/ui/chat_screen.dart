@@ -40,6 +40,10 @@ class _ChatScreenState extends State<ChatScreen> {
   final _scroll = ScrollController();
   Json? _catalog;
   bool _busy = false;
+  // Last resolved intent from the backend. Threaded into every subsequent
+  // request so the agent keeps origin/destination/preferences across turns
+  // instead of re-asking the same clarification.
+  Json _lastIntent = {};
 
   @override
   void initState() {
@@ -78,8 +82,16 @@ class _ChatScreenState extends State<ChatScreen> {
     _controller.clear();
     _scrollToEnd();
     try {
-      final rec = await widget.api.recommend({'message': text});
-      setState(() => _entries.add(_Entry.result(rec, _catalog)));
+      final rec = await widget.api.recommend({
+        'message': text,
+        if (_lastIntent.isNotEmpty) 'conversation_context': {'intent': _lastIntent},
+        if (_lastIntent['preferences'] is Map)
+          'conversation_preferences': Map<String, dynamic>.from(_lastIntent['preferences'] as Map),
+      });
+      setState(() {
+        if (rec.intent.isNotEmpty) _lastIntent = rec.intent;
+        _entries.add(_Entry.result(rec, _catalog));
+      });
     } on JakRouteApiException catch (e) {
       setState(() => _entries.add(_Entry.text(_Role.system, e.message)));
     } finally {
