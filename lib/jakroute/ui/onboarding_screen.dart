@@ -53,7 +53,7 @@ class OnboardingScreen extends StatelessWidget {
               const Spacer(),
               ClipRRect(
                 borderRadius: BorderRadius.circular(Radii.lg),
-                child: Image.asset('assets/logo.png', width: 72, height: 72),
+                child: Image.asset('assets/logo.png', width: 120, height: 120),
               ),
               const SizedBox(height: Space.lg),
               Text('JAKRoute', style: t.displayLarge),
