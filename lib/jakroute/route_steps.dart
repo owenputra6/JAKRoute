@@ -18,6 +18,17 @@ List<String> routeSteps(RouteOption route, Json catalog) {
   Object? floor;
   for (final f in route.features) {
     final props = f['properties'] as Map? ?? {};
+    if (props['scope'] == 'outdoor') {
+      if (walk > 0) out.add('Jalan ${walk.round()} m di Lantai $floor');
+      walk = 0;
+      final coords = ((f['geometry'] as Map?)?['coordinates'] as List? ?? []).cast<List>();
+      double metres = 0;
+      for (var i = 1; i < coords.length; i++) {
+        metres += _haversine(coords[i - 1], coords[i]);
+      }
+      out.add('Keluar stasiun, jalan kaki ${metres.round()} m di luar (rute OpenStreetMap)');
+      continue;
+    }
     floor ??= props['floor'];
     final xy = props['local_xy'] as List?;
     if (props['access'] == 'walk') {
@@ -44,6 +55,15 @@ List<String> routeSteps(RouteOption route, Json catalog) {
   return out;
 }
 
+
+double _haversine(List a, List b) {
+  const r = 6371000.0;
+  final dLat = ((b[1] as num) - (a[1] as num)) * math.pi / 180;
+  final dLon = ((b[0] as num) - (a[0] as num)) * math.pi / 180;
+  final la1 = (a[1] as num) * math.pi / 180, la2 = (b[1] as num) * math.pi / 180;
+  final h = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(la1) * math.cos(la2) * math.sin(dLon / 2) * math.sin(dLon / 2);
+  return 2 * r * math.asin(math.sqrt(h));
+}
 
 /// Floors a route touches, in travel order, from its real geometry.
 List<int> routeFloors(RouteOption route) {

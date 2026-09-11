@@ -489,7 +489,7 @@ class _PlacePickerState extends State<_PlacePicker> {
                 title: const Text('Dari pesan saya (AI menafsirkan tujuan)'),
                 onTap: () => Navigator.of(ctx).pop(''),
               ),
-            for (final e in byFloor.entries.toList()..sort((a, b) => (b.key as int).compareTo(a.key as int))) ...[
+            for (final e in byFloor.entries.toList()..sort((a, b) => ((b.key as int?) ?? -1).compareTo((a.key as int?) ?? -1))) ...[
               SectionHeader(title: floorLabel(widget.catalog, e.key), badge: '${e.value.length}'),
               for (final p in e.value)
                 ListTile(
@@ -553,6 +553,8 @@ class _RouteOptionCard extends StatelessWidget {
           if (kinds.contains('escalator')) const Tag('Eskalator', icon: Icons.escalator),
           if (kinds.contains('stairs')) const Tag('Tangga', icon: Icons.stairs, color: Color(0xFFFFF4E0), fg: Color(0xFF9A5B00)),
           if (kinds.isNotEmpty && !kinds.contains('stairs')) const Tag('Bebas tangga', icon: Icons.accessible, color: Color(0xFFDCFCE7), fg: Color(0xFF166534)),
+          if ((route.data['sources'] as List? ?? []).contains('osrm_foot_openstreetmap'))
+            const Tag('Jalan kaki luar (OpenStreetMap)', icon: Icons.public, color: Color(0xFFFFF4E0), fg: Color(0xFF9A5B00)),
           Tag('crowd ${route.crowdExposure.toStringAsFixed(2)} (simulasi)', icon: Icons.groups_outlined),
         ]),
         for (final w in route.warnings)

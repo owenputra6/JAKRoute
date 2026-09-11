@@ -35,6 +35,7 @@ class FacilityDetailScreen extends StatelessWidget {
       'entrance_access' => 'Pintu masuk / keluar stasiun',
       'facility_entrance' => 'Pintu masuk fasilitas',
       'destination' => 'Titik tujuan',
+      'outdoor_poi' => 'Tempat di luar stasiun',
       _ => null,
     };
 
@@ -73,11 +74,16 @@ class FacilityDetailScreen extends StatelessWidget {
               const SizedBox(height: Space.xs),
               _InfoRow(label: 'Kategori', value: '$group • ${kindLabel(kind)}'),
               if (nodeType != null) _InfoRow(label: 'Jenis titik', value: nodeType),
-              if (place['floor'] != null) _InfoRow(label: 'Lantai', value: 'Lantai ${place['floor']}'),
+              _InfoRow(label: 'Lantai', value: floorLabel(const {}, place['floor'])),
               if (place['routing_adjustment_m'] != null)
                 _InfoRow(label: 'Penyesuaian ke area jalan', value: '${place['routing_adjustment_m']} m'),
+              if (place['osm_tag'] != null) _InfoRow(label: 'Tag OSM', value: place['osm_tag'].toString(), mono: true),
               if (place['id'] != null) _InfoRow(label: 'ID titik', value: place['id'].toString(), mono: true),
-              const _InfoRow(label: 'Sumber data', value: 'Supabase PostGIS — survei lapangan (station_nodes)', last: true),
+              _InfoRow(
+                label: 'Sumber data',
+                value: isOutdoor(place) ? 'OpenStreetMap (Overpass) — data komunitas, bukan survei' : 'Supabase PostGIS — survei lapangan (station_nodes)',
+                last: true,
+              ),
             ]),
           ),
           const SizedBox(height: Space.lg),
@@ -91,7 +97,7 @@ class FacilityDetailScreen extends StatelessWidget {
           const SizedBox(height: Space.xs),
           OutlinedButton.icon(
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => ChatScreen(api: api, mapStyleUrl: mapStyleUrl, initialMessage: 'Saya mau ke $label (Lantai ${place['floor']}).'),
+              builder: (_) => ChatScreen(api: api, mapStyleUrl: mapStyleUrl, initialMessage: isOutdoor(place) ? 'Saya mau keluar stasiun ke $label.' : 'Saya mau ke $label (Lantai ${place['floor']}).'),
             )),
             icon: const Icon(Icons.auto_awesome),
             label: const Text('Tanya AI rute ke sini'),

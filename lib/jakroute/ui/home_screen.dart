@@ -81,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final all = ((_catalog?['places'] as List?) ?? []).cast<Map>();
-    final onFloor = all.where((p) => p['floor'] == _activeFloor).toList();
+    final onFloor = all.where((p) => p['floor'] == _activeFloor || isOutdoor(p)).toList();
     final groups = ['Semua', ...{for (final p in all) groupForKind(p['kind']?.toString())}];
     final visible = onFloor.where((p) => _group == 'Semua' || groupForKind(p['kind']?.toString()) == _group).toList();
 
@@ -146,7 +146,8 @@ class _HomeScreenState extends State<HomeScreen> {
             title: 'Fasilitas ${floorShort(_activeFloor)}',
             subtitle: _catalog == null ? 'Memuat…' : '${_catalog!['label']} • ${floorLabel(_catalog!, _activeFloor)}',
             places: visible,
-            total: onFloor.length,
+            total: onFloor.where((p) => !isOutdoor(p)).length,
+            outdoor: onFloor.where(isOutdoor).length,
             error: _error,
             onTap: _openFacility,
             onRoute: (p) => _openPlanner(destinationId: p['id'] as String),
@@ -210,6 +211,7 @@ class _FacilitySheet extends StatelessWidget {
     required this.subtitle,
     required this.places,
     required this.total,
+    required this.outdoor,
     required this.error,
     required this.onTap,
     required this.onRoute,
@@ -219,6 +221,7 @@ class _FacilitySheet extends StatelessWidget {
   final String subtitle;
   final List<Map> places;
   final int total;
+  final int outdoor;
   final String? error;
   final ValueChanged<Map> onTap;
   final ValueChanged<Map> onRoute;
@@ -251,7 +254,13 @@ class _FacilitySheet extends StatelessWidget {
                     Text(subtitle, style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
                   ]),
                 ),
-                Tag('$total titik survei', icon: Icons.verified_outlined, color: AppColors.accentLight, fg: AppColors.secondary),
+                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Tag('$total titik survei', icon: Icons.verified_outlined, color: AppColors.accentLight, fg: AppColors.secondary),
+                  if (outdoor > 0) ...[
+                    const SizedBox(height: 4),
+                    Tag('$outdoor tempat luar (OSM)', icon: Icons.public, color: const Color(0xFFFFF4E0), fg: const Color(0xFF9A5B00)),
+                  ],
+                ]),
               ],
             ),
             const SizedBox(height: Space.sm),

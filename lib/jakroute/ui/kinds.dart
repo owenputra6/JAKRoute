@@ -20,6 +20,10 @@ IconData iconForKind(String? kind) => switch (kind) {
       'atm' => Icons.local_atm,
       'seating' => Icons.chair,
       'amenity' => Icons.category,
+      'food' => Icons.restaurant,
+      'bus_stop' => Icons.directions_bus,
+      'minimarket' => Icons.local_grocery_store,
+      'pharmacy' => Icons.local_pharmacy,
       _ => Icons.place,
     };
 
@@ -38,6 +42,10 @@ String kindLabel(String? kind) => switch (kind) {
       'atm' => 'ATM',
       'seating' => 'Tempat Duduk',
       'amenity' => 'Perlengkapan',
+      'food' => 'Kuliner',
+      'bus_stop' => 'Halte Bus',
+      'minimarket' => 'Minimarket',
+      'pharmacy' => 'Apotek',
       _ => kind ?? 'Lainnya',
     };
 
@@ -46,24 +54,29 @@ String groupForKind(String? kind) => switch (kind) {
       'toilet' || 'mushola' || 'vending_machine' || 'first_aid' || 'lactation_room' => 'Fasilitas Umum',
       'entrance' || 'ticket_gate' => 'Akses Masuk',
       'shop' || 'atm' => 'Komersial',
+      'food' || 'bus_stop' || 'minimarket' || 'pharmacy' => 'Sekitar Stasiun',
       _ => 'Lainnya',
     };
 
 /// Floor label from the catalog's `floors` list (backend-supplied), e.g.
 /// "Lantai 2 — Hall". Falls back to the bare number.
 String floorLabel(Map catalog, Object? floorId) {
+  if (floorId == null) return 'Luar stasiun (OpenStreetMap)';
   final floors = (catalog['floors'] as List? ?? []).cast<Map>();
   final match = floors.where((f) => f['id'] == floorId);
   return match.isEmpty ? 'Lantai $floorId' : (match.first['label']?.toString() ?? 'Lantai $floorId');
 }
 
 /// Short badge form: "LT 2".
-String floorShort(Object? floorId) => 'LT $floorId';
+String floorShort(Object? floorId) => floorId == null ? 'Luar' : 'LT $floorId';
+
+bool isOutdoor(Map place) => place['scope'] == 'outdoor';
 
 Color groupColor(String group) => switch (group) {
       'Aksesibilitas' => AppColors.secondary,
       'Fasilitas Umum' => AppColors.success,
       'Akses Masuk' => AppColors.tertiaryFixedDim,
       'Komersial' => AppColors.warning,
+      'Sekitar Stasiun' => const Color(0xFFC77716),
       _ => AppColors.outline,
     };

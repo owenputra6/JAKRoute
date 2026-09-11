@@ -127,10 +127,10 @@ class _MapLibreViewState extends State<_MapLibreView> {
 
   Map<String, dynamic> _places() => _fc([
         for (final p in (widget.catalog['places'] as List).cast<Map>())
-          if (p['scope'] == 'indoor' && p['floor'] == widget.floor)
+          if ((p['scope'] == 'indoor' && p['floor'] == widget.floor) || p['scope'] == 'outdoor')
             {
               'type': 'Feature',
-              'properties': {'label': p['kind'] == 'amenity' || p['kind'] == 'seating' ? '' : p['label'], 'kind': p['kind']},
+              'properties': {'label': p['kind'] == 'amenity' || p['kind'] == 'seating' ? '' : p['label'], 'kind': p['kind'], 'outdoor': p['scope'] == 'outdoor'},
               'geometry': {'type': 'Point', 'coordinates': p['source_lonlat'] ?? _lonlat(p['xy'] as List)},
             },
       ]);
@@ -207,7 +207,8 @@ class _MapLibreViewState extends State<_MapLibreView> {
     _addLayer({'id': 'route-line', 'type': 'line', 'source': 'route', 'layout': {'line-cap': 'round', 'line-join': 'round'},
         'paint': {'line-color': ['case', ['==', ['get', 'scope'], 'outdoor'], '#c77716', '#0058BC'], 'line-width': 4.5}});
     _addLayer({'id': 'floor-change-dots', 'type': 'circle', 'source': 'floor-changes', 'paint': {'circle-color': '#FFB347', 'circle-radius': 7, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2}});
-    _addLayer({'id': 'place-dots', 'type': 'circle', 'source': 'places', 'paint': {'circle-color': '#127465', 'circle-radius': 3.5, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 1}});
+    _addLayer({'id': 'place-dots', 'type': 'circle', 'source': 'places',
+        'paint': {'circle-color': ['case', ['get', 'outdoor'], '#c77716', '#127465'], 'circle-radius': ['case', ['get', 'outdoor'], 5, 3.5], 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 1}});
     _addLayer({'id': 'place-labels', 'type': 'symbol', 'source': 'places',
         'layout': {'text-field': ['get', 'label'], 'text-font': ['Roboto Regular'], 'text-size': 10, 'text-offset': [0, 0.9], 'text-anchor': 'top', 'text-max-width': 8},
         'paint': {'text-color': '#223344', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2}});

@@ -165,6 +165,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _InfoRow('Mode AI', _health?['agent_mode']?.toString() ?? (_healthError == null ? '…' : 'offline')),
               _InfoRow('Data stasiun', _health?['station_data_mode']?.toString() ?? '…'),
               _InfoRow('Cuaca', _health?['weather_mode']?.toString() ?? '…'),
+              _InfoRow('Rute luar', _health == null ? '…' : (_health!['mapid_mode'] == 'osrm' ? 'OSRM jalan kaki (OpenStreetMap)' : _health!['mapid_mode'].toString())),
+              _InfoRow('Tempat sekitar', _health == null ? '…' : '${_health!['outdoor_poi_count'] ?? 0} dari OpenStreetMap'),
               _InfoRow('Kepadatan', _health == null ? '…' : 'simulasi ${_health!['crowd_user_count']} pengguna'),
               Row(children: [
                 Expanded(child: Text('Status solver', style: t.bodyMedium?.copyWith(fontSize: 14, color: AppColors.slate))),
