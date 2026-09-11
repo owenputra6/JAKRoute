@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../api_client.dart';
 import '../models.dart';
-import '../route_diagram.dart';
+import '../station_map.dart';
 import '../route_screen.dart';
 import 'app_theme.dart';
 import 'chat_screen.dart';
@@ -90,7 +90,16 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           if (_catalog != null)
-            Positioned.fill(child: RouteDiagram(catalog: _catalog!, floor: _activeFloor))
+            Positioned.fill(
+              child: LayoutBuilder(
+                builder: (context, c) => StationMap(
+                  styleUrl: widget.mapStyleUrl,
+                  catalog: _catalog!,
+                  floor: _activeFloor,
+                  padding: EdgeInsets.fromLTRB(24, 120, 90, c.maxHeight * 0.34 + 16),
+                ),
+              ),
+            )
           else
             Container(color: AppColors.surfaceContainerLow, child: _error == null ? const Center(child: CircularProgressIndicator()) : null),
           Positioned(

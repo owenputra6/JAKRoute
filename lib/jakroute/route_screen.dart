@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'api_client.dart';
-import 'mapid_route_map.dart';
 import 'models.dart';
-import 'route_diagram.dart';
+import 'station_map.dart';
 import 'route_steps.dart';
 import 'ui/app_theme.dart';
 import 'ui/kinds.dart';
@@ -271,9 +270,7 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
             height: 300,
             child: Stack(children: [
               Positioned.fill(
-                child: widget.mapStyleUrl.isNotEmpty
-                    ? MapidRouteMap(styleUrl: widget.mapStyleUrl, catalog: catalog, floor: _floor, route: _selected, crowd: _crowd)
-                    : RouteDiagram(catalog: catalog, route: _selected, crowd: _crowd, floor: _floor),
+                child: StationMap(styleUrl: widget.mapStyleUrl, catalog: catalog, floor: _floor, route: _selected, crowd: _crowd),
               ),
               Positioned(
                 right: Space.xs, top: Space.xs,

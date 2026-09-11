@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../mapid_route_map.dart';
 import '../models.dart';
-import '../route_diagram.dart';
+import '../station_map.dart';
 import '../route_steps.dart';
 import 'app_theme.dart';
 import 'kinds.dart';
@@ -106,9 +105,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               borderRadius: BorderRadius.circular(Radii.lg),
               child: Stack(children: [
                 Positioned.fill(
-                  child: mapStyleUrl.isNotEmpty
-                      ? MapidRouteMap(styleUrl: mapStyleUrl, catalog: catalog, floor: floor, route: route)
-                      : RouteDiagram(catalog: catalog, route: route, floor: floor),
+                  child: StationMap(styleUrl: mapStyleUrl, catalog: catalog, floor: floor, route: route),
                 ),
                 if (floors.length > 1)
                   Positioned(
