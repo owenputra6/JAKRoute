@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_theme.dart';
+
 /// Real `kind` values from GET /catalog (set by the Supabase loader from the
 /// surveyed label). Only reorganizes what the backend returns — no invented
 /// categories.
@@ -57,3 +59,11 @@ String floorLabel(Map catalog, Object? floorId) {
 
 /// Short badge form: "LT 2".
 String floorShort(Object? floorId) => 'LT $floorId';
+
+Color groupColor(String group) => switch (group) {
+      'Aksesibilitas' => AppColors.secondary,
+      'Fasilitas Umum' => AppColors.success,
+      'Akses Masuk' => AppColors.tertiaryFixedDim,
+      'Komersial' => AppColors.warning,
+      _ => AppColors.outline,
+    };

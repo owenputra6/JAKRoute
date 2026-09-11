@@ -1,46 +1,57 @@
 import 'package:flutter/material.dart';
+
 import 'api_client.dart';
+import 'mapid_route_map.dart';
 import 'models.dart';
 import 'route_diagram.dart';
-import 'mapid_route_map.dart';
+import 'route_steps.dart';
 import 'ui/app_theme.dart';
+import 'ui/kinds.dart';
 import 'ui/route_detail_screen.dart';
+import 'ui/widgets.dart';
+import 'user_prefs.dart';
 
+/// Route planner (revised UI UX/pilihan_rute_stasiun_palmerah): origin /
+/// destination header with swap, preference pills, hero floor plan with the
+/// selected route, "Pilihan Rute Stasiun" cards, AI insight, and
+/// Mulai Navigasi / Langkah actions. Every number is a `/recommend-route`
+/// field; connector chips come from the real `connectors_used` list.
 class JakRouteScreen extends StatefulWidget {
   final JakRouteApi api;
   final String mapStyleUrl;
-  const JakRouteScreen({super.key, required this.api, this.mapStyleUrl = ''});
+  final String? initialDestinationId;
+  const JakRouteScreen({super.key, required this.api, this.mapStyleUrl = '', this.initialDestinationId});
   @override
   State<JakRouteScreen> createState() => _JakRouteScreenState();
 }
 
-const _routeAccents = [AppColors.secondary, AppColors.success, AppColors.tertiaryFixedDim];
-
 class _JakRouteScreenState extends State<JakRouteScreen> {
-  final _message = TextEditingController(text: 'Saya mau ke peron.');
+  final _message = TextEditingController();
   final _walkLimit = TextEditingController();
   Json? _catalog;
   CrowdSnapshot? _crowd;
   Recommendation? _recommendation;
   RouteOption? _selected;
   String? _error;
-  bool _loading = true, _busy = false, _avoidStairs = false, _stepFree = false, _formExpanded = true;
-  String _origin = 'entrance_west', _destination = 'platform_1', _access = 'any';
+  bool _loading = true, _busy = false, _advanced = false;
+  bool _avoidStairs = UserPrefs.instance.avoidStairs, _stepFree = UserPrefs.instance.stepFree;
+  String _origin = '', _destination = '', _access = UserPrefs.instance.stepFree ? 'elevator' : 'any', _focus = 'best_fit';
   int _floor = 0, _requestGeneration = 0;
   double _timeWeight = 1, _walkWeight = 1, _crowdWeight = 1;
   bool _prioritiesChanged = false;
   final Set<String> _via = {};
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _walkLimit.text = UserPrefs.instance.maxWalkM?.round().toString() ?? '';
+    _load();
+  }
 
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final loaded = await Future.wait([
-        widget.api.catalog(),
-        widget.api.crowdSnapshot(),
-      ]);
+      final loaded = await Future.wait([widget.api.catalog(), widget.api.crowdSnapshot()]);
       final catalog = loaded[0] as Json;
       final crowd = loaded[1] as CrowdSnapshot;
       if (!mounted) return;
@@ -49,13 +60,15 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
       setState(() {
         _catalog = catalog;
         _crowd = crowd;
+        // Defaults: the west entrance (hall) -> the accessible toilet door.
         if (!ids.contains(_origin)) {
-          final preferred = places.where((p) => p['id'] == 'palmerah_lt2_node_004').toList();
-          _origin = (preferred.isEmpty ? places.first : preferred.first)['id'] as String;
+          _origin = ids.contains('palmerah_lt2_node_009') ? 'palmerah_lt2_node_009' : places.first['id'] as String;
         }
-        if (!ids.contains(_destination)) {
-          final preferred = places.where((p) => p['id'] == 'palmerah_lt2_node_018').toList();
-          _destination = preferred.isEmpty ? '' : preferred.first['id'] as String;
+        final wanted = widget.initialDestinationId;
+        if (wanted != null && ids.contains(wanted)) {
+          _destination = wanted;
+        } else if (!ids.contains(_destination)) {
+          _destination = ids.contains('palmerah_lt2_node_015') ? 'palmerah_lt2_node_015' : '';
         }
         _floor = ((catalog['floors'] as List).last as Map)['id'] as int;
       });
@@ -78,6 +91,7 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
         'origin_id': _origin,
         'destination_id': _destination.isEmpty ? null : _destination,
         'via_indoor_ids': _via.toList(),
+        'focus_mode': _focus,
         'preferences': {
           'avoid_stairs': _avoidStairs,
           'step_free': _stepFree,
@@ -92,9 +106,9 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
       final available = result.routes.where((r) => r.available).toList();
       setState(() {
         _recommendation = result;
-        _selected = available.isEmpty ? null : available.firstWhere(
-            (r) => r.id == result.selectedId, orElse: () => available.first);
-        if (_selected != null) _formExpanded = false;
+        _selected = available.isEmpty ? null : available.firstWhere((r) => r.id == result.selectedId, orElse: () => available.first);
+        final floors = _selected == null ? const <int>[] : routeFloors(_selected!);
+        if (floors.isNotEmpty) _floor = floors.first;
       });
     } catch (e) { if (mounted) setState(() => _error = e.toString()); }
     finally { if (mounted && generation == _requestGeneration) setState(() => _busy = false); }
@@ -103,312 +117,457 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
   @override
   void dispose() { _message.dispose(); _walkLimit.dispose(); super.dispose(); }
 
-  String _placeLabel(Json catalog, String id) {
-    if (id.isEmpty) return 'pesan saya';
-    final places = (catalog['places'] as List).cast<Map>();
-    final match = places.where((p) => p['id'] == id);
-    return match.isEmpty ? id : match.first['label'] as String;
-  }
-
-  Widget _statBox(BuildContext context, IconData icon, String label, String value) {
-    final t = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.all(Space.sm),
-      decoration: BoxDecoration(color: AppColors.surfaceContainerLow, borderRadius: BorderRadius.circular(Radii.md)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Icon(icon, size: 14, color: AppColors.onSurfaceVariant),
-          const SizedBox(width: 4),
-          Expanded(child: Text(label.toUpperCase(), style: t.labelSmall?.copyWith(fontSize: 10, color: AppColors.onSurfaceVariant))),
-        ]),
-        const SizedBox(height: 4),
-        Text(value, style: t.labelMedium),
-      ]),
-    );
-  }
-
-  Widget _legendDot(BuildContext context, Color color, String label) {
-    return Row(mainAxisSize: MainAxisSize.min, children: [
-      Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-      const SizedBox(width: 6),
-      Expanded(child: Text(label, style: Theme.of(context).textTheme.labelSmall)),
-    ]);
-  }
-
-  Widget _card({required Widget child}) => Card(
-        margin: const EdgeInsets.only(bottom: Space.md),
-        child: Padding(padding: const EdgeInsets.all(Space.md), child: child),
-      );
-
-  Widget _placeSelector(String label, String value, ValueChanged<String> changed, {bool automatic = false}) {
+  Map? _place(String id) {
     final places = (_catalog!['places'] as List).cast<Map>();
-    return DropdownButtonFormField<String>(
-      value: value,
-      isExpanded: true,
-      decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
-      items: [
-        if (automatic) const DropdownMenuItem(value: '', child: Text('Dari pesan saya')),
-        ...places.map((p) => DropdownMenuItem(value: p['id'] as String,
-            child: Text('${p['label']} · LT ${p['floor']}', overflow: TextOverflow.ellipsis))),
-      ],
-      onChanged: _busy ? null : (v) { if (v != null) changed(v); },
-    );
+    final match = places.where((p) => p['id'] == id);
+    return match.isEmpty ? null : match.first;
   }
 
-  Widget _priority(String label, double value, ValueChanged<double> changed) => Row(children: [
-    SizedBox(width: 115, child: Text(label)),
-    Expanded(child: Slider(value: value, min: 0, max: 5, divisions: 10,
-        label: value.toStringAsFixed(1), onChanged: _busy ? null : changed)),
-    SizedBox(width: 30, child: Text(value.toStringAsFixed(1))),
-  ]);
-
-  Widget _routeCard(RouteOption route, Color accent, bool selected) {
-    return GestureDetector(
-      onTap: route.available ? () => setState(() => _selected = route) : null,
-      child: Container(
-        width: 220,
-        margin: const EdgeInsets.only(right: Space.sm),
-        padding: const EdgeInsets.all(Space.md),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(Radii.lg),
-          border: Border.all(color: selected ? accent : AppColors.hairline, width: selected ? 2 : 1),
-          boxShadow: const [kSurfaceShadow],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(children: [
-              Container(width: 8, height: 8, decoration: BoxDecoration(
-                  color: route.available ? accent : AppColors.outline, shape: BoxShape.circle)),
-              const SizedBox(width: Space.xs),
-              Expanded(child: Text(route.label, style: Theme.of(context).textTheme.labelMedium,
-                  maxLines: 1, overflow: TextOverflow.ellipsis)),
-            ]),
-            const SizedBox(height: 4),
-            if (!route.available)
-              Text(route.explanation, style: Theme.of(context).textTheme.labelSmall
-                  ?.copyWith(color: AppColors.onSurfaceVariant), maxLines: 2, overflow: TextOverflow.ellipsis)
-            else ...[
-              const SizedBox(height: 8),
-              Row(children: [
-                Icon(Icons.schedule, size: 16, color: AppColors.onSurfaceVariant),
-                const SizedBox(width: 4),
-                Text('${(route.durationSeconds / 60).toStringAsFixed(1)} mnt', style: Theme.of(context).textTheme.labelSmall),
-              ]),
-              const SizedBox(height: 4),
-              Row(children: [
-                Icon(Icons.straighten, size: 16, color: AppColors.onSurfaceVariant),
-                const SizedBox(width: 4),
-                Text('${route.walkingMeters.toStringAsFixed(0)} m', style: Theme.of(context).textTheme.labelSmall),
-              ]),
-              const SizedBox(height: 4),
-              Row(children: [
-                Icon(Icons.groups, size: 16, color: AppColors.onSurfaceVariant),
-                const SizedBox(width: 4),
-                Text('crowd ${route.crowdExposure.toStringAsFixed(2)}', style: Theme.of(context).textTheme.labelSmall),
-              ]),
-            ],
-          ],
-        ),
-      ),
+  Future<void> _pickPlace({required bool origin}) async {
+    final places = (_catalog!['places'] as List).cast<Map>();
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.surfaceContainerLowest,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.xl))),
+      builder: (ctx) => _PlacePicker(places: places, catalog: _catalog!, allowAuto: !origin),
     );
+    if (picked == null) return;
+    setState(() { if (origin) { _origin = picked; } else { _destination = picked; } });
   }
 
-  Widget _insightCard(BuildContext context, RouteOption route) {
-    final insight = route.insight;
-    final facts = (insight['facts'] as List? ?? []).cast<Map>();
-    final personalization = (insight['personalization'] as List? ?? []).cast<String>();
-    final generator = insight['generator']?.toString() ?? 'backend_evidence';
-    final sourceLabel = generator == 'openai_reason_selection'
-        ? 'OpenAI'
-        : generator == 'deterministic_demo' ? 'Simulasi logika' : 'Data backend';
-    final t = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.all(Space.md),
-      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(Radii.lg)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
-          const SizedBox(width: Space.xs),
-          Expanded(child: Text('Insight AI', style: t.labelMedium?.copyWith(color: Colors.white))),
-          Chip(label: Text(sourceLabel), visualDensity: VisualDensity.compact,
-              backgroundColor: AppColors.primaryContainer,
-              labelStyle: const TextStyle(color: Colors.white, fontSize: 11)),
+  void _openDetail() {
+    if (_selected == null) return;
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => RouteDetailScreen(route: _selected!, catalog: _catalog!, mapStyleUrl: widget.mapStyleUrl),
+    ));
+  }
+
+  void _showSteps() {
+    if (_selected == null) return;
+    final steps = routeSteps(_selected!, _catalog!);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceContainerLowest,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.xl))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(Space.gutter, 0, Space.gutter, Space.lg),
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const SheetHandle(),
+          Text('Langkah perjalanan', style: Theme.of(ctx).textTheme.headlineSmall),
+          const SizedBox(height: Space.sm),
+          for (final (i, s) in steps.indexed)
+            Padding(
+              padding: const EdgeInsets.only(bottom: Space.xs),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                CircleAvatar(radius: 12, backgroundColor: AppColors.secondary, child: Text('${i + 1}', style: const TextStyle(color: Colors.white, fontSize: 11))),
+                const SizedBox(width: Space.sm),
+                Expanded(child: Text(s)),
+              ]),
+            ),
         ]),
-        const SizedBox(height: Space.xs),
-        Text(insight['headline']?.toString() ?? route.label,
-            style: t.labelMedium?.copyWith(color: Colors.white)),
-        const SizedBox(height: 6),
-        Text(insight['summary']?.toString() ?? route.explanation,
-            style: t.labelSmall?.copyWith(color: AppColors.onPrimaryContainer)),
-        if (personalization.isNotEmpty) ...[
-          const SizedBox(height: 6),
-          Text('Disesuaikan untuk: ${personalization.join(', ')}.',
-              style: t.labelSmall?.copyWith(color: AppColors.onPrimaryContainer)),
-        ],
-        if (facts.isNotEmpty) ...[
-          const SizedBox(height: Space.xs),
-          Wrap(spacing: 8, runSpacing: 8, children: facts.map((fact) => Chip(
-            label: Text('${fact['label']}: ${fact['value']}', style: const TextStyle(fontSize: 11)),
-            backgroundColor: AppColors.primaryContainer,
-            labelStyle: const TextStyle(color: Colors.white),
-            visualDensity: VisualDensity.compact,
-          )).toList()),
-        ],
-        const SizedBox(height: Space.xs),
-        Text('Perhitungan jalur tetap dilakukan fungsi GIS (A*), bukan AI.',
-            style: t.labelSmall?.copyWith(color: AppColors.onPrimaryContainer)),
-      ]),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final catalog = _catalog;
     final t = Theme.of(context).textTheme;
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: AppBar(backgroundColor: AppColors.surface,
-          title: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('Rute Stasiun'),
-            if (_catalog != null) Text(_catalog!['label'] as String,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal, color: AppColors.onSurfaceVariant)),
-          ]),
-          actions: [IconButton(onPressed: _busy ? null : _load, icon: const Icon(Icons.refresh), tooltip: 'Muat ulang')]),
-      body: _loading ? const Center(child: CircularProgressIndicator()) : catalog == null
-          ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
-            Text(_error ?? 'Katalog belum tersedia.'), const SizedBox(height: 16), FilledButton(onPressed: _load, child: const Text('Coba lagi')),
-          ])))
-          : SafeArea(child: ListView(padding: const EdgeInsets.all(Space.gutter), children: [
-            _card(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(catalog['label'] as String, style: t.headlineSmall),
-              if ((catalog['station_data'] as Map?)?['source'] == 'supabase_rest')
-                Padding(padding: const EdgeInsets.only(top: 4), child: Text(
-                    'Data routing: Supabase · ${((catalog['station_data'] as Map)['counts'] as Map)['blocks']} block · ${((catalog['station_data'] as Map)['counts'] as Map)['nodes']} titik',
-                    style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant))),
-              if (catalog['simulated'] == true) Padding(padding: const EdgeInsets.only(top: 8),
-                  child: Text('MODE DEMO · Denah dan kondisi adalah simulasi.', style: t.labelSmall?.copyWith(color: AppColors.warning))),
-              if (_crowd != null) ...[
-                const SizedBox(height: Space.sm),
-                Row(children: [
-                  Expanded(child: _statBox(context, Icons.groups_2_outlined, 'Keramaian Simulasi', '${_crowd!.userCount} titik')),
-                  const SizedBox(width: Space.sm),
-                  Expanded(child: _statBox(context, Icons.insights, 'Indeks Beban', _crowd!.totalWeight.toStringAsFixed(1))),
+      appBar: const BrandBar(context: 'Perencana Rute', leading: BackButton()),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _catalog == null
+              ? Center(child: Padding(padding: const EdgeInsets.all(Space.lg), child: Text(_error ?? 'Gagal memuat.', style: const TextStyle(color: AppColors.danger))))
+              : _buildBody(context, t),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, TextTheme t) {
+    final catalog = _catalog!;
+    final floors = (catalog['floors'] as List).cast<Map>();
+    final routes = _recommendation?.routes.where((r) => r.available).toList() ?? const <RouteOption>[];
+    final insight = _recommendation?.aiInsight;
+    final insightText = insight?['summary']?.toString() ?? insight?['explanation']?.toString();
+    final origin = _place(_origin), dest = _destination.isEmpty ? null : _place(_destination);
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(Space.gutter, Space.sm, Space.gutter, Space.xl),
+      children: [
+        // Origin / destination header card.
+        SurfaceCard(
+          padding: const EdgeInsets.all(Space.sm),
+          child: Column(children: [
+            Row(children: [
+              Expanded(
+                child: Column(children: [
+                  _PlaceField(
+                    label: 'TITIK ASAL',
+                    icon: Icons.trip_origin,
+                    iconColor: AppColors.secondary,
+                    value: origin == null ? 'Pilih titik awal' : '${origin['label']} • ${floorShort(origin['floor'])}',
+                    onTap: _busy ? null : () => _pickPlace(origin: true),
+                  ),
+                  const SizedBox(height: Space.xs),
+                  _PlaceField(
+                    label: 'TUJUAN',
+                    icon: Icons.place,
+                    iconColor: AppColors.danger,
+                    value: dest == null ? 'Dari pesan saya (AI menafsirkan)' : '${dest['label']} • ${floorShort(dest['floor'])}',
+                    onTap: _busy ? null : () => _pickPlace(origin: false),
+                  ),
                 ]),
-              ],
-            ])),
-            // Hero: floor plan up top, mirrors jakroute_app's route-results map.
-            ClipRRect(
-              borderRadius: BorderRadius.circular(Radii.lg),
-              child: widget.mapStyleUrl.isNotEmpty
-                  ? MapidRouteMap(styleUrl: widget.mapStyleUrl, catalog: catalog, floor: _floor, route: _selected, crowd: _crowd)
-                  : RouteDiagram(catalog: catalog, route: _selected, crowd: _crowd, floor: _floor),
-            ),
-            Padding(padding: const EdgeInsets.only(top: Space.sm), child: Column(children: [
-              Row(children: [
-                Expanded(child: _legendDot(context, AppColors.secondary, 'Jalur rute')),
-                Expanded(child: _legendDot(context, AppColors.danger, 'Titik crowd berbobot')),
-              ]),
-              const SizedBox(height: Space.xs),
-              Row(children: [
-                Expanded(child: _legendDot(context, AppColors.tertiaryFixedDim, 'Perpindahan lantai')),
-                Expanded(child: _legendDot(context, AppColors.onSurface, 'Obstacle')),
-              ]),
-            ])),
-            const SizedBox(height: Space.sm),
-            Wrap(spacing: 8, children: (catalog['floors'] as List).cast<Map>().map((f) => ChoiceChip(
-                label: Text(f['label']?.toString() ?? 'Lantai ${f['id']}'), selected: _floor == f['id'], onSelected: (_) => setState(() => _floor = f['id'] as int))).toList()),
-            const SizedBox(height: Space.md),
-            _card(child: _formExpanded
-                ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(children: [
-                      Expanded(child: Text('Rencana perjalanan', style: t.labelMedium)),
-                      if (_selected != null && _selected!.available)
-                        Chip(visualDensity: VisualDensity.compact,
-                          label: Text('${_selected!.walkingMeters.toStringAsFixed(0)} m · ${(_selected!.durationSeconds / 60).toStringAsFixed(1)} mnt', style: const TextStyle(fontSize: 11))),
-                    ]),
-                    const SizedBox(height: Space.sm),
-                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Expanded(child: Column(children: [
-                        _placeSelector('Lokasi awal', _origin, (v) => setState(() => _origin = v)),
-                        const SizedBox(height: Space.sm),
-                        _placeSelector('Tujuan', _destination, (v) => setState(() => _destination = v), automatic: true),
-                      ])),
-                      IconButton(
-                        tooltip: 'Tukar lokasi awal & tujuan',
-                        icon: const Icon(Icons.swap_vert),
-                        onPressed: (_busy || _destination.isEmpty) ? null : () => setState(() {
-                          final tmp = _origin; _origin = _destination; _destination = tmp;
-                        }),
-                      ),
-                    ]),
-                    const SizedBox(height: Space.sm),
-                    TextField(controller: _message, enabled: !_busy, maxLines: 2, maxLength: 2000,
-                      decoration: const InputDecoration(labelText: 'Kebutuhan perjalanan', hintText: 'Misalnya: ke peron, jangan lewat tangga', border: OutlineInputBorder())),
-                    SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Hindari tangga'), value: _avoidStairs,
-                        onChanged: _busy ? null : (v) => setState(() => _avoidStairs = v)),
-                    SwitchListTile(contentPadding: EdgeInsets.zero, title: const Text('Akses bebas anak tangga'),
-                        subtitle: const Text('Termasuk menghindari eskalator'), value: _stepFree,
-                        onChanged: _busy ? null : (v) => setState(() => _stepFree = v)),
-                    ExpansionTile(tilePadding: EdgeInsets.zero, title: const Text('Prioritas dan fasilitas'), children: [
-                      DropdownButtonFormField<String>(value: _access, decoration: const InputDecoration(labelText: 'Akses pilihan'),
-                        items: const [DropdownMenuItem(value: 'any', child: Text('Otomatis')),
-                          DropdownMenuItem(value: 'elevator', child: Text('Lift')),
-                          DropdownMenuItem(value: 'escalator', child: Text('Eskalator')),
-                          DropdownMenuItem(value: 'stairs', child: Text('Tangga'))],
-                        onChanged: _busy ? null : (v) => setState(() => _access = v ?? 'any')),
-                      _priority('Cepat sampai', _timeWeight, (v) => setState(() { _timeWeight = v; _prioritiesChanged = true; })),
-                      _priority('Sedikit berjalan', _walkWeight, (v) => setState(() { _walkWeight = v; _prioritiesChanged = true; })),
-                      _priority('Hindari kepadatan', _crowdWeight, (v) => setState(() { _crowdWeight = v; _prioritiesChanged = true; })),
-                      TextField(controller: _walkLimit, keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: 'Batas berjalan (meter)', hintText: 'Kosongkan jika tidak dibatasi')),
-                      Wrap(spacing: 8, children: (catalog['places'] as List).cast<Map>()
-                        .where((p) => ['toilet', 'mushola'].contains(p['kind']))
-                        .map((p) => FilterChip(label: Text('Singgah ${p['label']}'), selected: _via.contains(p['id']),
-                            onSelected: _busy ? null : (yes) => setState(() { yes ? _via.add(p['id'] as String) : _via.remove(p['id']); }))).toList()),
-                    ]),
-                    const SizedBox(height: Space.sm),
-                    FilledButton.icon(onPressed: _busy ? null : _recommend,
-                        icon: _busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.route),
-                        label: Text(_busy ? 'Mencari rute…' : 'Bandingkan tiga rute')),
-                  ])
-                : Row(children: [
-                    const Icon(Icons.route, color: AppColors.onSurfaceVariant),
-                    const SizedBox(width: Space.sm),
-                    Expanded(child: Text('${_placeLabel(catalog, _origin)} → ${_placeLabel(catalog, _destination)}', style: t.bodyMedium, overflow: TextOverflow.ellipsis)),
-                    TextButton(onPressed: () => setState(() => _formExpanded = true), child: const Text('Ubah')),
-                  ])),
-            if (_error != null) Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(_error!, style: const TextStyle(color: AppColors.error))),
-            if (_recommendation?.status == 'clarification_required') Padding(padding: const EdgeInsets.all(12), child: Text(_recommendation!.question ?? 'Lengkapi tujuan perjalanan.')),
-            if (_recommendation != null) ...[
-              const SizedBox(height: Space.md),
-              Text('Pilihan Rute', style: t.headlineSmall),
-              const SizedBox(height: Space.sm),
-              SizedBox(
-                height: 168,
-                child: ListView(scrollDirection: Axis.horizontal,
-                    children: [
-                      for (var i = 0; i < _recommendation!.routes.length; i++)
-                        _routeCard(_recommendation!.routes[i], _routeAccents[i % _routeAccents.length], _selected?.id == _recommendation!.routes[i].id),
-                    ]),
               ),
-              if (_selected != null) ...[
-                const SizedBox(height: Space.md), _insightCard(context, _selected!),
-                for (final warning in _selected!.warnings) Padding(padding: const EdgeInsets.only(top: 8), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Icon(Icons.info_outline, size: 18, color: AppColors.warning), const SizedBox(width: 8), Expanded(child: Text(warning)),
-                ])),
-                const SizedBox(height: Space.md),
-                FilledButton.icon(
-                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (_) => RouteDetailScreen(route: _selected!, catalog: catalog, mapStyleUrl: widget.mapStyleUrl))),
-                  icon: const Icon(Icons.navigation),
-                  label: const Text('Mulai Petunjuk Navigasi'),
-                ),
-              ],
-              if (_recommendation!.forumSummary.isNotEmpty) Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text('Kondisi fasilitas: ${_recommendation!.forumSummary}')),
+              const SizedBox(width: Space.xs),
+              RoundControl(
+                icon: Icons.swap_vert,
+                tooltip: 'Tukar asal & tujuan',
+                onTap: _busy || _destination.isEmpty
+                    ? null
+                    : () => setState(() { final o = _origin; _origin = _destination; _destination = o; }),
+              ),
+            ]),
+            const SizedBox(height: Space.sm),
+            SizedBox(
+              height: 40,
+              child: ListView(scrollDirection: Axis.horizontal, children: [
+                Pill(label: 'Step-Free / Lift', icon: Icons.accessible, selected: _stepFree,
+                    onTap: () => setState(() { _stepFree = !_stepFree; if (_stepFree) { _avoidStairs = true; _access = 'elevator'; } else if (_access == 'elevator') { _access = 'any'; } })),
+                const SizedBox(width: Space.xs),
+                Pill(label: 'Hindari Tangga', icon: Icons.block, selected: _avoidStairs,
+                    onTap: () => setState(() { _avoidStairs = !_avoidStairs; if (!_avoidStairs) _stepFree = false; })),
+                const SizedBox(width: Space.xs),
+                Pill(label: 'Paling Cepat', icon: Icons.bolt, selected: _focus == 'fastest',
+                    onTap: () => setState(() => _focus = _focus == 'fastest' ? 'best_fit' : 'fastest')),
+                const SizedBox(width: Space.xs),
+                Pill(label: 'Minim Jalan Kaki', icon: Icons.directions_walk, selected: _focus == 'min_walk',
+                    onTap: () => setState(() => _focus = _focus == 'min_walk' ? 'best_fit' : 'min_walk')),
+                const SizedBox(width: Space.xs),
+                Pill(label: 'Lainnya', icon: Icons.tune, selected: _advanced, onTap: () => setState(() => _advanced = !_advanced)),
+              ]),
+            ),
+            if (_advanced) ...[
+              const SizedBox(height: Space.sm),
+              _advancedForm(t),
             ],
-          ])),
+            const SizedBox(height: Space.sm),
+            FilledButton.icon(
+              onPressed: _busy ? null : _recommend,
+              icon: _busy
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.alt_route),
+              label: Text(_busy ? 'Menghitung tiga alternatif…' : 'Bandingkan Tiga Rute'),
+            ),
+            if (_error != null)
+              Padding(padding: const EdgeInsets.only(top: Space.xs), child: Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 13))),
+          ]),
+        ),
+        const SizedBox(height: Space.md),
+        // Hero floor plan.
+        ClipRRect(
+          borderRadius: BorderRadius.circular(Radii.lg),
+          child: SizedBox(
+            height: 300,
+            child: Stack(children: [
+              Positioned.fill(
+                child: widget.mapStyleUrl.isNotEmpty
+                    ? MapidRouteMap(styleUrl: widget.mapStyleUrl, catalog: catalog, floor: _floor, route: _selected, crowd: _crowd)
+                    : RouteDiagram(catalog: catalog, route: _selected, crowd: _crowd, floor: _floor),
+              ),
+              Positioned(
+                right: Space.xs, top: Space.xs,
+                child: FloorSwitcher(floors: floors, active: _floor, onChanged: (f) => setState(() => _floor = f)),
+              ),
+              Positioned(
+                left: Space.xs, bottom: Space.xs,
+                child: Wrap(spacing: 6, children: [
+                  const Tag('Rute', icon: Icons.circle, color: Colors.white, fg: AppColors.secondary),
+                  const Tag('Pindah lantai', icon: Icons.circle, color: Colors.white, fg: Colors.orange),
+                  Tag('Kepadatan simulasi (${_crowd?.userCount ?? 0})', icon: Icons.circle, color: Colors.white, fg: AppColors.danger),
+                ]),
+              ),
+            ]),
+          ),
+        ),
+        const SizedBox(height: Space.md),
+        // Route options.
+        Row(children: [
+          const Icon(Icons.alt_route, color: AppColors.secondary),
+          const SizedBox(width: Space.xs),
+          Text('Pilihan Rute Stasiun', style: t.headlineMedium),
+          const Spacer(),
+          if (_recommendation != null)
+            Tag('${routes.length} rute valid', color: AppColors.accentLight, fg: AppColors.secondary),
+        ]),
+        const SizedBox(height: Space.xs),
+        if (_recommendation == null)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: Space.md),
+            child: Text('Pilih asal & tujuan lalu bandingkan. Tiga mode dihitung backend: paling sesuai, paling cepat, minim jalan kaki.',
+                style: t.bodyMedium?.copyWith(color: AppColors.slate, fontSize: 14)),
+          ),
+        if (_recommendation != null && routes.isEmpty)
+          const SourceNote('Tidak ada rute yang memenuhi seluruh batasan. Longgarkan preferensi.', icon: Icons.info_outline),
+        for (final r in routes)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Space.xs),
+            child: _RouteOptionCard(
+              route: r,
+              catalog: catalog,
+              recommended: r.id == _recommendation!.selectedId,
+              selected: r.id == _selected?.id,
+              onTap: () => setState(() { _selected = r; final f = routeFloors(r); if (f.isNotEmpty) _floor = f.first; }),
+            ),
+          ),
+        if (insightText != null && insightText.isNotEmpty) ...[
+          const SizedBox(height: Space.xs),
+          Container(
+            padding: const EdgeInsets.all(Space.md),
+            decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(Radii.lg)),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+              const SizedBox(width: Space.sm),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('Insight AI', style: t.labelMedium?.copyWith(color: Colors.white70)),
+                  const SizedBox(height: 4),
+                  Text(insightText, style: t.bodyMedium?.copyWith(color: Colors.white, fontSize: 14)),
+                ]),
+              ),
+            ]),
+          ),
+        ],
+        if (_selected != null) ...[
+          const SizedBox(height: Space.md),
+          Row(children: [
+            Expanded(
+              flex: 3,
+              child: FilledButton.icon(onPressed: _openDetail, icon: const Icon(Icons.navigation), label: const Text('Mulai Navigasi')),
+            ),
+            const SizedBox(width: Space.xs),
+            Expanded(
+              flex: 2,
+              child: FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: AppColors.surfaceContainer, foregroundColor: AppColors.primary),
+                onPressed: _showSteps,
+                icon: const Icon(Icons.list),
+                label: const Text('Langkah'),
+              ),
+            ),
+          ]),
+        ],
+      ],
+    );
+  }
+
+  Widget _advancedForm(TextTheme t) {
+    final places = (_catalog!['places'] as List).cast<Map>();
+    final viaCandidates = places.where((p) => p['kind'] == 'toilet' || p['kind'] == 'mushola').toList();
+    return Container(
+      padding: const EdgeInsets.all(Space.sm),
+      decoration: BoxDecoration(color: AppColors.surfaceContainerLow, borderRadius: BorderRadius.circular(Radii.md)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        TextField(
+          controller: _message,
+          decoration: const InputDecoration(labelText: 'Kebutuhan perjalanan (opsional, ditafsirkan AI)', fillColor: Colors.white),
+        ),
+        const SizedBox(height: Space.xs),
+        DropdownButtonFormField<String>(
+          initialValue: _access,
+          decoration: const InputDecoration(labelText: 'Akses antarlantai', fillColor: Colors.white),
+          items: const [
+            DropdownMenuItem(value: 'any', child: Text('Otomatis')),
+            DropdownMenuItem(value: 'elevator', child: Text('Lift')),
+            DropdownMenuItem(value: 'escalator', child: Text('Eskalator')),
+            DropdownMenuItem(value: 'stairs', child: Text('Tangga')),
+          ],
+          onChanged: _busy ? null : (v) => setState(() => _access = v ?? 'any'),
+        ),
+        const SizedBox(height: Space.xs),
+        TextField(
+          controller: _walkLimit,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(labelText: 'Batas jalan kaki (meter)', fillColor: Colors.white),
+        ),
+        const SizedBox(height: Space.xs),
+        Text('Singgah wajib', style: t.labelSmall?.copyWith(color: AppColors.slate)),
+        Wrap(spacing: 6, runSpacing: 6, children: [
+          for (final p in viaCandidates)
+            Pill(
+              label: '${p['label']} • ${floorShort(p['floor'])}',
+              selected: _via.contains(p['id']),
+              onTap: () => setState(() { _via.contains(p['id']) ? _via.remove(p['id']) : _via.add(p['id'] as String); }),
+            ),
+        ]),
+        const SizedBox(height: Space.xs),
+        Text('Bobot prioritas', style: t.labelSmall?.copyWith(color: AppColors.slate)),
+        _priority('Waktu', _timeWeight, (v) => setState(() { _timeWeight = v; _prioritiesChanged = true; })),
+        _priority('Jalan kaki', _walkWeight, (v) => setState(() { _walkWeight = v; _prioritiesChanged = true; })),
+        _priority('Keramaian', _crowdWeight, (v) => setState(() { _crowdWeight = v; _prioritiesChanged = true; })),
+      ]),
+    );
+  }
+
+  Widget _priority(String label, double value, ValueChanged<double> changed) => Row(children: [
+    SizedBox(width: 90, child: Text(label, style: const TextStyle(fontSize: 13))),
+    Expanded(child: Slider(value: value, min: 0, max: 5, divisions: 10, label: value.toStringAsFixed(1), onChanged: _busy ? null : changed)),
+    SizedBox(width: 30, child: Text(value.toStringAsFixed(1), style: const TextStyle(fontSize: 13))),
+  ]);
+}
+
+class _PlaceField extends StatelessWidget {
+  const _PlaceField({required this.label, required this.icon, required this.iconColor, required this.value, required this.onTap});
+  final String label, value;
+  final IconData icon;
+  final Color iconColor;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Material(
+      color: AppColors.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(Radii.md),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(Radii.md),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Space.sm, vertical: Space.xs),
+          child: Row(children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(width: Space.xs),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(label, style: t.labelSmall?.copyWith(letterSpacing: 0.6, color: AppColors.slate)),
+                Text(value, style: t.labelMedium?.copyWith(fontSize: 15), maxLines: 1, overflow: TextOverflow.ellipsis),
+              ]),
+            ),
+            const Icon(Icons.expand_more, color: AppColors.outline, size: 20),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+/// Searchable place picker: groups by floor, shows real kind and floor.
+class _PlacePicker extends StatefulWidget {
+  const _PlacePicker({required this.places, required this.catalog, required this.allowAuto});
+  final List<Map> places;
+  final Json catalog;
+  final bool allowAuto;
+  @override
+  State<_PlacePicker> createState() => _PlacePickerState();
+}
+
+class _PlacePickerState extends State<_PlacePicker> {
+  String _q = '';
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final visible = widget.places.where((p) => _q.isEmpty || p['label'].toString().toLowerCase().contains(_q.toLowerCase())).toList();
+    final byFloor = <Object?, List<Map>>{};
+    for (final p in visible) { byFloor.putIfAbsent(p['floor'], () => []).add(p); }
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.75,
+      maxChildSize: 0.95,
+      builder: (ctx, controller) => Column(children: [
+        const SheetHandle(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Space.gutter),
+          child: TextField(
+            autofocus: true,
+            onChanged: (v) => setState(() => _q = v),
+            decoration: const InputDecoration(hintText: 'Cari titik…', prefixIcon: Icon(Icons.search)),
+          ),
+        ),
+        const SizedBox(height: Space.xs),
+        Expanded(
+          child: ListView(controller: controller, padding: const EdgeInsets.symmetric(horizontal: Space.gutter), children: [
+            if (widget.allowAuto)
+              ListTile(
+                leading: const Icon(Icons.auto_awesome, color: AppColors.secondary),
+                title: const Text('Dari pesan saya (AI menafsirkan tujuan)'),
+                onTap: () => Navigator.of(ctx).pop(''),
+              ),
+            for (final e in byFloor.entries.toList()..sort((a, b) => (b.key as int).compareTo(a.key as int))) ...[
+              SectionHeader(title: floorLabel(widget.catalog, e.key), badge: '${e.value.length}'),
+              for (final p in e.value)
+                ListTile(
+                  dense: true,
+                  leading: Icon(iconForKind(p['kind']?.toString()), color: AppColors.secondary),
+                  title: Text(p['label'].toString(), style: t.labelMedium),
+                  subtitle: Text(kindLabel(p['kind']?.toString()), style: t.labelSmall?.copyWith(color: AppColors.slate)),
+                  onTap: () => Navigator.of(ctx).pop(p['id'] as String),
+                ),
+            ],
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+class _RouteOptionCard extends StatelessWidget {
+  const _RouteOptionCard({required this.route, required this.catalog, required this.recommended, required this.selected, required this.onTap});
+  final RouteOption route;
+  final Json catalog;
+  final bool recommended, selected;
+  final VoidCallback onTap;
+
+  static const _titles = {'best_fit': 'Rute Paling Sesuai', 'fastest': 'Rute Paling Cepat', 'min_walk': 'Rute Minim Jalan Kaki'};
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final connectors = {for (final c in (catalog['connectors'] as List? ?? []).cast<Map>()) c['id']: c};
+    final used = (route.data['connectors_used'] as List? ?? []).cast<String>().map((id) => connectors[id]).whereType<Map>().toList();
+    final kinds = {for (final c in used) c['kind'].toString()};
+    final minutes = route.durationSeconds / 60;
+    return SurfaceCard(
+      border: selected ? AppColors.secondary : null,
+      elevated: selected,
+      onTap: onTap,
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(
+            child: Wrap(spacing: Space.xs, runSpacing: 4, crossAxisAlignment: WrapCrossAlignment.center, children: [
+              Text(_titles[route.mode] ?? route.label, style: t.headlineSmall?.copyWith(fontSize: 17)),
+              if (recommended) const Tag('Rekomendasi', color: AppColors.secondary, fg: Colors.white),
+            ]),
+          ),
+          const SizedBox(width: Space.xs),
+          Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            Text('${minutes < 10 ? minutes.toStringAsFixed(1) : minutes.round()} mnt',
+                style: t.headlineMedium?.copyWith(color: selected ? AppColors.secondary : AppColors.onSurface, fontFeatures: const [FontFeature.tabularFigures()])),
+            Text('${route.walkingMeters.round()} m', style: t.labelSmall?.copyWith(color: AppColors.slate)),
+          ]),
+        ]),
+        if (route.explanation.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(route.explanation, style: t.bodyMedium?.copyWith(fontSize: 14, color: AppColors.slate)),
+        ],
+        const SizedBox(height: Space.xs),
+        Wrap(spacing: 6, runSpacing: 6, children: [
+          if (kinds.isEmpty) const Tag('Tanpa pindah lantai', icon: Icons.layers_clear_outlined),
+          if (kinds.contains('elevator')) const Tag('Lift', icon: Icons.elevator_outlined, color: AppColors.accentLight, fg: AppColors.secondary),
+          if (kinds.contains('escalator')) const Tag('Eskalator', icon: Icons.escalator),
+          if (kinds.contains('stairs')) const Tag('Tangga', icon: Icons.stairs, color: Color(0xFFFFF4E0), fg: Color(0xFF9A5B00)),
+          if (kinds.isNotEmpty && !kinds.contains('stairs')) const Tag('Bebas tangga', icon: Icons.accessible, color: Color(0xFFDCFCE7), fg: Color(0xFF166534)),
+          Tag('crowd ${route.crowdExposure.toStringAsFixed(2)} (simulasi)', icon: Icons.groups_outlined),
+        ]),
+        for (final w in route.warnings)
+          Padding(
+            padding: const EdgeInsets.only(top: Space.xs),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Icon(Icons.warning_amber, size: 14, color: AppColors.warning),
+              const SizedBox(width: 4),
+              Expanded(child: Text(w, style: const TextStyle(fontSize: 11, color: AppColors.warning))),
+            ]),
+          ),
+      ]),
     );
   }
 }

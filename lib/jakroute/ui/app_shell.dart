@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../api_client.dart';
-import '../route_screen.dart';
-import 'app_theme.dart';
+import 'chat_screen.dart';
 import 'facility_list_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
 
-/// Bottom-nav shell: AI chat (primary, chatbot rubric) + advanced form
-/// (existing route_screen.dart — sliders/switches for power users, kept as-is
-/// since it is already wired and tested against the real backend).
+/// Bottom-nav shell (revised UI UX mockups): Peta / Tanya AI / Fasilitas /
+/// Profil. The AI chat is a first-class tab — it is the app's core
+/// differentiator. The advanced route planner (route_screen.dart) is reached
+/// from the Peta search pill's directions button.
 class AppShell extends StatefulWidget {
   const AppShell({super.key, required this.api, required this.mapStyleUrl});
 
@@ -23,25 +23,26 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _index = 0;
 
+  void _goProfile() => setState(() => _index = 3);
+  void _goChat() => setState(() => _index = 1);
+
   @override
   Widget build(BuildContext context) {
     final pages = [
-      HomeScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
-      JakRouteScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
-      FacilityListScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
-      const ProfileScreen(),
+      HomeScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl, onAvatarTap: _goProfile, onAskAi: _goChat),
+      ChatScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl, embedded: true, onAvatarTap: _goProfile),
+      FacilityListScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl, onAvatarTap: _goProfile),
+      ProfileScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
     ];
     return Scaffold(
       body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
-        backgroundColor: AppColors.surfaceContainerLowest,
-        indicatorColor: AppColors.secondaryContainer.withValues(alpha: 0.18),
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.explore_outlined), selectedIcon: Icon(Icons.explore), label: 'Peta'),
-          NavigationDestination(icon: Icon(Icons.directions_outlined), selectedIcon: Icon(Icons.directions), label: 'Rute'),
-          NavigationDestination(icon: Icon(Icons.home_work_outlined), selectedIcon: Icon(Icons.home_work), label: 'Fasilitas'),
+          NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map), label: 'Peta'),
+          NavigationDestination(icon: Icon(Icons.auto_awesome_outlined), selectedIcon: Icon(Icons.auto_awesome), label: 'Tanya AI'),
+          NavigationDestination(icon: Icon(Icons.storefront_outlined), selectedIcon: Icon(Icons.storefront), label: 'Fasilitas'),
           NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
         ],
       ),

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../api_client.dart';
+import '../route_screen.dart';
 import 'app_theme.dart';
 import 'chat_screen.dart';
 import 'kinds.dart';
+import 'widgets.dart';
 
-/// Mirrors stitch_jakroute_ui_ux_design_system/facility_detail_view, bound to
-/// a real place row from GET /catalog (Supabase station_blocks/station_nodes).
-/// No fabricated status/notes — only fields the backend actually returns.
+/// One real place row from GET /catalog (Supabase station_nodes). Only fields
+/// the backend returns: label, kind, floor, node type, source id. Two actions:
+/// plan a route here (advanced planner, destination prefilled) or ask the AI.
 class FacilityDetailScreen extends StatelessWidget {
   const FacilityDetailScreen({
     super.key,
@@ -27,51 +29,72 @@ class FacilityDetailScreen extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     final label = place['label']?.toString() ?? 'Fasilitas';
     final kind = place['kind']?.toString() ?? '';
+    final group = groupForKind(kind);
+    final nodeType = switch (place['node_type']) {
+      'connector_access' => 'Akses antarlantai (konektor)',
+      'entrance_access' => 'Pintu masuk / keluar stasiun',
+      'facility_entrance' => 'Pintu masuk fasilitas',
+      'destination' => 'Titik tujuan',
+      _ => null,
+    };
 
     return Scaffold(
-      appBar: AppBar(backgroundColor: AppColors.surface, title: Text(kindLabel(kind))),
+      backgroundColor: AppColors.surface,
+      appBar: BrandBar(context: kindLabel(kind), leading: const BackButton()),
       body: ListView(
         padding: const EdgeInsets.all(Space.gutter),
         children: [
-          Row(
-            children: [
+          SurfaceCard(
+            child: Row(children: [
               Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceContainer,
-                  borderRadius: BorderRadius.circular(Radii.md),
-                ),
-                child: Icon(iconForKind(kind), color: AppColors.primary, size: 28),
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(color: groupColor(group).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(Radii.md)),
+                child: Icon(iconForKind(kind), color: groupColor(group), size: 32),
               ),
-              const SizedBox(width: Space.sm),
+              const SizedBox(width: Space.md),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label, style: t.headlineSmall),
-                    Text(stationLabel, style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
-                  ],
-                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(label, style: t.headlineMedium),
+                  Text(stationLabel, style: t.labelSmall?.copyWith(color: AppColors.slate)),
+                  const SizedBox(height: 6),
+                  Wrap(spacing: 6, runSpacing: 6, children: [
+                    Tag(kindLabel(kind), color: groupColor(group).withValues(alpha: 0.12), fg: groupColor(group)),
+                    if (place['floor'] != null) Tag(floorShort(place['floor']), icon: Icons.layers_outlined, color: AppColors.accentLight, fg: AppColors.secondary),
+                  ]),
+                ]),
               ),
-            ],
+            ]),
           ),
           const SizedBox(height: Space.md),
-          _InfoRow(label: 'Kategori', value: kindLabel(kind)),
-          if (place['floor'] != null) _InfoRow(label: 'Lantai', value: floorShort(place['floor'])),
-          _InfoRow(label: 'Sumber data', value: 'Supabase — station_blocks / station_nodes (survei lapangan)'),
-          if (place['id'] != null) _InfoRow(label: 'ID titik', value: place['id'].toString()),
+          SurfaceCard(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Data titik', style: t.headlineSmall),
+              const SizedBox(height: Space.xs),
+              _InfoRow(label: 'Kategori', value: '$group • ${kindLabel(kind)}'),
+              if (nodeType != null) _InfoRow(label: 'Jenis titik', value: nodeType),
+              if (place['floor'] != null) _InfoRow(label: 'Lantai', value: 'Lantai ${place['floor']}'),
+              if (place['routing_adjustment_m'] != null)
+                _InfoRow(label: 'Penyesuaian ke area jalan', value: '${place['routing_adjustment_m']} m'),
+              if (place['id'] != null) _InfoRow(label: 'ID titik', value: place['id'].toString(), mono: true),
+              const _InfoRow(label: 'Sumber data', value: 'Supabase PostGIS — survei lapangan (station_nodes)', last: true),
+            ]),
+          ),
           const SizedBox(height: Space.lg),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-              builder: (_) => ChatScreen(api: api, mapStyleUrl: mapStyleUrl, initialMessage: 'Saya mau ke $label.'),
+              builder: (_) => JakRouteScreen(api: api, mapStyleUrl: mapStyleUrl, initialDestinationId: place['id']?.toString()),
             )),
-            child: const Text('Rute ke Sini'),
+            icon: const Icon(Icons.navigation_outlined),
+            label: const Text('Rute ke Sini'),
           ),
           const SizedBox(height: Space.xs),
-          OutlinedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Lihat Fasilitas Lain'),
+          OutlinedButton.icon(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => ChatScreen(api: api, mapStyleUrl: mapStyleUrl, initialMessage: 'Saya mau ke $label (Lantai ${place['floor']}).'),
+            )),
+            icon: const Icon(Icons.auto_awesome),
+            label: const Text('Tanya AI rute ke sini'),
           ),
         ],
       ),
@@ -80,26 +103,28 @@ class FacilityDetailScreen extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
+  const _InfoRow({required this.label, required this.value, this.mono = false, this.last = false});
 
   final String label;
   final String value;
+  final bool mono, last;
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: Space.xs),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant)),
-          const SizedBox(height: 2),
-          Text(value, style: t.bodyMedium),
-          const SizedBox(height: Space.xs),
-          const Divider(height: 1, color: AppColors.hairline),
-        ],
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: Space.xs),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(child: Text(label, style: t.bodyMedium?.copyWith(fontSize: 14, color: AppColors.slate))),
+          Expanded(
+            flex: 2,
+            child: Text(value, textAlign: TextAlign.right,
+                style: t.labelMedium?.copyWith(fontSize: 13, fontFamily: mono ? 'monospace' : null)),
+          ),
+        ]),
       ),
-    );
+      if (!last) const Divider(),
+    ]);
   }
 }

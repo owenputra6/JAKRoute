@@ -35,6 +35,9 @@ class AppColors {
   static const success = Color(0xFF28A745);
   static const danger = Color(0xFFDC3545);
   static const hairline = Color(0xFFE2E8F0);
+  static const accentLight = Color(0xFFEBF3FF);
+  static const slate = Color(0xFF475569);
+  static const slateLight = Color(0xFF94A3B8);
 }
 
 /// 4px baseline grid.
@@ -121,12 +124,35 @@ ThemeData buildAppTheme() {
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.lg)),
     ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: AppColors.surfaceContainerLowest,
+      indicatorColor: AppColors.accentLight,
+      surfaceTintColor: Colors.transparent,
+      height: 68,
+      labelTextStyle: WidgetStateProperty.resolveWith((states) => text.labelSmall!.copyWith(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: states.contains(WidgetState.selected) ? AppColors.secondary : AppColors.onSurfaceVariant)),
+      iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+          color: states.contains(WidgetState.selected) ? AppColors.secondary : AppColors.onSurfaceVariant)),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: AppColors.surfaceContainerLow,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.md), borderSide: BorderSide.none),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(Radii.md), borderSide: BorderSide.none),
+      focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(Radii.md), borderSide: const BorderSide(color: AppColors.secondary, width: 1.5)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: Space.md, vertical: Space.sm),
+      hintStyle: text.bodyMedium?.copyWith(color: AppColors.outline),
+    ),
+    dividerTheme: const DividerThemeData(color: AppColors.hairline, space: 1, thickness: 1),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: AppColors.secondary,
         foregroundColor: Colors.white,
         minimumSize: const Size.fromHeight(52),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.std)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.md)),
         textStyle: text.labelMedium?.copyWith(fontSize: 16),
       ),
     ),
@@ -142,5 +168,7 @@ ThemeData buildAppTheme() {
   );
 }
 
-/// Soft, highly diffused shadow used by floating surfaces (DESIGN.md > Elevation).
-const kSurfaceShadow = BoxShadow(color: Color(0x14000000), blurRadius: 12, offset: Offset(0, 4));
+/// DESIGN.md > Elevation. Level 1 surfaces and Level 2/3 floating anchors.
+const kSurfaceShadow = BoxShadow(color: Color(0x14002045), blurRadius: 8, offset: Offset(0, 2));
+const kRaisedShadow = BoxShadow(color: Color(0x1F002045), blurRadius: 24, offset: Offset(0, 8));
+const kAccentShadow = BoxShadow(color: Color(0x400058BC), blurRadius: 32, offset: Offset(0, 12));

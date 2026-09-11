@@ -5,6 +5,7 @@ import 'jakroute/api_client.dart';
 import 'jakroute/ui/onboarding_screen.dart';
 import 'jakroute/ui/app_theme.dart';
 import 'jakroute/ui/mobile_frame.dart';
+import 'jakroute/user_prefs.dart';
 
 const _backendUrl = String.fromEnvironment(
   'BACKEND_URL',
@@ -16,6 +17,7 @@ const _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await UserPrefs.instance.load();
   if (_supabaseUrl.isNotEmpty && _supabaseAnonKey.isNotEmpty) {
     await Supabase.initialize(url: _supabaseUrl, anonKey: _supabaseAnonKey);
     if (Supabase.instance.client.auth.currentSession == null) {
