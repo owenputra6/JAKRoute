@@ -234,3 +234,105 @@ class NodeCorridorCrowdSimulator:
                 'rotation_degrees':0,
             },
         }
+
+
+class HotspotCrowdSimulator:
+    """Weighted dummy users at the places where a station actually queues:
+    the tap gates, escalator and stair landings, entrances, plus the surveyed
+    crowd corridor. Areas are circles around real station_nodes (merged when
+    they touch). Still a labelled simulation — no live sensor — but it makes
+    the crowd-aware modes (fastest / best_fit) diverge from min_walk where a
+    crowded landing has a less crowded alternative.
+    """
+    RADIUS_M={'ticket_gate':4.0,'escalator':3.5,'stairs':3.5,'entrance':3.0,'elevator':2.5}
+    # Relative crowd share per kind; individual areas get a seeded jitter so
+    # two escalators are not equally busy.
+    SHARE={'ticket_gate':3.0,'escalator':2.0,'stairs':1.2,'entrance':1.0,'elevator':0.6,'corridor':1.0}
+
+    def __init__(self,site,user_count=100,seed=20260908):
+        self.site=site
+        self.user_count=int(user_count)
+        self.seed=int(seed)
+
+    def _areas(self):
+        from shapely.geometry import Point,Polygon
+        from shapely.ops import unary_union
+        rng=random.Random(self.seed)
+        areas=[]
+        for floor in sorted({p['floor'] for p in self.site['places'] if p.get('scope')=='indoor'}):
+            groups={}
+            for p in self.site['places']:
+                if p.get('scope')!='indoor' or p['floor']!=floor or p['kind'] not in self.RADIUS_M: continue
+                groups.setdefault(p['kind'],[]).append(p)
+            for kind,places in groups.items():
+                merged=unary_union([Point(p['xy']).buffer(self.RADIUS_M[kind],resolution=8) for p in places])
+                polys=list(merged.geoms) if hasattr(merged,'geoms') else [merged]
+                for poly in polys:
+                    labels=[p['label'] for p in places if poly.covers(Point(p['xy']))]
+                    ring=[[round(x,4),round(y,4)] for x,y in poly.exterior.coords]
+                    areas.append({'id':f"hot_{floor}_{_slug('_'.join(labels)[:60])}",'label':' / '.join(labels),
+                                  'floor':int(floor),'kind':kind,'area_m2':round(poly.area,3),'polygon':[ring],
+                                  'share':self.SHARE[kind]*rng.uniform(0.4,1.6)})
+        for corridor in self.site.get('crowd_corridors',[]):
+            ring=NodeCorridorCrowdSimulator._ring(corridor)
+            areas.append({'id':corridor['id'],'label':corridor.get('label',corridor['id']),'floor':int(corridor['floor']),
+                          'kind':'corridor','area_m2':NodeCorridorCrowdSimulator._area(corridor),'polygon':[ring],
+                          'share':self.SHARE['corridor']})
+        # Areas must be disjoint (each user belongs to exactly one). Trim any
+        # overlap between kinds in favour of the earlier area.
+        from shapely.geometry import shape
+        kept=[]
+        for area in areas:
+            poly=Polygon(area['polygon'][0])
+            for other in kept:
+                if other['floor']!=area['floor']: continue
+                poly=poly.difference(Polygon(other['polygon'][0]))
+            if poly.is_empty or poly.area<1: continue
+            if poly.geom_type!='Polygon': poly=max(poly.geoms,key=lambda g:g.area)
+            area['polygon']=[[[round(x,4),round(y,4)] for x,y in poly.exterior.coords]]
+            area['area_m2']=round(poly.area,3)
+            kept.append(area)
+        return kept
+
+    def build_snapshot(self,observed_at=None):
+        from shapely.geometry import Point,Polygon
+        areas=self._areas()
+        if not areas: raise RouteError('crowd_corridor','Tidak ada area crowd yang dapat disimulasikan.',503)
+        total_share=sum(a['share'] for a in areas)
+        counts={a['id']:1 for a in areas}
+        remaining=self.user_count-len(areas)
+        if remaining<0: raise RouteError('crowd_count','Jumlah user crowd terlalu kecil untuk jumlah area.',503)
+        raw={a['id']:remaining*a['share']/total_share for a in areas}
+        for a in areas: counts[a['id']]+=math.floor(raw[a['id']])
+        left=self.user_count-sum(counts.values())
+        for a in sorted(areas,key=lambda a:(raw[a['id']]-math.floor(raw[a['id']]),a['id']),reverse=True)[:left]: counts[a['id']]+=1
+        rng=random.Random(self.seed+1)
+        users=[]
+        for area in areas:
+            poly=Polygon(area['polygon'][0]); minx,miny,maxx,maxy=poly.bounds
+            made=0
+            while made<counts[area['id']]:
+                xy=[rng.uniform(minx,maxx),rng.uniform(miny,maxy)]
+                if not poly.contains(Point(xy)): continue
+                users.append({'id':f'crowd_{len(users)+1:03d}','area_id':area['id'],'floor':area['floor'],
+                              'weight':round(rng.uniform(.75,1.75),3),
+                              'lonlat':[round(v,10) for v in local_to_lonlat(xy,self.site['anchor_lonlat'])],
+                              'xy':[round(v,5) for v in xy]})
+                made+=1
+        layer=calculate_area_crowd_weight(areas,users)
+        public_areas=[]
+        for area in areas:
+            stats=layer[area['id']]
+            public_areas.append({k:v for k,v in area.items() if k!='share'}|{
+                'geojson_geometry':{'type':'Polygon','coordinates':[[local_to_lonlat(p,self.site['anchor_lonlat']) for p in area['polygon'][0]]]},
+                'user_count':counts[area['id']],'weighted_users':round(stats['weighted_users'],4),'density':round(stats['density'],6)})
+        timestamp=observed_at or datetime.now(timezone.utc).isoformat().replace('+00:00','Z')
+        return {
+            'snapshot_id':f'hotspot-{self.seed}-{self.user_count}',
+            'simulated':True,'observed_at':timestamp,'user_count':len(users),
+            'total_weight':round(sum(u['weight'] for u in users),4),
+            'users':users,'areas':public_areas,
+            'source':{'kind':'station_node_hotspot_sampling','tables':['station_nodes'],'area_count':len(areas),
+                      'description':f'{len(users)} user dummy berbobot di sekitar gerbang tap, eskalator, tangga, lift, pintu masuk (radius 2.5–4 m dari station_nodes) dan koridor crowd survei. Simulasi, bukan sensor.'},
+            'routing_transform':{'purpose':'Tidak ada transformasi: crowd dan routing memakai koordinat station_nodes yang sama.','rotation_degrees':0},
+        }

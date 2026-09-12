@@ -2,7 +2,7 @@
 import copy
 from .providers import OsmPoiClient,load_json,MapidClient,WeatherClient,SupabaseStationClient,create_weather_warning
 from .geometry import local_to_lonlat, lonlat_to_local
-from .crowd_simulation import GeoJsonCrowdSimulator,NodeCorridorCrowdSimulator
+from .crowd_simulation import GeoJsonCrowdSimulator,HotspotCrowdSimulator
 from .station_source import build_station_site
 from .schemas import Preferences,MODES,LABELS
 from .indoor_routing import IndoorRouter
@@ -17,9 +17,7 @@ class RouteService:
         self.station_snapshot=self.station_data.get_station_data()
         if settings.station_data_mode=='supabase':
             self.site=build_station_site(self.station_snapshot)
-            self.crowd_simulator=NodeCorridorCrowdSimulator(
-                self.site['crowd_corridors'],self.site['anchor_lonlat'],
-                settings.crowd_user_count,settings.crowd_seed)
+            self.crowd_simulator=HotspotCrowdSimulator(self.site,settings.crowd_user_count,settings.crowd_seed)
         else:
             self.site=load_json(settings.data_dir/'station_demo.json')
             ground=next(f for f in self.site['floors'] if f['id']==0)

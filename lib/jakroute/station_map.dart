@@ -149,6 +149,12 @@ class _MapLibreViewState extends State<_MapLibreView> {
             {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'Point', 'coordinates': ((f['geometry'] as Map)['coordinates'] as List).first}},
       ]);
 
+  Map<String, dynamic> _crowdAreas() => _fc([
+        for (final a in widget.crowd?.areas ?? const <Json>[])
+          if (a['floor'] == widget.floor && a['geojson_geometry'] != null)
+            {'type': 'Feature', 'properties': {'density': (a['density'] as num?)?.toDouble() ?? 0, 'label': a['label']}, 'geometry': a['geojson_geometry']},
+      ]);
+
   Map<String, dynamic> _crowd() => _fc([
         for (final u in widget.crowd?.users ?? const <Json>[])
           if (u['floor'] == widget.floor && u['lonlat'] != null)
@@ -198,10 +204,13 @@ class _MapLibreViewState extends State<_MapLibreView> {
     _addSource('places', _places());
     _addSource('route', _routeLines());
     _addSource('floor-changes', _floorChanges());
+    _addSource('crowd-areas', _crowdAreas());
     _addSource('crowd', _crowd());
     _addLayer({'id': 'walkable-fill', 'type': 'fill', 'source': 'walkable', 'paint': {'fill-color': '#ffffff', 'fill-opacity': 0.88}});
     _addLayer({'id': 'walkable-line', 'type': 'line', 'source': 'walkable', 'paint': {'line-color': '#0058BC', 'line-width': 1.5, 'line-opacity': 0.6}});
     _addLayer({'id': 'obstacles-fill', 'type': 'fill', 'source': 'obstacles', 'paint': {'fill-color': '#324354', 'fill-opacity': 0.85}});
+    _addLayer({'id': 'crowd-area-fill', 'type': 'fill', 'source': 'crowd-areas',
+        'paint': {'fill-color': '#d04444', 'fill-opacity': ['interpolate', ['linear'], ['get', 'density'], 0, 0.08, 0.5, 0.35]}});
     _addLayer({'id': 'crowd-dots', 'type': 'circle', 'source': 'crowd', 'paint': {'circle-color': '#d04444', 'circle-opacity': 0.75, 'circle-radius': ['+', 2, ['*', 0.7, ['get', 'w']]]}});
     _addLayer({'id': 'route-casing', 'type': 'line', 'source': 'route', 'layout': {'line-cap': 'round', 'line-join': 'round'}, 'paint': {'line-color': '#ffffff', 'line-width': 8}});
     _addLayer({'id': 'route-line', 'type': 'line', 'source': 'route', 'layout': {'line-cap': 'round', 'line-join': 'round'},
@@ -226,6 +235,7 @@ class _MapLibreViewState extends State<_MapLibreView> {
     _setData('places', _places());
     _setData('route', _routeLines());
     _setData('floor-changes', _floorChanges());
+    _setData('crowd-areas', _crowdAreas());
     _setData('crowd', _crowd());
     // Camera: follow the route on this floor when one is selected, else the floor.
     final routeId = widget.route?.id;

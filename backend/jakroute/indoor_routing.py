@@ -119,7 +119,8 @@ class IndoorRouter:
         duration+=caution
         exposure=density*e["length_m"]
         access=0 if prefs.preferred_access in ("any",e["kind"]) or e["kind"]=="walk" else 1.5
-        cost=prefs.time_priority*duration/60+prefs.walking_priority*e["walking_m"]/100+prefs.crowd_priority*exposure/100+access
+        # Scale: 1 min of time ≈ 100 m of walking ≈ 10 person·m of crowd exposure.
+        cost=prefs.time_priority*duration/60+prefs.walking_priority*e["walking_m"]/100+prefs.crowd_priority*exposure/10+access
         return {"duration_s":duration,"crowd_exposure":exposure,"density":density,"cost":cost}
 
     def route(self,origin,destination,mode="best_fit",preferences=None,users=None,incidents=None):
