@@ -72,7 +72,12 @@ def _kind(row):
         ('eskalator', 'escalator'), ('lift', 'elevator'), ('tangga', 'stairs'),
         ('toilet', 'toilet'), ('musala', 'mushola'), ('mushola', 'mushola'),
         ('laktasi', 'lactation_room'), ('p3k', 'first_aid'),
-        ('vending', 'vending_machine'),
+        ('vending', 'vending_machine'), ('atm', 'atm'), ('tap in', 'ticket_gate'), ('pembatas', 'ticket_gate'),
+        ('entryexit', 'entrance'), ('kursi', 'seating'), ('tempat sampah', 'amenity'), ('billboard', 'amenity'),
+        ('booth', 'shop'), ('alfamart', 'shop'), ('indomaret', 'shop'), ('kopi', 'shop'), ('roti', 'shop'),
+        ('bakso', 'shop'), ('warung', 'shop'), ('susu', 'shop'), ('creme', 'shop'), ('rayne', 'shop'),
+        ('cuties', 'shop'), ('naruto', 'shop'), ('sprite', 'vending_machine'), ('teh pucuk', 'vending_machine'),
+        ('air minum', 'vending_machine'),
     ):
         if token in name:
             return kind
@@ -80,6 +85,18 @@ def _kind(row):
 
 
 FLOOR_LABELS = {1: 'Lantai 1 — Peron', 2: 'Lantai 2 — Hall'}
+
+
+def _block_meta(row, geom, floor_nodes):
+    """Kind of a block: from the node linked to it (survey), else its name."""
+    kinds = [_kind(node_row) for node_row, _, _ in floor_nodes if node_row.get('linked_block_id') == row.get('id')]
+    kinds = [k for k in kinds if k not in ('amenity', 'seating', 'access')]
+    kind = kinds[0] if kinds else _kind({'name': row.get('name'), 'metadata': {}})
+    if row.get('block_type') == 'rail_track': kind = 'rail_track'
+    elif row.get('block_type') == 'gate_barrier': kind = 'ticket_gate'
+    c = geom.centroid
+    return {'id': row.get('id'), 'name': row.get('name'), 'kind': kind, 'block_type': row.get('block_type'),
+            'centroid': [round(c.x, 4), round(c.y, 4)]}
 
 
 def _paid_boundary(gates, lift_blocks, entrances, extra_m):
@@ -329,6 +346,9 @@ def build_station_site(snapshot, grid_step_m=0.75, clearance_m=0.2,
             'walkable': [_rings(part) for part in walkable_parts],
             'obstacles': [_rings(part) for _, geom in floor_blocks
                           for part in (geom.geoms if isinstance(geom, MultiPolygon) else [geom])],
+            # Parallel to `obstacles`: what each block is, for icons/colours.
+            'obstacle_meta': [_block_meta(row, part, floor_nodes) for row, geom in floor_blocks
+                              for part in (geom.geoms if isinstance(geom, MultiPolygon) else [geom])],
         })
 
     if len({place['id'] for place in places}) != len(places):

@@ -31,6 +31,14 @@ class RouteService:
         if settings.outdoor_poi_mode=='osm':
             pois,self.outdoor_meta=OsmPoiClient(settings).fetch(self.site['anchor_lonlat'])
             for p in pois: p['xy']=[round(v,5) for v in lonlat_to_local(p['source_lonlat'],self.site['anchor_lonlat'])]
+            # OSM also tags the shops inside the station; those are already
+            # surveyed indoor places, so drop any POI inside the station footprint.
+            from shapely.geometry import Point,Polygon
+            from shapely.ops import unary_union
+            footprint=unary_union([Polygon(ring[0]) for f in self.site['floors'] for ring in f['walkable']]).buffer(8)
+            dropped=[p['label'] for p in pois if footprint.contains(Point(p['xy']))]
+            pois=[p for p in pois if not footprint.contains(Point(p['xy']))]
+            self.outdoor_meta={**self.outdoor_meta,'count':len(pois),'dropped_inside_station':dropped}
             self.site['places']=[p for p in self.site['places'] if p.get('scope')!='outdoor' or not p['id'].startswith('osm_')]+pois
         self.crowd=self.crowd_simulator.build_snapshot()
         self.site['crowd_areas']=[{key:area[key] for key in ('id','floor','area_m2','polygon')}
