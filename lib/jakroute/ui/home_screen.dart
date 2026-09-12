@@ -338,12 +338,7 @@ class _FacilitySheet extends StatelessWidget {
                   border: Colors.transparent,
                   onTap: () => onTap(p),
                   child: Row(children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(color: AppColors.accentLight, borderRadius: BorderRadius.circular(Radii.std)),
-                      child: Icon(iconForKind(p['kind']?.toString()), color: AppColors.secondary, size: 22),
-                    ),
+                    FacilityThumb(place: p, color: AppColors.secondary, size: 44),
                     const SizedBox(width: Space.sm),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

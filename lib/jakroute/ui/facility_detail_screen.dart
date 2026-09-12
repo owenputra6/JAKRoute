@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../api_client.dart';
+import '../facility_photos.dart';
 import '../route_screen.dart';
 import 'app_theme.dart';
 import 'chat_screen.dart';
@@ -39,12 +40,17 @@ class FacilityDetailScreen extends StatelessWidget {
       _ => null,
     };
 
+    final photos = facilityPhotos[place['id']?.toString()] ?? const <String>[];
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: BrandBar(context: kindLabel(kind), leading: const BackButton()),
       body: ListView(
         padding: const EdgeInsets.all(Space.gutter),
         children: [
+          if (photos.isNotEmpty) ...[
+            _PhotoStrip(photos: photos),
+            const SizedBox(height: Space.md),
+          ],
           SurfaceCard(
             child: Row(children: [
               Container(
@@ -131,6 +137,48 @@ class _InfoRow extends StatelessWidget {
         ]),
       ),
       if (!last) const Divider(),
+    ]);
+  }
+}
+
+/// Survey photos, swipeable; tap opens full-screen.
+class _PhotoStrip extends StatelessWidget {
+  const _PhotoStrip({required this.photos});
+  final List<String> photos;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SizedBox(
+        height: 220,
+        child: PageView.builder(
+          controller: PageController(viewportFraction: photos.length > 1 ? 0.9 : 1),
+          itemCount: photos.length,
+          itemBuilder: (_, i) => Padding(
+            padding: EdgeInsets.only(right: photos.length > 1 ? Space.xs : 0),
+            child: GestureDetector(
+              onTap: () => showDialog(
+                context: context,
+                builder: (_) => Dialog.fullscreen(
+                  backgroundColor: Colors.black,
+                  child: Stack(children: [
+                    Center(child: InteractiveViewer(child: Image.asset(photos[i]))),
+                    Positioned(top: 8, right: 8, child: IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => Navigator.of(context).pop())),
+                  ]),
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(Radii.lg),
+                child: Image.asset(photos[i], fit: BoxFit.cover, width: double.infinity),
+              ),
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text('Foto survei lapangan 30 Agu 2026${photos.length > 1 ? ' • geser untuk foto lain' : ''}',
+          style: t.labelSmall?.copyWith(color: AppColors.slate)),
     ]);
   }
 }

@@ -142,15 +142,7 @@ class _FacilityListScreenState extends State<FacilityListScreen> {
                   padding: const EdgeInsets.all(Space.sm),
                   onTap: () => _open(p),
                   child: Row(children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: groupColor(entry.key).withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(Radii.std),
-                      ),
-                      child: Icon(iconForKind(p['kind']?.toString()), color: groupColor(entry.key), size: 24),
-                    ),
+                    FacilityThumb(place: p, color: groupColor(entry.key), size: 48),
                     const SizedBox(width: Space.sm),
                     Expanded(
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

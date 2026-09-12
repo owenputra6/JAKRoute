@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../facility_photos.dart';
 import 'app_theme.dart';
+import 'kinds.dart';
 
 /// Shared chrome for the revised UI (revised UI UX/*/screen.png): brand bar,
 /// cards, pills, section headers, stat boxes, floor switcher. Everything
@@ -361,6 +363,30 @@ class SourceNote extends StatelessWidget {
         const SizedBox(width: Space.xs),
         Expanded(child: Text(text, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.onSurface))),
       ]),
+    );
+  }
+}
+
+/// Leading tile for a place: survey photo when one exists, else the kind icon.
+class FacilityThumb extends StatelessWidget {
+  const FacilityThumb({super.key, required this.place, required this.color, this.size = 44});
+  final Map place;
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final photos = facilityPhotos[place['id']?.toString()];
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(Radii.std),
+      child: photos != null && photos.isNotEmpty
+          ? Image.asset(photos.first, width: size, height: size, fit: BoxFit.cover)
+          : Container(
+              width: size,
+              height: size,
+              color: color.withValues(alpha: 0.12),
+              child: Icon(iconForKind(place['kind']?.toString()), color: color, size: size / 2),
+            ),
     );
   }
 }
