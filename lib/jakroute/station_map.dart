@@ -51,6 +51,8 @@ extension type _JsMap._(JSObject _) implements JSObject {
   external void resize();
   external void remove();
   external JSBoolean loaded();
+  external JSBoolean hasImage(String id);
+  external void addImage(String id, JSAny image, JSObject options);
 }
 
 extension type _JsGeoJsonSource._(JSObject _) implements JSObject {
@@ -120,9 +122,27 @@ class _MapLibreViewState extends State<_MapLibreView> {
           {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'Polygon', 'coordinates': [for (final ring in poly as List) [for (final p in ring as List) _lonlat(p as List)]]}},
       ]);
 
-  Map<String, dynamic> _obstacles() => _fc([
-        for (final poly in _floorData()['obstacles'] as List)
-          {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'Polygon', 'coordinates': [for (final ring in poly as List) [for (final p in ring as List) _lonlat(p as List)]]}},
+  List<Map> get _obstacleMeta => ((_floorData()['obstacle_meta'] as List?) ?? const []).cast<Map>();
+
+  Map<String, dynamic> _obstacles() {
+    final polys = _floorData()['obstacles'] as List;
+    final meta = _obstacleMeta;
+    return _fc([
+      for (var i = 0; i < polys.length; i++)
+        {
+          'type': 'Feature',
+          'properties': {'kind': i < meta.length ? meta[i]['kind'] : 'access', 'name': i < meta.length ? meta[i]['name'] : ''},
+          'geometry': {'type': 'Polygon', 'coordinates': [for (final ring in polys[i] as List) [for (final p in ring as List) _lonlat(p as List)]]},
+        },
+    ]);
+  }
+
+  static const _iconKinds = {'toilet', 'mushola', 'elevator', 'escalator', 'stairs', 'entrance', 'ticket_gate', 'shop', 'atm', 'vending_machine', 'first_aid', 'lactation_room', 'rail_track'};
+
+  Map<String, dynamic> _obstacleIcons() => _fc([
+        for (final m in _obstacleMeta)
+          if (_iconKinds.contains(m['kind']) && m['centroid'] != null)
+            {'type': 'Feature', 'properties': {'kind': m['kind']}, 'geometry': {'type': 'Point', 'coordinates': _lonlat(m['centroid'] as List)}},
       ]);
 
   Map<String, dynamic> _places() => _fc([
@@ -130,7 +150,7 @@ class _MapLibreViewState extends State<_MapLibreView> {
           if ((p['scope'] == 'indoor' && p['floor'] == widget.floor) || p['scope'] == 'outdoor')
             {
               'type': 'Feature',
-              'properties': {'label': p['kind'] == 'amenity' || p['kind'] == 'seating' ? '' : p['label'], 'kind': p['kind'], 'outdoor': p['scope'] == 'outdoor'},
+              'properties': {'label': p['kind'] == 'amenity' || p['kind'] == 'seating' ? '' : p['label'], 'kind': p['kind'], 'outdoor': p['scope'] == 'outdoor', 'icon': p['scope'] == 'outdoor' ? 'k-${p['kind']}' : ''},
               'geometry': {'type': 'Point', 'coordinates': p['source_lonlat'] ?? _lonlat(p['xy'] as List)},
             },
       ]);
@@ -195,12 +215,47 @@ class _MapLibreViewState extends State<_MapLibreView> {
     }).toJS);
   }
 
+  // Kind -> fill colour (station blocks) and emoji glyph (icon image).
+  static const _kindColors = {
+    'toilet': '#2E86AB', 'mushola': '#2A9D8F', 'lactation_room': '#E76F91', 'first_aid': '#DC3545',
+    'elevator': '#0058BC', 'escalator': '#1F6FD1', 'stairs': '#3B82C4',
+    'entrance': '#FFB347', 'ticket_gate': '#B23A48', 'shop': '#E9A23B', 'atm': '#7A5C99', 'vending_machine': '#F4A261',
+    'seating': '#6B7C93', 'amenity': '#7C8794', 'rail_track': '#324354', 'access': '#4A5A6A',
+  };
+  static const _kindGlyphs = {
+    'toilet': '🚻', 'mushola': '🕌', 'lactation_room': '🍼', 'first_aid': '🩹', 'elevator': '🛗', 'escalator': '⏫', 'stairs': '🪜',
+    'entrance': '🚪', 'ticket_gate': '🎫', 'shop': '🛍️', 'atm': '🏧', 'vending_machine': '🥤', 'rail_track': '🚆',
+    'food': '🍽️', 'bus_stop': '🚌', 'minimarket': '🏪', 'pharmacy': '💊',
+  };
+  static List<Object> get _kindColorPairs => [for (final e in _kindColors.entries) ...[e.key, e.value]];
+
+  /// Rasterise each glyph on a canvas and register it as a map image.
+  void _registerIcons() {
+    for (final e in _kindGlyphs.entries) {
+      final name = 'k-${e.key}';
+      if (_map!.hasImage(name).toDart) continue;
+      final canvas = web.HTMLCanvasElement()..width = 64..height = 64;
+      final ctx = canvas.getContext('2d') as web.CanvasRenderingContext2D;
+      ctx.beginPath();
+      ctx.arc(32, 32, 28, 0, 6.2832);
+      ctx.fillStyle = 'rgba(255,255,255,0.92)'.toJS;
+      ctx.fill();
+      ctx.font = '34px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(e.value, 32, 35);
+      _map!.addImage(name, ctx.getImageData(0, 0, 64, 64), {'pixelRatio': 2}.jsify() as JSObject);
+    }
+  }
+
   void _addSource(String id, Map<String, dynamic> data) => _map!.addSource(id, {'type': 'geojson', 'data': data}.jsify() as JSObject);
   void _addLayer(Map<String, dynamic> layer) => _map!.addLayer(layer.jsify() as JSObject);
 
   void _addLayers() {
+    _registerIcons();
     _addSource('walkable', _walkable());
     _addSource('obstacles', _obstacles());
+    _addSource('obstacle-icons', _obstacleIcons());
     _addSource('places', _places());
     _addSource('route', _routeLines());
     _addSource('floor-changes', _floorChanges());
@@ -208,7 +263,9 @@ class _MapLibreViewState extends State<_MapLibreView> {
     _addSource('crowd', _crowd());
     _addLayer({'id': 'walkable-fill', 'type': 'fill', 'source': 'walkable', 'paint': {'fill-color': '#ffffff', 'fill-opacity': 0.88}});
     _addLayer({'id': 'walkable-line', 'type': 'line', 'source': 'walkable', 'paint': {'line-color': '#0058BC', 'line-width': 1.5, 'line-opacity': 0.6}});
-    _addLayer({'id': 'obstacles-fill', 'type': 'fill', 'source': 'obstacles', 'paint': {'fill-color': '#324354', 'fill-opacity': 0.85}});
+    _addLayer({'id': 'obstacles-fill', 'type': 'fill', 'source': 'obstacles',
+        'paint': {'fill-color': ['match', ['get', 'kind'], ..._kindColorPairs, '#4A5A6A'], 'fill-opacity': 0.85}});
+    _addLayer({'id': 'obstacles-line', 'type': 'line', 'source': 'obstacles', 'paint': {'line-color': '#ffffff', 'line-width': 0.8, 'line-opacity': 0.6}});
     _addLayer({'id': 'crowd-area-fill', 'type': 'fill', 'source': 'crowd-areas',
         'paint': {'fill-color': '#d04444', 'fill-opacity': ['interpolate', ['linear'], ['get', 'density'], 0, 0.08, 0.5, 0.35]}});
     _addLayer({'id': 'crowd-dots', 'type': 'circle', 'source': 'crowd', 'paint': {'circle-color': '#d04444', 'circle-opacity': 0.75, 'circle-radius': ['+', 2, ['*', 0.7, ['get', 'w']]]}});
@@ -216,8 +273,12 @@ class _MapLibreViewState extends State<_MapLibreView> {
     _addLayer({'id': 'route-line', 'type': 'line', 'source': 'route', 'layout': {'line-cap': 'round', 'line-join': 'round'},
         'paint': {'line-color': ['case', ['==', ['get', 'scope'], 'outdoor'], '#c77716', '#0058BC'], 'line-width': 4.5}});
     _addLayer({'id': 'floor-change-dots', 'type': 'circle', 'source': 'floor-changes', 'paint': {'circle-color': '#FFB347', 'circle-radius': 7, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2}});
+    _addLayer({'id': 'obstacle-icons', 'type': 'symbol', 'source': 'obstacle-icons',
+        'layout': {'icon-image': ['concat', 'k-', ['get', 'kind']], 'icon-size': 0.5, 'icon-allow-overlap': true, 'icon-ignore-placement': true}});
     _addLayer({'id': 'place-dots', 'type': 'circle', 'source': 'places',
         'paint': {'circle-color': ['case', ['get', 'outdoor'], '#c77716', '#127465'], 'circle-radius': ['case', ['get', 'outdoor'], 5, 3.5], 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 1}});
+    _addLayer({'id': 'outdoor-icons', 'type': 'symbol', 'source': 'places', 'filter': ['get', 'outdoor'],
+        'layout': {'icon-image': ['get', 'icon'], 'icon-size': 0.45, 'icon-allow-overlap': true}});
     _addLayer({'id': 'place-labels', 'type': 'symbol', 'source': 'places',
         'layout': {'text-field': ['get', 'label'], 'text-font': ['Roboto Regular'], 'text-size': 10, 'text-offset': [0, 0.9], 'text-anchor': 'top', 'text-max-width': 8},
         'paint': {'text-color': '#223344', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2}});
@@ -232,6 +293,7 @@ class _MapLibreViewState extends State<_MapLibreView> {
     if (!_styleReady || _map == null) return;
     _setData('walkable', _walkable());
     _setData('obstacles', _obstacles());
+    _setData('obstacle-icons', _obstacleIcons());
     _setData('places', _places());
     _setData('route', _routeLines());
     _setData('floor-changes', _floorChanges());

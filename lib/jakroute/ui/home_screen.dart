@@ -39,13 +39,70 @@ class _HomeScreenState extends State<HomeScreen> {
     _load();
   }
 
+  static bool _askedFloor = false;
+
   Future<void> _load() async {
     try {
       final c = await widget.api.catalog();
       if (mounted) setState(() => _catalog = c);
+      if (mounted && !_askedFloor && (c['floors'] as List?)?.length == 2) {
+        _askedFloor = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) => _confirmFloor());
+      }
     } catch (e) {
       if (mounted) setState(() => _error = 'Gagal memuat data stasiun.');
     }
+  }
+
+  /// "Anda berada di lantai mana?" — visual confirmation with real station
+  /// photos (survey 30 Aug 2026), since there is no indoor positioning.
+  Future<void> _confirmFloor() async {
+    final picked = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: AppColors.surfaceContainerLowest,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.xl))),
+      builder: (ctx) {
+        final t = Theme.of(ctx).textTheme;
+        Widget card(int floor, String title, String hint, String asset) => Expanded(
+              child: Material(
+                color: AppColors.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(Radii.lg),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(Radii.lg),
+                  onTap: () => Navigator.of(ctx).pop(floor),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(Radii.lg)),
+                      child: AspectRatio(aspectRatio: 4 / 3, child: Image.asset(asset, fit: BoxFit.cover)),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(Space.sm),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(title, style: t.labelMedium?.copyWith(fontSize: 15)),
+                        Text(hint, style: t.labelSmall?.copyWith(color: AppColors.slate)),
+                      ]),
+                    ),
+                  ]),
+                ),
+              ),
+            );
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(Space.gutter, 0, Space.gutter, Space.lg),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const SheetHandle(),
+            Text('Anda berada di lantai mana?', style: t.headlineSmall),
+            Text('Tidak ada GPS indoor — cocokkan dengan foto stasiun.', style: t.labelSmall?.copyWith(color: AppColors.slate)),
+            const SizedBox(height: Space.sm),
+            Row(children: [
+              card(1, 'Lantai 1 — Peron', 'Rel kereta, peron 1 & 2', 'assets/floor_peron.jpg'),
+              const SizedBox(width: Space.xs),
+              card(2, 'Lantai 2 — Hall', 'Gerbang tap, toilet, kios', 'assets/floor_hall.jpg'),
+            ]),
+          ]),
+        );
+      },
+    );
+    if (picked != null && mounted) setState(() => _floor = picked);
   }
 
   List<Map> get _floors => ((_catalog?['floors'] as List?) ?? []).cast<Map>();

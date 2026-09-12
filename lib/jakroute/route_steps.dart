@@ -77,3 +77,15 @@ List<int> routeFloors(RouteOption route) {
   }
   return seen;
 }
+
+/// True when every available alternative is effectively the same path —
+/// crowd and personal preferences did not change the route for this pair.
+bool routesIdentical(List<RouteOption> routes) {
+  final ok = routes.where((r) => r.available).toList();
+  if (ok.length < 2) return false;
+  final a = ok.first;
+  return ok.every((r) => (r.walkingMeters - a.walkingMeters).abs() < 1 && (r.durationSeconds - a.durationSeconds).abs() < 2);
+}
+
+const kIdenticalRoutesNote =
+    'Ketiga mode menghasilkan jalur yang sama untuk pasangan asal–tujuan ini: hanya satu jalur yang memenuhi batasan, sehingga faktor keramaian dan preferensi personal tidak mengubah rute.';

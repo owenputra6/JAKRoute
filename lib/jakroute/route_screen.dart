@@ -304,6 +304,10 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
             child: Text('Pilih asal & tujuan lalu bandingkan. Tiga mode dihitung backend: paling sesuai, paling cepat, minim jalan kaki.',
                 style: t.bodyMedium?.copyWith(color: AppColors.slate, fontSize: 14)),
           ),
+        if (routesIdentical(routes)) ...[
+          const SourceNote(kIdenticalRoutesNote, icon: Icons.info_outline),
+          const SizedBox(height: Space.xs),
+        ],
         if (_recommendation != null && routes.isEmpty)
           const SourceNote('Tidak ada rute yang memenuhi seluruh batasan. Longgarkan preferensi.', icon: Icons.info_outline),
         for (final r in routes)

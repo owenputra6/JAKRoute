@@ -483,6 +483,11 @@ class _ResultView extends StatelessWidget {
                 ? insightText
                 : 'Parameter rute sudah disesuaikan. Ini alternatif yang memenuhi batasanmu:'),
             _ParamCard(intent: rec.intent),
+            if (routesIdentical(routes))
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(kIdenticalRoutesNote, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.slate)),
+              ),
           ]),
         ),
         for (final route in routes)
