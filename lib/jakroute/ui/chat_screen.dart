@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../api_client.dart';
+import '../chat_history.dart';
 import '../models.dart';
 import '../route_steps.dart';
 import '../user_prefs.dart';
@@ -20,6 +23,17 @@ class _Entry {
   final Recommendation? recommendation;
   final Json? catalog;
   final DateTime at;
+
+  /// Round-trips through `chat_sessions.messages` (Supabase). The catalog
+  /// snapshot isn't stored — it's re-attached from the live catalog on load.
+  Json toJson() => {'role': role.name, 'text': text, 'recommendation': recommendation?.data, 'at': at.toIso8601String()};
+
+  static _Entry fromJson(Json j, Json? catalog) {
+    final rec = j['recommendation'];
+    if (rec is Map) return _Entry.result(Recommendation(Map<String, dynamic>.from(rec)), catalog);
+    final role = _Role.values.firstWhere((r) => r.name == j['role'], orElse: () => _Role.assistant);
+    return _Entry.text(role, j['text'] as String? ?? '');
+  }
 }
 
 /// Tanya AI (revised UI UX/tanya_ai_navigasi). Real AI chat: hits POST
@@ -59,12 +73,15 @@ class _ChatScreenState extends State<ChatScreen> {
   // request so the agent keeps origin/destination/preferences across turns
   // instead of re-asking the same clarification.
   Json _lastIntent = {};
+  // Current Supabase chat_sessions row id; null until the first message of
+  // a conversation is persisted (or when starting a fresh "Chat Baru").
+  String? _sessionId;
 
   static const _quickPrompts = [
-    ('Toilet terdekat', Icons.wc),
-    ('Musala di lantai 2', Icons.mosque),
-    ('Jalur ramah kursi roda ke peron', Icons.accessible),
-    ('Lift ke Peron 1', Icons.elevator),
+    ('Toilet terdekat', Icons.wc, 'Cepat ketemu fasilitas terdekat'),
+    ('Musala di lantai 2', Icons.mosque, 'Lokasi & jalur ke musala'),
+    ('Jalur ramah kursi roda ke peron', Icons.accessible, 'Rute step-free, tanpa tangga'),
+    ('Lift ke Peron 1', Icons.elevator, 'Akses vertikal terdekat'),
   ];
 
   @override
@@ -120,7 +137,63 @@ class _ChatScreenState extends State<ChatScreen> {
     } finally {
       setState(() => _busy = false);
       _scrollToEnd();
+      unawaited(_persist());
     }
+  }
+
+  /// Best-effort save to Supabase (`chat_sessions`) — see chat_history.dart.
+  /// Never blocks or surfaces errors into the chat; history is a bonus, not
+  /// a requirement for the conversation to work.
+  Future<void> _persist() async {
+    if (_entries.isEmpty) return;
+    final firstUser = _entries.firstWhere((e) => e.role == _Role.user, orElse: () => _entries.first);
+    final rawTitle = (firstUser.text ?? 'Percakapan').trim();
+    final title = rawTitle.length > 60 ? '${rawTitle.substring(0, 60)}…' : rawTitle;
+    final id = await ChatHistoryStore.instance.save(
+      sessionId: _sessionId,
+      title: title.isEmpty ? 'Percakapan' : title,
+      messages: _entries.map((e) => e.toJson()).toList(),
+    );
+    if (mounted) setState(() => _sessionId = id);
+  }
+
+  void _newChat() {
+    setState(() {
+      _entries.clear();
+      _sessionId = null;
+      _lastIntent = {};
+    });
+  }
+
+  Future<void> _openHistory() async {
+    final picked = await showModalBottomSheet<_HistoryPick>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _HistorySheet(),
+    );
+    if (picked == null || !mounted) return;
+    if (picked.newChat) {
+      _newChat();
+      return;
+    }
+    final id = picked.sessionId!;
+    final raw = await ChatHistoryStore.instance.loadMessages(id);
+    if (!mounted) return;
+    setState(() {
+      _sessionId = id;
+      _entries
+        ..clear()
+        ..addAll(raw.map((j) => _Entry.fromJson(j, _catalog)));
+      _lastIntent = {};
+      for (final e in _entries.reversed) {
+        if (e.recommendation?.intent.isNotEmpty ?? false) {
+          _lastIntent = e.recommendation!.intent;
+          break;
+        }
+      }
+    });
+    _scrollToEnd();
   }
 
   @override
@@ -131,6 +204,18 @@ class _ChatScreenState extends State<ChatScreen> {
         context: 'Tanya AI',
         leading: widget.embedded ? null : const BackButton(),
         onAvatarTap: widget.onAvatarTap,
+        trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+          IconButton(
+            tooltip: 'Riwayat percakapan',
+            icon: const Icon(Icons.history, color: AppColors.secondary),
+            onPressed: _openHistory,
+          ),
+          IconButton(
+            tooltip: 'Chat baru',
+            icon: const Icon(Icons.add_comment_outlined, color: AppColors.secondary),
+            onPressed: _entries.isEmpty ? null : _newChat,
+          ),
+        ]),
       ),
       body: Column(
         children: [
@@ -138,22 +223,25 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ListView.builder(
               controller: _scroll,
               padding: const EdgeInsets.fromLTRB(Space.md, Space.sm, Space.md, Space.md),
-              itemCount: _entries.length + 1 + (_busy ? 1 : 0),
+              itemCount: (_entries.isEmpty ? 2 : _entries.length + 1) + (_busy ? 1 : 0),
               itemBuilder: (context, i) {
                 if (i == 0) return _AssistantHeader(agentMode: _agentMode, ready: _catalog != null);
+                if (_entries.isEmpty) {
+                  return i == 1 ? _EmptyState(quickPrompts: _quickPrompts, onSend: _busy ? null : _send) : const _TypingBubble();
+                }
                 if (i == _entries.length + 1) return const _TypingBubble();
                 return _EntryView(entry: _entries[i - 1], onSend: _send, mapStyleUrl: widget.mapStyleUrl);
               },
             ),
           ),
-          if (_entries.isEmpty || _entries.last.role != _Role.assistant)
+          if (_entries.isNotEmpty && _entries.last.role != _Role.assistant)
             SizedBox(
               height: 40,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: Space.md),
                 children: [
-                  for (final (label, icon) in _quickPrompts) ...[
+                  for (final (label, icon, _) in _quickPrompts) ...[
                     Pill(label: label, icon: icon, onTap: _busy ? null : () => _send(label)),
                     const SizedBox(width: Space.xs),
                   ],
@@ -206,6 +294,175 @@ class _AssistantHeader extends StatelessWidget {
         ),
         Tag(ready ? 'ONLINE' : 'MEMUAT', color: Colors.white.withValues(alpha: 0.14), fg: Colors.white),
       ]),
+    );
+  }
+}
+
+/// Shown only before the first message: quick-suggestion cards (real
+/// pre-written prompts, not fabricated stats) plus a one-line tip.
+class _EmptyState extends StatelessWidget {
+  const _EmptyState({required this.quickPrompts, required this.onSend});
+  final List<(String, IconData, String)> quickPrompts;
+  final ValueChanged<String>? onSend;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: Space.md),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.bolt, size: 16, color: AppColors.secondary),
+          const SizedBox(width: 4),
+          Text('REKOMENDASI PERTANYAAN', style: t.labelSmall?.copyWith(color: AppColors.slate, fontWeight: FontWeight.w700, letterSpacing: 0.4)),
+        ]),
+        const SizedBox(height: Space.xs),
+        for (final (label, icon, subtitle) in quickPrompts) ...[
+          SurfaceCard(
+            padding: const EdgeInsets.symmetric(horizontal: Space.sm, vertical: Space.xs),
+            onTap: onSend == null ? null : () => onSend!(label),
+            child: Row(children: [
+              Container(
+                width: 36, height: 36,
+                decoration: BoxDecoration(color: AppColors.accentLight, borderRadius: BorderRadius.circular(Radii.std)),
+                child: Icon(icon, size: 18, color: AppColors.secondary),
+              ),
+              const SizedBox(width: Space.sm),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(label, style: t.labelMedium),
+                  Text(subtitle, style: t.labelSmall?.copyWith(color: AppColors.slate)),
+                ]),
+              ),
+              const Icon(Icons.arrow_forward, size: 16, color: AppColors.outline),
+            ]),
+          ),
+          const SizedBox(height: Space.xs),
+        ],
+        SurfaceCard(
+          padding: const EdgeInsets.all(Space.sm),
+          color: AppColors.surfaceContainerLow,
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Icon(Icons.tips_and_updates_outlined, size: 18, color: AppColors.secondary),
+            const SizedBox(width: Space.xs),
+            Expanded(
+              child: RichText(
+                text: TextSpan(style: t.labelSmall?.copyWith(color: AppColors.onSurfaceVariant), children: [
+                  const TextSpan(text: 'Tip: ', style: TextStyle(fontWeight: FontWeight.w700)),
+                  const TextSpan(text: 'sebutkan kondisi seperti bawa koper, kursi roda, atau mau ke tempat makan luar stasiun.'),
+                ]),
+              ),
+            ),
+          ]),
+        ),
+      ]),
+    );
+  }
+}
+
+class _HistoryPick {
+  const _HistoryPick.session(this.sessionId) : newChat = false;
+  const _HistoryPick.newChat() : sessionId = null, newChat = true;
+  final String? sessionId;
+  final bool newChat;
+}
+
+/// Riwayat Percakapan drawer (revised UI UX/tanya_ai_riwayat_chat_history):
+/// past sessions grouped Hari ini / Sebelumnya, newest first.
+class _HistorySheet extends StatefulWidget {
+  const _HistorySheet();
+  @override
+  State<_HistorySheet> createState() => _HistorySheetState();
+}
+
+class _HistorySheetState extends State<_HistorySheet> {
+  List<ChatSessionSummary>? _sessions;
+
+  @override
+  void initState() {
+    super.initState();
+    ChatHistoryStore.instance.listSessions().then((s) {
+      if (mounted) setState(() => _sessions = s);
+    });
+  }
+
+  Future<void> _delete(ChatSessionSummary s) async {
+    setState(() => _sessions = _sessions!.where((x) => x.id != s.id).toList());
+    await ChatHistoryStore.instance.deleteSession(s.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final sessions = _sessions;
+    final today = DateTime.now();
+    bool isToday(DateTime d) => d.year == today.year && d.month == today.month && d.day == today.day;
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      expand: false,
+      builder: (context, controller) => Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.xl)),
+          boxShadow: [kRaisedShadow],
+        ),
+        child: Column(children: [
+          const SheetHandle(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: Space.md),
+            child: Row(children: [
+              Expanded(child: Text('Riwayat Percakapan', style: t.headlineMedium)),
+              TextButton.icon(
+                onPressed: () => Navigator.of(context).pop(const _HistoryPick.newChat()),
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text('Chat Baru'),
+              ),
+            ]),
+          ),
+          const SizedBox(height: Space.xs),
+          Expanded(
+            child: sessions == null
+                ? const Center(child: CircularProgressIndicator())
+                : sessions.isEmpty
+                    ? Center(child: Text('Belum ada riwayat percakapan.', style: t.bodyMedium?.copyWith(color: AppColors.slate)))
+                    : ListView(
+                        controller: controller,
+                        padding: const EdgeInsets.fromLTRB(Space.md, 0, Space.md, Space.lg),
+                        children: [
+                          for (final s in sessions)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: Space.xs),
+                              child: SurfaceCard(
+                                padding: const EdgeInsets.all(Space.sm),
+                                onTap: () => Navigator.of(context).pop(_HistoryPick.session(s.id)),
+                                child: Row(children: [
+                                  const Icon(Icons.chat_bubble_outline, color: AppColors.secondary),
+                                  const SizedBox(width: Space.sm),
+                                  Expanded(
+                                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                      Text(s.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.labelMedium),
+                                      Text(
+                                        isToday(s.updatedAt)
+                                            ? 'Hari ini • ${s.updatedAt.hour.toString().padLeft(2, '0')}:${s.updatedAt.minute.toString().padLeft(2, '0')}'
+                                            : '${s.updatedAt.day}/${s.updatedAt.month}/${s.updatedAt.year}',
+                                        style: t.labelSmall?.copyWith(color: AppColors.slate),
+                                      ),
+                                    ]),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline, size: 20, color: AppColors.outline),
+                                    onPressed: () => _delete(s),
+                                  ),
+                                ]),
+                              ),
+                            ),
+                        ],
+                      ),
+          ),
+        ]),
+      ),
     );
   }
 }

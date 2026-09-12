@@ -33,15 +33,29 @@ class _HomeScreenState extends State<HomeScreen> {
   int? _floor;
   String _group = 'Semua';
   final _mapController = StationMapController();
+  bool _locating = false;
 
   void _locateMe() {
+    if (_locating) return;
+    setState(() => _locating = true);
     _mapController.locateMe(onError: () {
       if (!mounted) return;
+      setState(() => _locating = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Lokasi tidak tersedia — izinkan akses lokasi browser dulu.')),
       );
     });
+    // getCurrentPosition has no "done" callback surfaced through the
+    // controller; the button re-enables shortly after so a stuck GPS
+    // fix never locks it forever.
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _locating = false);
+    });
   }
+
+  /// Stops a wheel-scroll or drag that starts on the facility sheet from
+  /// also panning/zooming the map underneath it.
+  void _guardMapGestures(bool overSheet) => _mapController.setPanZoomEnabled(!overSheet);
 
   @override
   void initState() {
@@ -228,21 +242,30 @@ class _HomeScreenState extends State<HomeScreen> {
                   alignment: Alignment.bottomRight,
                   child: Padding(
                     padding: EdgeInsets.only(right: Space.gutter, bottom: c.maxHeight * 0.34 + 16),
-                    child: RoundControl(icon: Icons.my_location, tooltip: 'Lokasi saya', onTap: _locateMe),
+                    child: RoundControl(icon: Icons.my_location, tooltip: 'Lokasi saya', onTap: _locateMe, busy: _locating),
                   ),
                 ),
               ),
             ),
-          _FacilitySheet(
-            title: 'Fasilitas ${floorShort(_activeFloor)}',
-            subtitle: _catalog == null ? 'Memuat…' : '${_catalog!['label']} • ${floorLabel(_catalog!, _activeFloor)}',
-            places: visible,
-            total: onFloor.where((p) => !isOutdoor(p)).length,
-            outdoor: onFloor.where(isOutdoor).length,
-            error: _error,
-            onTap: _openFacility,
-            onRoute: (p) => _openPlanner(destinationId: p['id'] as String),
-            onAskAi: _openChat,
+          MouseRegion(
+            onEnter: (_) => _guardMapGestures(true),
+            onExit: (_) => _guardMapGestures(false),
+            child: Listener(
+              onPointerDown: (_) => _guardMapGestures(true),
+              onPointerUp: (_) => _guardMapGestures(false),
+              onPointerCancel: (_) => _guardMapGestures(false),
+              child: _FacilitySheet(
+                title: 'Fasilitas ${floorShort(_activeFloor)}',
+                subtitle: _catalog == null ? 'Memuat…' : '${_catalog!['label']} • ${floorLabel(_catalog!, _activeFloor)}',
+                places: visible,
+                total: onFloor.where((p) => !isOutdoor(p)).length,
+                outdoor: onFloor.where(isOutdoor).length,
+                error: _error,
+                onTap: _openFacility,
+                onRoute: (p) => _openPlanner(destinationId: p['id'] as String),
+                onAskAi: _openChat,
+              ),
+            ),
           ),
         ],
       ),

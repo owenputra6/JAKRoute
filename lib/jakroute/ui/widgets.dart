@@ -11,10 +11,12 @@ import 'kinds.dart';
 
 /// Top bar: logo + "JAKRoute" + context word, blue caps station line, avatar.
 class BrandBar extends StatelessWidget implements PreferredSizeWidget {
-  const BrandBar({super.key, this.context, this.leading, this.onAvatarTap});
+  const BrandBar({super.key, this.context, this.leading, this.onAvatarTap, this.trailing});
   final String? context;
   final Widget? leading;
   final VoidCallback? onAvatarTap;
+  /// Extra actions before the avatar (e.g. chat history / new chat).
+  final Widget? trailing;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -54,6 +56,7 @@ class BrandBar extends StatelessWidget implements PreferredSizeWidget {
               ],
             ),
           ),
+          if (trailing != null) ...[trailing!, const SizedBox(width: Space.xs)],
           UserAvatar(onTap: onAvatarTap),
         ],
       ),
@@ -312,11 +315,13 @@ class FloorSwitcher extends StatelessWidget {
 
 /// Round white floating control (locate / 2D / legend buttons in the mockup).
 class RoundControl extends StatelessWidget {
-  const RoundControl({super.key, required this.icon, this.onTap, this.color = AppColors.secondary, this.tooltip});
+  const RoundControl({super.key, required this.icon, this.onTap, this.color = AppColors.secondary, this.tooltip, this.busy = false});
   final IconData icon;
   final VoidCallback? onTap;
   final Color color;
   final String? tooltip;
+  /// Shows a small spinner instead of the icon while an action is pending.
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
@@ -326,8 +331,14 @@ class RoundControl extends StatelessWidget {
       elevation: 0,
       child: InkWell(
         customBorder: const CircleBorder(),
-        onTap: onTap,
-        child: SizedBox(width: 44, height: 44, child: Icon(icon, color: color, size: 22)),
+        onTap: busy ? null : onTap,
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: busy
+              ? Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: color)))
+              : Icon(icon, color: color, size: 22),
+        ),
       ),
     );
     return tooltip == null ? b : Tooltip(message: tooltip!, child: b);

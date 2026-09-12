@@ -4,6 +4,7 @@ import '../api_client.dart';
 import 'chat_screen.dart';
 import 'facility_list_screen.dart';
 import 'home_screen.dart';
+import 'onboarding_coach.dart';
 import 'profile_screen.dart';
 
 /// Bottom-nav shell (revised UI UX mockups): Peta / Tanya AI / Fasilitas /
@@ -34,17 +35,19 @@ class _AppShellState extends State<AppShell> {
       FacilityListScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl, onAvatarTap: _goProfile),
       ProfileScreen(api: widget.api, mapStyleUrl: widget.mapStyleUrl),
     ];
-    return Scaffold(
-      body: IndexedStack(index: _index, children: pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map), label: 'Peta'),
-          NavigationDestination(icon: Icon(Icons.auto_awesome_outlined), selectedIcon: Icon(Icons.auto_awesome), label: 'Tanya AI'),
-          NavigationDestination(icon: Icon(Icons.storefront_outlined), selectedIcon: Icon(Icons.storefront), label: 'Fasilitas'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
-        ],
+    return OnboardingCoach(
+      child: Scaffold(
+        body: IndexedStack(index: _index, children: pages),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _index,
+          onDestinationSelected: (i) => setState(() => _index = i),
+          destinations: const [
+            NavigationDestination(icon: Icon(Icons.map_outlined), selectedIcon: Icon(Icons.map), label: 'Peta'),
+            NavigationDestination(icon: Icon(Icons.auto_awesome_outlined), selectedIcon: Icon(Icons.auto_awesome), label: 'Tanya AI'),
+            NavigationDestination(icon: Icon(Icons.storefront_outlined), selectedIcon: Icon(Icons.storefront), label: 'Fasilitas'),
+            NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profil'),
+          ],
+        ),
       ),
     );
   }

@@ -23,7 +23,12 @@ import 'route_diagram.dart';
 /// maplibre state (e.g. a "my location" button in the parent's own Stack).
 class StationMapController {
   void Function({VoidCallback? onError})? _locate;
-  void _bind(void Function({VoidCallback? onError}) locate) => _locate = locate;
+  ValueChanged<bool>? _setPanZoom;
+  void _bind(void Function({VoidCallback? onError}) locate, ValueChanged<bool> setPanZoom) {
+    _locate = locate;
+    _setPanZoom = setPanZoom;
+  }
+
   /// Re-reads the device's real position and centres the map on it.
   /// [onError] fires if the browser denies/lacks geolocation.
   void locateMe({VoidCallback? onError}) {
@@ -34,6 +39,11 @@ class StationMapController {
       onError?.call();
     }
   }
+
+  /// Disables/re-enables the map's own pan & zoom gestures (wheel, drag,
+  /// pinch, double-click) — used to stop a wheel-scroll or drag on an
+  /// overlaid sheet from also panning/zooming the map underneath.
+  void setPanZoomEnabled(bool enabled) => _setPanZoom?.call(enabled);
 }
 
 class StationMap extends StatelessWidget {
@@ -76,6 +86,16 @@ extension type _JsMap._(JSObject _) implements JSObject {
   external void addImage(String id, JSAny image, JSObject options);
   external JSArray queryRenderedFeatures(JSAny point, JSObject options);
   external void flyTo(JSObject options);
+  external JSNumber getZoom();
+  external _JsInteractionHandler get dragPan;
+  external _JsInteractionHandler get scrollZoom;
+  external _JsInteractionHandler get touchZoomRotate;
+  external _JsInteractionHandler get doubleClickZoom;
+}
+
+extension type _JsInteractionHandler._(JSObject _) implements JSObject {
+  external void enable();
+  external void disable();
 }
 
 extension type _JsGeoJsonSource._(JSObject _) implements JSObject {
@@ -115,7 +135,7 @@ class _MapLibreViewState extends State<_MapLibreView> {
       ..style.height = '100%';
     ui_web.platformViewRegistry.registerViewFactory(_viewType, (int viewId) => _div);
     WidgetsBinding.instance.addPostFrameCallback((_) => _create());
-    widget.controller?._bind(_flyToMe);
+    widget.controller?._bind(_flyToMe, _setPanZoomEnabled);
   }
 
   @override
@@ -280,23 +300,41 @@ class _MapLibreViewState extends State<_MapLibreView> {
     }
   }
 
+  bool _locating = false;
+
   /// Bound to [StationMapController.locateMe]: fresh device fix, then fly
-  /// the camera there and drop/refresh the blue dot.
+  /// the camera there and drop/refresh the blue dot. Guarded against
+  /// overlapping taps — a second tap mid-flight used to fire a second
+  /// `flyTo` that cut the first animation off, reading as a jerky,
+  /// unclear zoom instead of one smooth move.
   void _flyToMe({VoidCallback? onError}) {
+    if (_locating) return;
+    _locating = true;
+    void done() => _locating = false;
     try {
       web.window.navigator.geolocation.getCurrentPosition(
         ((web.GeolocationPosition pos) {
+          done();
           if (!mounted || _map == null) return;
           final lon = pos.coords.longitude, lat = pos.coords.latitude;
           _setData('me', _fc([
             {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'Point', 'coordinates': [lon, lat]}},
           ]));
-          _map!.flyTo({'center': [lon, lat], 'zoom': 19, 'duration': 600}.jsify() as JSObject);
+          // Keep the current zoom (only zoom in if it was zoomed out past
+          // street level) instead of always snapping to a fixed zoom —
+          // that snap could zoom *out* from an already-close view, which
+          // read as an unclear, un-smooth jump rather than a move to me.
+          final zoom = math.max(_map!.getZoom().toDartDouble, 18.0);
+          _map!.flyTo({'center': [lon, lat], 'zoom': zoom, 'duration': 700}.jsify() as JSObject);
         }).toJS,
-        ((JSObject _) => onError?.call()).toJS,
+        ((JSObject _) {
+          done();
+          onError?.call();
+        }).toJS,
         web.PositionOptions(enableHighAccuracy: true),
       );
     } catch (_) {
+      done();
       onError?.call();
     }
   }
@@ -331,6 +369,22 @@ class _MapLibreViewState extends State<_MapLibreView> {
       ctx.textBaseline = 'middle';
       ctx.fillText(e.value, 32, 35);
       _map!.addImage(name, ctx.getImageData(0, 0, 64, 64), {'pixelRatio': 2}.jsify() as JSObject);
+    }
+  }
+
+  /// Bound to [StationMapController.setPanZoomEnabled]: stops a wheel
+  /// scroll or drag that starts on an overlaid Flutter sheet (the facility
+  /// list, e.g.) from also bubbling into the map's own pan/zoom — the map's
+  /// platform-view div can otherwise still see that raw browser gesture.
+  void _setPanZoomEnabled(bool enabled) {
+    final map = _map;
+    if (map == null) return;
+    for (final h in [map.dragPan, map.scrollZoom, map.touchZoomRotate, map.doubleClickZoom]) {
+      if (enabled) {
+        h.enable();
+      } else {
+        h.disable();
+      }
     }
   }
 
