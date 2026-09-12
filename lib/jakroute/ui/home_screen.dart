@@ -124,6 +124,16 @@ class _HomeScreenState extends State<HomeScreen> {
     ));
   }
 
+  void _onMapFeatureTap(String id) {
+    final all = ((_catalog?['places'] as List?) ?? []).cast<Map>();
+    Map? place;
+    for (final p in all) {
+      final matches = id.startsWith('blk:') ? 'blk:${p['linked_block_id']}' == id : p['id']?.toString() == id;
+      if (matches) { place = p; break; }
+    }
+    if (place != null) _openFacility(place);
+  }
+
   void _openFacility(Map place) {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => FacilityDetailScreen(
@@ -154,6 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   catalog: _catalog!,
                   floor: _activeFloor,
                   padding: EdgeInsets.fromLTRB(24, 120, 90, c.maxHeight * 0.34 + 16),
+                  onFeatureTap: _onMapFeatureTap,
                 ),
               ),
             )

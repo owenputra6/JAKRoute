@@ -43,7 +43,11 @@ List<String> routeSteps(RouteOption route, Json catalog) {
     final c = connectors[props['resource_id']];
     final to = props['to_floor'];
     final up = to is num && floor is num && to > floor;
-    final via = c?['label'] ?? verbs[props['access']] ?? props['access'];
+    var via = c?['label'] ?? verbs[props['access']] ?? props['access'];
+    // Survey names carry a unit suffix (e.g. "Tangga Peron 1.2") to tell two
+    // physical units apart; drop it here since "Naik/Turun" already says the
+    // direction and the suffix reads like a confusing version number.
+    if (via is String) via = via.replaceFirst(RegExp(r'\.\d+$'), '');
     out.add('${up ? 'Naik' : 'Turun'} $via ke Lantai $to');
     floor = to;
   }

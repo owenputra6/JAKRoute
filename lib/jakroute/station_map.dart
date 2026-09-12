@@ -20,7 +20,7 @@ import 'route_diagram.dart';
 /// Uses JS interop directly instead of maplibre_gl's Flutter-web binding,
 /// which does not paint tiles reliably.
 class StationMap extends StatelessWidget {
-  const StationMap({super.key, required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, this.interactive = true, this.padding = const EdgeInsets.all(40)});
+  const StationMap({super.key, required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, this.interactive = true, this.padding = const EdgeInsets.all(40), this.onFeatureTap});
   final String styleUrl;
   final Json catalog;
   final int floor;
@@ -29,11 +29,14 @@ class StationMap extends StatelessWidget {
   final bool interactive;
   /// Screen-space padding for camera fitting (e.g. room for overlaid sheets).
   final EdgeInsets padding;
+  /// Fired with a `places` id (or `blk:<block id>` for an obstacle polygon
+  /// without its own place) when the user taps an icon or coloured polygon.
+  final ValueChanged<String>? onFeatureTap;
 
   @override
   Widget build(BuildContext context) {
     if (styleUrl.isEmpty) return RouteDiagram(catalog: catalog, route: route, crowd: crowd, floor: floor);
-    return _MapLibreView(styleUrl: styleUrl, catalog: catalog, floor: floor, route: route, crowd: crowd, interactive: interactive, padding: padding);
+    return _MapLibreView(styleUrl: styleUrl, catalog: catalog, floor: floor, route: route, crowd: crowd, interactive: interactive, padding: padding, onFeatureTap: onFeatureTap);
   }
 }
 
@@ -53,6 +56,7 @@ extension type _JsMap._(JSObject _) implements JSObject {
   external JSBoolean loaded();
   external JSBoolean hasImage(String id);
   external void addImage(String id, JSAny image, JSObject options);
+  external JSArray queryRenderedFeatures(JSAny point, JSObject options);
 }
 
 extension type _JsGeoJsonSource._(JSObject _) implements JSObject {
@@ -60,7 +64,7 @@ extension type _JsGeoJsonSource._(JSObject _) implements JSObject {
 }
 
 class _MapLibreView extends StatefulWidget {
-  const _MapLibreView({required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, required this.interactive, required this.padding});
+  const _MapLibreView({required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, required this.interactive, required this.padding, this.onFeatureTap});
   final String styleUrl;
   final Json catalog;
   final int floor;
@@ -68,6 +72,7 @@ class _MapLibreView extends StatefulWidget {
   final CrowdSnapshot? crowd;
   final bool interactive;
   final EdgeInsets padding;
+  final ValueChanged<String>? onFeatureTap;
 
   @override
   State<_MapLibreView> createState() => _MapLibreViewState();
@@ -131,7 +136,7 @@ class _MapLibreViewState extends State<_MapLibreView> {
       for (var i = 0; i < polys.length; i++)
         {
           'type': 'Feature',
-          'properties': {'kind': i < meta.length ? meta[i]['kind'] : 'access', 'name': i < meta.length ? meta[i]['name'] : ''},
+          'properties': {'kind': i < meta.length ? meta[i]['kind'] : 'access', 'name': i < meta.length ? meta[i]['name'] : '', 'id': i < meta.length ? 'blk:${meta[i]['id']}' : ''},
           'geometry': {'type': 'Polygon', 'coordinates': [for (final ring in polys[i] as List) [for (final p in ring as List) _lonlat(p as List)]]},
         },
     ]);
@@ -142,7 +147,7 @@ class _MapLibreViewState extends State<_MapLibreView> {
   Map<String, dynamic> _obstacleIcons() => _fc([
         for (final m in _obstacleMeta)
           if (_iconKinds.contains(m['kind']) && m['centroid'] != null)
-            {'type': 'Feature', 'properties': {'kind': m['kind']}, 'geometry': {'type': 'Point', 'coordinates': _lonlat(m['centroid'] as List)}},
+            {'type': 'Feature', 'properties': {'kind': m['kind'], 'id': 'blk:${m['id']}'}, 'geometry': {'type': 'Point', 'coordinates': _lonlat(m['centroid'] as List)}},
       ]);
 
   Map<String, dynamic> _places() => _fc([
@@ -150,7 +155,7 @@ class _MapLibreViewState extends State<_MapLibreView> {
           if ((p['scope'] == 'indoor' && p['floor'] == widget.floor) || p['scope'] == 'outdoor')
             {
               'type': 'Feature',
-              'properties': {'label': p['kind'] == 'amenity' || p['kind'] == 'seating' ? '' : p['label'], 'kind': p['kind'], 'outdoor': p['scope'] == 'outdoor', 'icon': p['scope'] == 'outdoor' ? 'k-${p['kind']}' : ''},
+              'properties': {'id': p['id'], 'label': p['kind'] == 'amenity' || p['kind'] == 'seating' ? '' : p['label'], 'kind': p['kind'], 'outdoor': p['scope'] == 'outdoor', 'icon': p['scope'] == 'outdoor' ? 'k-${p['kind']}' : ''},
               'geometry': {'type': 'Point', 'coordinates': p['source_lonlat'] ?? _lonlat(p['xy'] as List)},
             },
       ]);
@@ -212,7 +217,46 @@ class _MapLibreViewState extends State<_MapLibreView> {
       _styleReady = true;
       _addLayers();
       _sync(force: true);
+      _bindClick();
+      _locateMe();
     }).toJS);
+  }
+
+  static const _tapLayers = ['place-dots', 'outdoor-icons', 'obstacle-icons', 'obstacles-fill'];
+
+  void _bindClick() {
+    _map!.on('click', ((JSObject e) {
+      if (widget.onFeatureTap == null) return;
+      final point = e.getProperty<JSObject?>('point'.toJS)!;
+      final x = point.getProperty<JSNumber?>('x'.toJS)!.toDartDouble;
+      final y = point.getProperty<JSNumber?>('y'.toJS)!.toDartDouble;
+      final opts = {'layers': _tapLayers}.jsify() as JSObject;
+      final feats = _map!.queryRenderedFeatures([x.toJS, y.toJS].toJS, opts).toDart;
+      if (feats.isEmpty) return;
+      final props = (feats.first as JSObject).getProperty<JSObject?>('properties'.toJS)?.dartify() as Map?;
+      final id = props?['id']?.toString();
+      if (id != null && id.isNotEmpty && id != 'blk:null') widget.onFeatureTap!(id);
+    }).toJS);
+  }
+
+  // Real device location via the browser Geolocation API (no fabricated
+  // position); silently does nothing if the user denies/lacks permission.
+  void _locateMe() {
+    try {
+      web.window.navigator.geolocation.watchPosition(
+        ((web.GeolocationPosition pos) {
+          if (!mounted) return;
+          final lon = pos.coords.longitude, lat = pos.coords.latitude;
+          _setData('me', _fc([
+            {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'Point', 'coordinates': [lon, lat]}},
+          ]));
+        }).toJS,
+        ((JSObject _) {}).toJS,
+        web.PositionOptions(enableHighAccuracy: true),
+      );
+    } catch (_) {
+      // Geolocation unsupported/blocked; map still works without it.
+    }
   }
 
   // Kind -> fill colour (station blocks) and emoji glyph (icon image).
@@ -261,6 +305,7 @@ class _MapLibreViewState extends State<_MapLibreView> {
     _addSource('floor-changes', _floorChanges());
     _addSource('crowd-areas', _crowdAreas());
     _addSource('crowd', _crowd());
+    _addSource('me', _fc(const []));
     _addLayer({'id': 'walkable-fill', 'type': 'fill', 'source': 'walkable', 'paint': {'fill-color': '#ffffff', 'fill-opacity': 0.88}});
     _addLayer({'id': 'walkable-line', 'type': 'line', 'source': 'walkable', 'paint': {'line-color': '#0058BC', 'line-width': 1.5, 'line-opacity': 0.6}});
     _addLayer({'id': 'obstacles-fill', 'type': 'fill', 'source': 'obstacles',
@@ -282,6 +327,8 @@ class _MapLibreViewState extends State<_MapLibreView> {
     _addLayer({'id': 'place-labels', 'type': 'symbol', 'source': 'places',
         'layout': {'text-field': ['get', 'label'], 'text-font': ['Roboto Regular'], 'text-size': 10, 'text-offset': [0, 0.9], 'text-anchor': 'top', 'text-max-width': 8},
         'paint': {'text-color': '#223344', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2}});
+    _addLayer({'id': 'me-halo', 'type': 'circle', 'source': 'me', 'paint': {'circle-color': '#1a73e8', 'circle-opacity': 0.2, 'circle-radius': 14}});
+    _addLayer({'id': 'me-dot', 'type': 'circle', 'source': 'me', 'paint': {'circle-color': '#1a73e8', 'circle-radius': 6, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2}});
   }
 
   void _setData(String id, Map<String, dynamic> data) {
