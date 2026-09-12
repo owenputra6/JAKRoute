@@ -131,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _SwitchRow(
                 icon: Icons.elevator_outlined,
                 title: 'Bebas anak tangga (lift saja)',
-                subtitle: 'Eskalator ikut dihindari — untuk kursi roda / stroller',
+                subtitle: 'Eskalator ikut dihindari, untuk kursi roda / stroller',
                 value: p.stepFree,
                 onChanged: (v) => p.update(stepFree: v, avoidStairs: v ? true : null),
               ),

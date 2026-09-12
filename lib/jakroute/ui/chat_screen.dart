@@ -6,6 +6,7 @@ import '../api_client.dart';
 import '../chat_history.dart';
 import '../models.dart';
 import '../route_steps.dart';
+import '../speech_input.dart';
 import '../user_prefs.dart';
 import 'app_theme.dart';
 import 'route_detail_screen.dart';
@@ -203,7 +204,7 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: BrandBar(
         context: 'Tanya AI',
         leading: widget.embedded ? null : const BackButton(),
-        onAvatarTap: widget.onAvatarTap,
+        showAvatar: false,
         trailing: Row(mainAxisSize: MainAxisSize.min, children: [
           IconButton(
             tooltip: 'Riwayat percakapan',
@@ -467,14 +468,53 @@ class _HistorySheetState extends State<_HistorySheet> {
   }
 }
 
-class _Composer extends StatelessWidget {
+class _Composer extends StatefulWidget {
   const _Composer({required this.controller, required this.busy, required this.onSend});
   final TextEditingController controller;
   final bool busy;
   final ValueChanged<String> onSend;
 
   @override
+  State<_Composer> createState() => _ComposerState();
+}
+
+class _ComposerState extends State<_Composer> {
+  final _speech = SpeechInput();
+  bool _listening = false;
+
+  void _toggleMic() {
+    if (_listening) {
+      _speech.stop();
+      return;
+    }
+    setState(() => _listening = true);
+    _speech.start(
+      onResult: (text) {
+        widget.controller.text = widget.controller.text.isEmpty ? text : '${widget.controller.text} $text';
+        widget.controller.selection = TextSelection.collapsed(offset: widget.controller.text.length);
+      },
+      onDone: () {
+        if (mounted) setState(() => _listening = false);
+      },
+      onError: () {
+        if (!mounted) return;
+        setState(() => _listening = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Mic tidak tersedia di browser ini.')),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _speech.stop();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final busy = widget.busy;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(Space.md, Space.xs, Space.md, Space.sm),
@@ -491,29 +531,36 @@ class _Composer extends StatelessWidget {
             children: [
               Expanded(
                 child: TextField(
-                  controller: controller,
+                  controller: widget.controller,
                   enabled: !busy,
                   minLines: 1,
                   maxLines: 4,
                   textInputAction: TextInputAction.send,
-                  onSubmitted: onSend,
-                  decoration: const InputDecoration(
-                    hintText: 'Ketik tujuan atau kebutuhan rute…',
+                  onSubmitted: widget.onSend,
+                  decoration: InputDecoration(
+                    hintText: _listening ? 'Mendengarkan…' : 'Ketik tujuan atau kebutuhan rute…',
                     filled: false,
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: Space.sm),
+                    contentPadding: const EdgeInsets.symmetric(vertical: Space.sm),
                   ),
                 ),
               ),
+              if (SpeechInput.isSupported) ...[
+                IconButton(
+                  tooltip: _listening ? 'Berhenti merekam' : 'Ucapkan pertanyaan',
+                  icon: Icon(_listening ? Icons.mic : Icons.mic_none, color: _listening ? AppColors.danger : AppColors.secondary),
+                  onPressed: busy ? null : _toggleMic,
+                ),
+              ],
               const SizedBox(width: Space.xs),
               Material(
                 color: busy ? AppColors.surfaceContainer : AppColors.primary,
                 shape: const CircleBorder(),
                 child: InkWell(
                   customBorder: const CircleBorder(),
-                  onTap: busy ? null : () => onSend(controller.text),
+                  onTap: busy ? null : () => widget.onSend(widget.controller.text),
                   child: const SizedBox(width: 44, height: 44, child: Icon(Icons.send, color: Colors.white, size: 20)),
                 ),
               ),

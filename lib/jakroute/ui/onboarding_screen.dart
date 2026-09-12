@@ -160,7 +160,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 FilledButton.icon(
                   onPressed: _loading ? null : _enterDemo,
                   icon: const Icon(Icons.bolt),
-                  label: const Text('Masuk Cepat — Akun Demo Palmerah'),
+                  label: const Text('Masuk Cepat: Akun Demo Palmerah'),
                 ),
               ]),
             ),

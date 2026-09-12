@@ -11,12 +11,15 @@ import 'kinds.dart';
 
 /// Top bar: logo + "JAKRoute" + context word, blue caps station line, avatar.
 class BrandBar extends StatelessWidget implements PreferredSizeWidget {
-  const BrandBar({super.key, this.context, this.leading, this.onAvatarTap, this.trailing});
+  const BrandBar({super.key, this.context, this.leading, this.onAvatarTap, this.trailing, this.showAvatar = true});
   final String? context;
   final Widget? leading;
   final VoidCallback? onAvatarTap;
   /// Extra actions before the avatar (e.g. chat history / new chat).
   final Widget? trailing;
+  /// False on screens where `trailing` already crowds the header (e.g.
+  /// Tanya AI's history/new-chat icons) — avoids overflow next to the title.
+  final bool showAvatar;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -57,7 +60,7 @@ class BrandBar extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
           if (trailing != null) ...[trailing!, const SizedBox(width: Space.xs)],
-          UserAvatar(onTap: onAvatarTap),
+          if (showAvatar) UserAvatar(onTap: onAvatarTap),
         ],
       ),
     );
@@ -267,8 +270,8 @@ class FloorSwitcher extends StatelessWidget {
   static String _short(Map f) => 'L${f['id']}';
   static String _sub(Map f) {
     final label = f['label']?.toString() ?? '';
-    final i = label.indexOf('—');
-    return i < 0 ? '' : label.substring(i + 1).trim();
+    final i = label.indexOf(' - ');
+    return i < 0 ? '' : label.substring(i + 3).trim();
   }
 
   @override

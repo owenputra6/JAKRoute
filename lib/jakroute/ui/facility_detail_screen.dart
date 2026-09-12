@@ -87,7 +87,7 @@ class FacilityDetailScreen extends StatelessWidget {
               if (place['id'] != null) _InfoRow(label: 'ID titik', value: place['id'].toString(), mono: true),
               _InfoRow(
                 label: 'Sumber data',
-                value: isOutdoor(place) ? 'OpenStreetMap (Overpass) — data komunitas, bukan survei' : 'Supabase PostGIS — survei lapangan (station_nodes)',
+                value: isOutdoor(place) ? 'OpenStreetMap (Overpass), data komunitas, bukan survei' : 'Supabase PostGIS, survei lapangan (station_nodes)',
                 last: true,
               ),
             ]),

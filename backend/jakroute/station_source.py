@@ -84,7 +84,7 @@ def _kind(row):
     return 'access'
 
 
-FLOOR_LABELS = {1: 'Lantai 1 — Peron', 2: 'Lantai 2 — Hall'}
+FLOOR_LABELS = {1: 'Lantai 1 - Peron', 2: 'Lantai 2 - Hall'}
 
 
 def _block_meta(row, geom, floor_nodes):

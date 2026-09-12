@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (!mounted) return;
       setState(() => _locating = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Lokasi tidak tersedia — izinkan akses lokasi browser dulu.')),
+        const SnackBar(content: Text('Lokasi tidak tersedia, izinkan akses lokasi browser dulu.')),
       );
     });
     // getCurrentPosition has no "done" callback surfaced through the
@@ -115,12 +115,12 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             const SheetHandle(),
             Text('Anda berada di lantai mana?', style: t.headlineSmall),
-            Text('Tidak ada GPS indoor — cocokkan dengan foto stasiun.', style: t.labelSmall?.copyWith(color: AppColors.slate)),
+            Text('Tidak ada GPS indoor, cocokkan dengan foto stasiun.', style: t.labelSmall?.copyWith(color: AppColors.slate)),
             const SizedBox(height: Space.sm),
             Row(children: [
-              card(1, 'Lantai 1 — Peron', 'Rel kereta, peron 1 & 2', 'assets/floor_peron.jpg'),
+              card(1, 'Lantai 1 - Peron', 'Rel kereta, peron 1 & 2', 'assets/floor_peron.jpg'),
               const SizedBox(width: Space.xs),
-              card(2, 'Lantai 2 — Hall', 'Gerbang tap, toilet, kios', 'assets/floor_hall.jpg'),
+              card(2, 'Lantai 2 - Hall', 'Gerbang tap, toilet, kios', 'assets/floor_hall.jpg'),
             ]),
           ]),
         );
@@ -247,25 +247,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-          MouseRegion(
-            onEnter: (_) => _guardMapGestures(true),
-            onExit: (_) => _guardMapGestures(false),
-            child: Listener(
-              onPointerDown: (_) => _guardMapGestures(true),
-              onPointerUp: (_) => _guardMapGestures(false),
-              onPointerCancel: (_) => _guardMapGestures(false),
-              child: _FacilitySheet(
-                title: 'Fasilitas ${floorShort(_activeFloor)}',
-                subtitle: _catalog == null ? 'Memuat…' : '${_catalog!['label']} • ${floorLabel(_catalog!, _activeFloor)}',
-                places: visible,
-                total: onFloor.where((p) => !isOutdoor(p)).length,
-                outdoor: onFloor.where(isOutdoor).length,
-                error: _error,
-                onTap: _openFacility,
-                onRoute: (p) => _openPlanner(destinationId: p['id'] as String),
-                onAskAi: _openChat,
-              ),
-            ),
+          _FacilitySheet(
+            title: 'Fasilitas ${floorShort(_activeFloor)}',
+            subtitle: _catalog == null ? 'Memuat…' : '${_catalog!['label']} • ${floorLabel(_catalog!, _activeFloor)}',
+            places: visible,
+            total: onFloor.where((p) => !isOutdoor(p)).length,
+            outdoor: onFloor.where(isOutdoor).length,
+            error: _error,
+            onTap: _openFacility,
+            onRoute: (p) => _openPlanner(destinationId: p['id'] as String),
+            onAskAi: _openChat,
+            onGestureGuard: _guardMapGestures,
           ),
         ],
       ),
@@ -330,6 +322,7 @@ class _FacilitySheet extends StatelessWidget {
     required this.onTap,
     required this.onRoute,
     required this.onAskAi,
+    this.onGestureGuard,
   });
   final String title;
   final String subtitle;
@@ -340,6 +333,12 @@ class _FacilitySheet extends StatelessWidget {
   final ValueChanged<Map> onTap;
   final ValueChanged<Map> onRoute;
   final VoidCallback onAskAi;
+  /// Fired true/false while the pointer is down on (or hovering, for mouse)
+  /// this sheet's own visible box — never wrap this around the sheet from
+  /// outside: DraggableScrollableSheet gets loose full-Stack constraints, so
+  /// a MouseRegion out there (its hitTestSelf is always true) would swallow
+  /// taps across the whole screen, not just the sheet's drawn area.
+  final ValueChanged<bool>? onGestureGuard;
 
   @override
   Widget build(BuildContext context) {
@@ -348,7 +347,14 @@ class _FacilitySheet extends StatelessWidget {
       initialChildSize: 0.34,
       minChildSize: 0.16,
       maxChildSize: 0.88,
-      builder: (context, controller) => Container(
+      builder: (context, controller) => MouseRegion(
+        onEnter: onGestureGuard == null ? null : (_) => onGestureGuard!(true),
+        onExit: onGestureGuard == null ? null : (_) => onGestureGuard!(false),
+        child: Listener(
+          onPointerDown: onGestureGuard == null ? null : (_) => onGestureGuard!(true),
+          onPointerUp: onGestureGuard == null ? null : (_) => onGestureGuard!(false),
+          onPointerCancel: onGestureGuard == null ? null : (_) => onGestureGuard!(false),
+          child: Container(
         decoration: const BoxDecoration(
           color: AppColors.surfaceContainerLowest,
           borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.xl)),
@@ -426,6 +432,8 @@ class _FacilitySheet extends StatelessWidget {
               label: const Text('Tanya AI: rute sesuai kebutuhanmu'),
             ),
           ],
+        ),
+          ),
         ),
       ),
     );
