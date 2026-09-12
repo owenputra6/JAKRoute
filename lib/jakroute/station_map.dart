@@ -19,8 +19,25 @@ import 'route_diagram.dart';
 ///
 /// Uses JS interop directly instead of maplibre_gl's Flutter-web binding,
 /// which does not paint tiles reliably.
+/// Lets a parent screen trigger map actions without exposing the private
+/// maplibre state (e.g. a "my location" button in the parent's own Stack).
+class StationMapController {
+  void Function({VoidCallback? onError})? _locate;
+  void _bind(void Function({VoidCallback? onError}) locate) => _locate = locate;
+  /// Re-reads the device's real position and centres the map on it.
+  /// [onError] fires if the browser denies/lacks geolocation.
+  void locateMe({VoidCallback? onError}) {
+    final fn = _locate;
+    if (fn != null) {
+      fn(onError: onError);
+    } else {
+      onError?.call();
+    }
+  }
+}
+
 class StationMap extends StatelessWidget {
-  const StationMap({super.key, required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, this.interactive = true, this.padding = const EdgeInsets.all(40), this.onFeatureTap});
+  const StationMap({super.key, required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, this.interactive = true, this.padding = const EdgeInsets.all(40), this.onFeatureTap, this.controller});
   final String styleUrl;
   final Json catalog;
   final int floor;
@@ -32,11 +49,12 @@ class StationMap extends StatelessWidget {
   /// Fired with a `places` id (or `blk:<block id>` for an obstacle polygon
   /// without its own place) when the user taps an icon or coloured polygon.
   final ValueChanged<String>? onFeatureTap;
+  final StationMapController? controller;
 
   @override
   Widget build(BuildContext context) {
     if (styleUrl.isEmpty) return RouteDiagram(catalog: catalog, route: route, crowd: crowd, floor: floor);
-    return _MapLibreView(styleUrl: styleUrl, catalog: catalog, floor: floor, route: route, crowd: crowd, interactive: interactive, padding: padding, onFeatureTap: onFeatureTap);
+    return _MapLibreView(styleUrl: styleUrl, catalog: catalog, floor: floor, route: route, crowd: crowd, interactive: interactive, padding: padding, onFeatureTap: onFeatureTap, controller: controller);
   }
 }
 
@@ -57,6 +75,7 @@ extension type _JsMap._(JSObject _) implements JSObject {
   external JSBoolean hasImage(String id);
   external void addImage(String id, JSAny image, JSObject options);
   external JSArray queryRenderedFeatures(JSAny point, JSObject options);
+  external void flyTo(JSObject options);
 }
 
 extension type _JsGeoJsonSource._(JSObject _) implements JSObject {
@@ -64,7 +83,7 @@ extension type _JsGeoJsonSource._(JSObject _) implements JSObject {
 }
 
 class _MapLibreView extends StatefulWidget {
-  const _MapLibreView({required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, required this.interactive, required this.padding, this.onFeatureTap});
+  const _MapLibreView({required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, required this.interactive, required this.padding, this.onFeatureTap, this.controller});
   final String styleUrl;
   final Json catalog;
   final int floor;
@@ -73,6 +92,7 @@ class _MapLibreView extends StatefulWidget {
   final bool interactive;
   final EdgeInsets padding;
   final ValueChanged<String>? onFeatureTap;
+  final StationMapController? controller;
 
   @override
   State<_MapLibreView> createState() => _MapLibreViewState();
@@ -95,6 +115,7 @@ class _MapLibreViewState extends State<_MapLibreView> {
       ..style.height = '100%';
     ui_web.platformViewRegistry.registerViewFactory(_viewType, (int viewId) => _div);
     WidgetsBinding.instance.addPostFrameCallback((_) => _create());
+    widget.controller?._bind(_flyToMe);
   }
 
   @override
@@ -256,6 +277,27 @@ class _MapLibreViewState extends State<_MapLibreView> {
       );
     } catch (_) {
       // Geolocation unsupported/blocked; map still works without it.
+    }
+  }
+
+  /// Bound to [StationMapController.locateMe]: fresh device fix, then fly
+  /// the camera there and drop/refresh the blue dot.
+  void _flyToMe({VoidCallback? onError}) {
+    try {
+      web.window.navigator.geolocation.getCurrentPosition(
+        ((web.GeolocationPosition pos) {
+          if (!mounted || _map == null) return;
+          final lon = pos.coords.longitude, lat = pos.coords.latitude;
+          _setData('me', _fc([
+            {'type': 'Feature', 'properties': {}, 'geometry': {'type': 'Point', 'coordinates': [lon, lat]}},
+          ]));
+          _map!.flyTo({'center': [lon, lat], 'zoom': 19, 'duration': 600}.jsify() as JSObject);
+        }).toJS,
+        ((JSObject _) => onError?.call()).toJS,
+        web.PositionOptions(enableHighAccuracy: true),
+      );
+    } catch (_) {
+      onError?.call();
     }
   }
 

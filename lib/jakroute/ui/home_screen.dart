@@ -32,6 +32,16 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _error;
   int? _floor;
   String _group = 'Semua';
+  final _mapController = StationMapController();
+
+  void _locateMe() {
+    _mapController.locateMe(onError: () {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Lokasi tidak tersedia — izinkan akses lokasi browser dulu.')),
+      );
+    });
+  }
 
   @override
   void initState() {
@@ -165,6 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   floor: _activeFloor,
                   padding: EdgeInsets.fromLTRB(24, 120, 90, c.maxHeight * 0.34 + 16),
                   onFeatureTap: _onMapFeatureTap,
+                  controller: _mapController,
                 ),
               ),
             )
@@ -209,6 +220,18 @@ class _HomeScreenState extends State<HomeScreen> {
               right: Space.gutter,
               top: 120,
               child: FloorSwitcher(floors: _floors, active: _activeFloor, onChanged: (f) => setState(() => _floor = f)),
+            ),
+          if (_catalog != null)
+            Positioned.fill(
+              child: LayoutBuilder(
+                builder: (context, c) => Align(
+                  alignment: Alignment.bottomRight,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: Space.gutter, bottom: c.maxHeight * 0.34 + 16),
+                    child: RoundControl(icon: Icons.my_location, tooltip: 'Lokasi saya', onTap: _locateMe),
+                  ),
+                ),
+              ),
             ),
           _FacilitySheet(
             title: 'Fasilitas ${floorShort(_activeFloor)}',
