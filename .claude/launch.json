@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "jakroute-web",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": ["run", "-d", "web-server", "--web-port", "3000",
+        "--dart-define=BACKEND_URL=https://jakroute-api-production.up.railway.app",
+        "--dart-define=SUPABASE_URL=https://riyslvapfqbkpglxrdyd.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=sb_publishable_eKwqw7lorIc4F9uo_aiaaQ_i3UqMuvw"
+      ],
+      "port": 3000
+    }
+  ]
+}

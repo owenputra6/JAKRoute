@@ -182,9 +182,11 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                 Expanded(
                   child: FilledButton.icon(
                     style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
-                    onPressed: _step >= steps.length - 1 ? null : () => setState(() { _step++; _floor = null; }),
-                    icon: const Icon(Icons.chevron_right),
-                    label: const Text('Berikutnya'),
+                    onPressed: _step >= steps.length - 1
+                        ? () => Navigator.of(context).pop()
+                        : () => setState(() { _step++; _floor = null; }),
+                    icon: Icon(_step >= steps.length - 1 ? Icons.check : Icons.chevron_right),
+                    label: Text(_step >= steps.length - 1 ? 'Selesai' : 'Berikutnya'),
                   ),
                 ),
               ]),
