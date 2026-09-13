@@ -10,9 +10,7 @@ Indoor + outdoor wayfinding untuk Stasiun Palmerah — akurat hingga level peron
 
 **[jakroute.vercel.app](https://jakroute.vercel.app)** — masuk pakai "Masuk Cepat" (akun demo, tanpa registrasi).
 
-![JAKRoute poster](docs/screenshots/poster.svg)
-<!-- ganti file di atas + baris ini jadi docs/screenshots/poster.png begitu poster asli siap -->
-
+![JAKRoute poster](docs/screenshots/poster.jpeg)
 
 ## Ringkasan
 

@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400">
-  <rect width="1200" height="400" fill="#0B2E5C"/>
-  <rect x="1" y="1" width="1198" height="398" fill="none" stroke="#ffffff33" stroke-width="2" stroke-dasharray="10 8"/>
-  <text x="50%" y="48%" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="66" font-weight="700" fill="#ffffff">POSTER PLACEHOLDER</text>
-  <text x="50%" y="58%" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="40" fill="#ffffffaa">ganti dengan docs/screenshots/poster.png — lihat prompt di README</text>
-</svg>
