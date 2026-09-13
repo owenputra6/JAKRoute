@@ -54,145 +54,150 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     final minutes = route.durationSeconds / 60;
     final isChange = current != null && (current.startsWith('Naik') || current.startsWith('Turun'));
 
+    // Full-bleed map like Google Maps turn-by-turn: the map is the whole
+    // screen, HUD banner and step panel float on top of it instead of
+    // splitting the screen into fixed Column sections.
     return Scaffold(
       backgroundColor: AppColors.surface,
-      appBar: const BrandBar(context: 'Navigasi', leading: BackButton()),
-      body: Column(children: [
-        // HUD banner: the current instruction.
-        Container(
-          margin: const EdgeInsets.fromLTRB(Space.gutter, Space.sm, Space.gutter, 0),
-          decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(Radii.lg), boxShadow: const [kRaisedShadow]),
-          child: Column(children: [
-            Padding(
-              padding: const EdgeInsets.all(Space.md),
-              child: Row(children: [
+      body: Stack(children: [
+        Positioned.fill(
+          child: StationMap(styleUrl: mapStyleUrl, catalog: catalog, floor: floor, route: route, activeRouteFeatures: activeFeatures),
+        ),
+        // Top overlay: back button + HUD banner + floor switcher.
+        Positioned(
+          left: 0, right: 0, top: 0,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(Space.gutter, Space.sm, Space.gutter, 0),
+              child: Column(children: [
                 Container(
-                  width: 56, height: 56,
-                  decoration: BoxDecoration(color: AppColors.secondary, borderRadius: BorderRadius.circular(Radii.md)),
-                  child: Icon(
-                    current == null ? Icons.flag : isChange ? (current.startsWith('Naik') ? Icons.arrow_upward : Icons.arrow_downward)
-                        : current.startsWith('Tiba') ? Icons.flag : current.startsWith('Mulai') ? Icons.trip_origin : Icons.arrow_forward,
-                    color: Colors.white, size: 30,
-                  ),
-                ),
-                const SizedBox(width: Space.sm),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('Langkah ${_step + 1} dari ${steps.length}', style: t.labelSmall?.copyWith(color: Colors.white70)),
-                    Text(current ?? 'Rute tanpa langkah', style: t.headlineSmall?.copyWith(color: Colors.white, fontSize: 18)),
+                  decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(Radii.lg), boxShadow: const [kRaisedShadow]),
+                  child: Column(children: [
+                    Padding(
+                      padding: const EdgeInsets.all(Space.md),
+                      child: Row(children: [
+                        RoundControl(icon: Icons.arrow_back, tooltip: 'Kembali ke rute', color: AppColors.secondary, onTap: () => Navigator.of(context).pop()),
+                        const SizedBox(width: Space.sm),
+                        Expanded(
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text('Langkah ${_step + 1} dari ${steps.length}', style: t.labelSmall?.copyWith(color: Colors.white70)),
+                            Text(current ?? 'Rute tanpa langkah', style: t.headlineSmall?.copyWith(color: Colors.white, fontSize: 18),
+                                maxLines: 2, overflow: TextOverflow.ellipsis),
+                          ]),
+                        ),
+                        const SizedBox(width: Space.sm),
+                        Icon(
+                          current == null ? Icons.flag : isChange ? (current.startsWith('Naik') ? Icons.arrow_upward : Icons.arrow_downward)
+                              : current.startsWith('Tiba') ? Icons.flag : current.startsWith('Mulai') ? Icons.trip_origin : Icons.arrow_forward,
+                          color: Colors.white, size: 28,
+                        ),
+                      ]),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: Space.md, vertical: 6),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF00091B),
+                        borderRadius: BorderRadius.vertical(bottom: Radius.circular(Radii.lg)),
+                      ),
+                      child: Row(children: [
+                        const Icon(Icons.route, size: 14, color: Colors.white70),
+                        const SizedBox(width: 6),
+                        Expanded(child: Text(route.label, style: t.labelSmall?.copyWith(color: Colors.white))),
+                        Text(floorLabel(catalog, floor), style: t.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+                      ]),
+                    ),
                   ]),
                 ),
-              ]),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: Space.md, vertical: 6),
-              decoration: const BoxDecoration(
-                color: Color(0xFF00091B),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(Radii.lg)),
-              ),
-              child: Row(children: [
-                const Icon(Icons.route, size: 14, color: Colors.white70),
-                const SizedBox(width: 6),
-                Expanded(child: Text(route.label, style: t.labelSmall?.copyWith(color: Colors.white))),
-                Text(floorLabel(catalog, floor), style: t.labelSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
-              ]),
-            ),
-          ]),
-        ),
-        // Map.
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(Space.gutter, Space.sm, Space.gutter, 0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(Radii.lg),
-              child: Stack(children: [
-                Positioned.fill(
-                  child: StationMap(styleUrl: mapStyleUrl, catalog: catalog, floor: floor, route: route, activeRouteFeatures: activeFeatures),
-                ),
-                if (floors.length > 1)
-                  Positioned(
-                    right: Space.xs, top: Space.xs,
+                if (floors.length > 1) ...[
+                  const SizedBox(height: Space.xs),
+                  Align(
+                    alignment: Alignment.centerRight,
                     child: FloorSwitcher(
                       floors: (catalog['floors'] as List).cast<Map>().where((f) => floors.contains(f['id'])).toList(),
                       active: floor,
                       onChanged: (f) => setState(() => _floor = f),
                     ),
                   ),
+                ],
               ]),
             ),
           ),
         ),
-        // Summary + step list + controls.
-        Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surfaceContainerLowest,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.xl)),
-            boxShadow: [kRaisedShadow],
-          ),
-          padding: const EdgeInsets.fromLTRB(Space.gutter, 0, Space.gutter, Space.md),
-          child: SafeArea(
-            top: false,
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const SheetHandle(),
-              Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
-                Text('${minutes < 10 ? minutes.toStringAsFixed(1) : minutes.round()} mnt',
-                    style: t.headlineMedium?.copyWith(color: AppColors.success, fontSize: 26)),
-                const SizedBox(width: 6),
-                Text('(${route.walkingMeters.round()} m jalan kaki)', style: t.bodyMedium?.copyWith(color: AppColors.slate, fontSize: 14)),
-              ]),
-              Text('Estimasi dari solver; waktu antarlantai adalah asumsi, bukan pengukuran.',
-                  style: t.labelSmall?.copyWith(color: AppColors.slateLight)),
-              const SizedBox(height: Space.xs),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 150),
-                child: ListView(shrinkWrap: true, children: [
-                  for (final (i, s) in steps.indexed)
-                    InkWell(
-                      onTap: () => setState(() { _step = i; _floor = null; }),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: Space.xs),
-                        decoration: BoxDecoration(
-                          color: i == _step ? AppColors.accentLight : Colors.transparent,
-                          borderRadius: BorderRadius.circular(Radii.std),
-                        ),
-                        child: Row(children: [
-                          CircleAvatar(
-                            radius: 11,
-                            backgroundColor: i == _step ? AppColors.secondary : AppColors.surfaceContainer,
-                            child: Text('${i + 1}', style: TextStyle(fontSize: 11, color: i == _step ? Colors.white : AppColors.slate)),
-                          ),
-                          const SizedBox(width: Space.xs),
-                          Expanded(child: Text(s, style: t.bodyMedium?.copyWith(fontSize: 14, fontWeight: i == _step ? FontWeight.w600 : FontWeight.w400))),
-                        ]),
-                      ),
-                    ),
+        // Bottom overlay: summary + step list + controls.
+        Positioned(
+          left: 0, right: 0, bottom: 0,
+          child: Container(
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceContainerLowest,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(Radii.xl)),
+              boxShadow: [kRaisedShadow],
+            ),
+            padding: const EdgeInsets.fromLTRB(Space.gutter, 0, Space.gutter, Space.md),
+            child: SafeArea(
+              top: false,
+              child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const SheetHandle(),
+                Row(crossAxisAlignment: CrossAxisAlignment.baseline, textBaseline: TextBaseline.alphabetic, children: [
+                  Text('${minutes < 10 ? minutes.toStringAsFixed(1) : minutes.round()} mnt',
+                      style: t.headlineMedium?.copyWith(color: AppColors.success, fontSize: 26)),
+                  const SizedBox(width: 6),
+                  Text('(${route.walkingMeters.round()} m jalan kaki)', style: t.bodyMedium?.copyWith(color: AppColors.slate, fontSize: 14)),
                 ]),
-              ),
-              const SizedBox(height: Space.xs),
-              Row(children: [
-                RoundControl(icon: Icons.close, color: AppColors.danger, tooltip: 'Selesai', onTap: () => Navigator.of(context).pop()),
-                const SizedBox(width: Space.xs),
-                Expanded(
-                  child: FilledButton.icon(
-                    style: FilledButton.styleFrom(backgroundColor: AppColors.surfaceContainer, foregroundColor: AppColors.primary, minimumSize: const Size.fromHeight(44)),
-                    onPressed: _step == 0 ? null : () => setState(() { _step--; _floor = null; }),
-                    icon: const Icon(Icons.chevron_left),
-                    label: const Text('Kembali'),
-                  ),
+                Text('Estimasi dari solver; waktu antarlantai adalah asumsi, bukan pengukuran.',
+                    style: t.labelSmall?.copyWith(color: AppColors.slateLight)),
+                const SizedBox(height: Space.xs),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 150),
+                  child: ListView(shrinkWrap: true, children: [
+                    for (final (i, s) in steps.indexed)
+                      InkWell(
+                        onTap: () => setState(() { _step = i; _floor = null; }),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: Space.xs),
+                          decoration: BoxDecoration(
+                            color: i == _step ? AppColors.accentLight : Colors.transparent,
+                            borderRadius: BorderRadius.circular(Radii.std),
+                          ),
+                          child: Row(children: [
+                            CircleAvatar(
+                              radius: 11,
+                              backgroundColor: i == _step ? AppColors.secondary : AppColors.surfaceContainer,
+                              child: Text('${i + 1}', style: TextStyle(fontSize: 11, color: i == _step ? Colors.white : AppColors.slate)),
+                            ),
+                            const SizedBox(width: Space.xs),
+                            Expanded(child: Text(s, style: t.bodyMedium?.copyWith(fontSize: 14, fontWeight: i == _step ? FontWeight.w600 : FontWeight.w400))),
+                          ]),
+                        ),
+                      ),
+                  ]),
                 ),
-                const SizedBox(width: Space.xs),
-                Expanded(
-                  child: FilledButton.icon(
-                    style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
-                    onPressed: _step >= steps.length - 1
-                        ? () => Navigator.of(context).pop()
-                        : () => setState(() { _step++; _floor = null; }),
-                    icon: Icon(_step >= steps.length - 1 ? Icons.check : Icons.chevron_right),
-                    label: Text(_step >= steps.length - 1 ? 'Selesai' : 'Berikutnya'),
+                const SizedBox(height: Space.xs),
+                Row(children: [
+                  RoundControl(icon: Icons.close, color: AppColors.danger, tooltip: 'Selesai', onTap: () => Navigator.of(context).pop()),
+                  const SizedBox(width: Space.xs),
+                  Expanded(
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(backgroundColor: AppColors.surfaceContainer, foregroundColor: AppColors.primary, minimumSize: const Size.fromHeight(44)),
+                      onPressed: _step == 0 ? null : () => setState(() { _step--; _floor = null; }),
+                      icon: const Icon(Icons.chevron_left),
+                      label: const Text('Kembali'),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: Space.xs),
+                  Expanded(
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(44)),
+                      onPressed: _step >= steps.length - 1
+                          ? () => Navigator.of(context).pop()
+                          : () => setState(() { _step++; _floor = null; }),
+                      icon: Icon(_step >= steps.length - 1 ? Icons.check : Icons.chevron_right),
+                      label: Text(_step >= steps.length - 1 ? 'Selesai' : 'Berikutnya'),
+                    ),
+                  ),
+                ]),
               ]),
-            ]),
+            ),
           ),
         ),
       ]),
