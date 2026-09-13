@@ -10,6 +10,10 @@ Indoor + outdoor wayfinding untuk Stasiun Palmerah — akurat hingga level peron
 
 **[jakroute.vercel.app](https://jakroute.vercel.app)** — masuk pakai "Masuk Cepat" (akun demo, tanpa registrasi).
 
+![JAKRoute poster](docs/screenshots/poster.svg)
+<!-- ganti file di atas + baris ini jadi docs/screenshots/poster.png begitu poster asli siap -->
+
+
 ## Ringkasan
 
 Navigasi indoor stasiun kereta itu susah bukan karena petanya tidak ada, tapi karena
@@ -44,6 +48,18 @@ bukan hasil survei.
 - **Peringatan cuaca** pada segmen outdoor, dan peringatan eksplisit saat akses
   antarlantai sedang rusak/dilaporkan tidak bisa dipakai.
 
+## Screens
+
+<!-- ganti kelima file docs/screenshots/app-*.svg dengan .png hasil screenshot layar asli -->
+<p align="center">
+  <img src="docs/screenshots/app-peta.svg" width="18%" alt="Peta indoor" />
+  <img src="docs/screenshots/app-route.svg" width="18%" alt="Navigasi rute" />
+  <img src="docs/screenshots/app-tanya-ai.svg" width="18%" alt="Tanya AI" />
+  <img src="docs/screenshots/app-fasilitas.svg" width="18%" alt="Direktori fasilitas" />
+  <img src="docs/screenshots/app-profil.svg" width="18%" alt="Profil" />
+</p>
+<p align="center"><sub>Peta indoor · Navigasi rute · Tanya AI · Fasilitas · Profil</sub></p>
+
 ## Arsitektur
 
 ```
@@ -75,6 +91,15 @@ maplibre-gl, per lantai.
 | `/crowd/snapshot` | GET | Snapshot kepadatan simulasi saat ini |
 | `/forum/summary`, `/forum/reports`, `/forum/confirm` | GET/POST | Laporan insiden akses (lift/eskalator rusak) |
 | `/health` | GET | Health check |
+
+### Deployment & skema data
+
+<!-- ganti kedua file di bawah dengan .png hasil screenshot Railway/Supabase asli -->
+<p align="center">
+  <img src="docs/screenshots/railway-architecture.svg" width="49%" alt="Railway service metrics" />
+  <img src="docs/screenshots/supabase-schema.svg" width="49%" alt="Supabase schema" />
+</p>
+<p align="center"><sub>Backend di Railway (jakroute-api) · Skema Supabase PostGIS (station_locations, station_nodes, station_blocks)</sub></p>
 
 ## Menjalankan secara lokal
 
