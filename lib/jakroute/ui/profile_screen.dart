@@ -26,13 +26,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Json? _catalog;
   Json? _health;
   String? _healthError;
-  final _walk = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     UserPrefs.instance.addListener(_onPrefs);
-    _walk.text = UserPrefs.instance.maxWalkM?.round().toString() ?? '';
     widget.api.catalog().then((c) => setState(() => _catalog = c)).catchError((_) {});
     widget.api.health().then((h) => setState(() => _health = h)).catchError((e) => setState(() => _healthError = '$e'));
   }
@@ -42,7 +40,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void dispose() {
     UserPrefs.instance.removeListener(_onPrefs);
-    _walk.dispose();
     super.dispose();
   }
 
@@ -134,19 +131,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 subtitle: 'Eskalator ikut dihindari, untuk kursi roda / stroller',
                 value: p.stepFree,
                 onChanged: (v) => p.update(stepFree: v, avoidStairs: v ? true : null),
-              ),
-              const SizedBox(height: Space.xs),
-              TextField(
-                controller: _walk,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Batas jalan kaki (meter, kosong = tanpa batas)',
-                  prefixIcon: Icon(Icons.straighten),
-                ),
-                onSubmitted: (v) {
-                  final n = double.tryParse(v.trim());
-                  p.update(maxWalkM: n, clearWalk: v.trim().isEmpty);
-                },
               ),
             ]),
           ),
