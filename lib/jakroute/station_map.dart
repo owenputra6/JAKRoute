@@ -47,7 +47,7 @@ class StationMapController {
 }
 
 class StationMap extends StatelessWidget {
-  const StationMap({super.key, required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, this.interactive = true, this.padding = const EdgeInsets.all(40), this.onFeatureTap, this.controller});
+  const StationMap({super.key, required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, this.interactive = true, this.padding = const EdgeInsets.all(40), this.onFeatureTap, this.controller, this.activeRouteFeatures});
   final String styleUrl;
   final Json catalog;
   final int floor;
@@ -60,11 +60,15 @@ class StationMap extends StatelessWidget {
   /// without its own place) when the user taps an icon or coloured polygon.
   final ValueChanged<String>? onFeatureTap;
   final StationMapController? controller;
+  /// Indices into [route]'s features currently being walked (e.g. the
+  /// selected turn-by-turn step) — that segment draws highlighted, the rest
+  /// of the route line dims, so the user sees exactly where to walk next.
+  final Set<int>? activeRouteFeatures;
 
   @override
   Widget build(BuildContext context) {
     if (styleUrl.isEmpty) return RouteDiagram(catalog: catalog, route: route, crowd: crowd, floor: floor);
-    return _MapLibreView(styleUrl: styleUrl, catalog: catalog, floor: floor, route: route, crowd: crowd, interactive: interactive, padding: padding, onFeatureTap: onFeatureTap, controller: controller);
+    return _MapLibreView(styleUrl: styleUrl, catalog: catalog, floor: floor, route: route, crowd: crowd, interactive: interactive, padding: padding, onFeatureTap: onFeatureTap, controller: controller, activeRouteFeatures: activeRouteFeatures);
   }
 }
 
@@ -103,7 +107,7 @@ extension type _JsGeoJsonSource._(JSObject _) implements JSObject {
 }
 
 class _MapLibreView extends StatefulWidget {
-  const _MapLibreView({required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, required this.interactive, required this.padding, this.onFeatureTap, this.controller});
+  const _MapLibreView({required this.styleUrl, required this.catalog, required this.floor, this.route, this.crowd, required this.interactive, required this.padding, this.onFeatureTap, this.controller, this.activeRouteFeatures});
   final String styleUrl;
   final Json catalog;
   final int floor;
@@ -113,6 +117,7 @@ class _MapLibreView extends StatefulWidget {
   final EdgeInsets padding;
   final ValueChanged<String>? onFeatureTap;
   final StationMapController? controller;
+  final Set<int>? activeRouteFeatures;
 
   @override
   State<_MapLibreView> createState() => _MapLibreViewState();
@@ -149,6 +154,8 @@ class _MapLibreViewState extends State<_MapLibreView> {
     super.didUpdateWidget(old);
     if (old.floor != widget.floor || old.route != widget.route || old.catalog != widget.catalog || old.crowd != widget.crowd || old.padding != widget.padding) {
       _sync();
+    } else if (old.activeRouteFeatures != widget.activeRouteFeatures) {
+      _setData('route', _routeLines());
     }
   }
 
@@ -202,9 +209,16 @@ class _MapLibreViewState extends State<_MapLibreView> {
       ]);
 
   Map<String, dynamic> _routeLines() => _fc([
-        for (final f in widget.route?.features ?? const <Json>[])
+        for (final (i, f) in (widget.route?.features ?? const <Json>[]).indexed)
           if ((f['properties'] as Map)['scope'] != 'indoor' || (f['properties'] as Map)['floor'] == widget.floor)
-            {'type': 'Feature', 'properties': {'scope': (f['properties'] as Map)['scope']}, 'geometry': f['geometry']},
+            {
+              'type': 'Feature',
+              'properties': {
+                'scope': (f['properties'] as Map)['scope'],
+                'active': widget.activeRouteFeatures == null || widget.activeRouteFeatures!.contains(i),
+              },
+              'geometry': f['geometry'],
+            },
       ]);
 
   Map<String, dynamic> _floorChanges() => _fc([
@@ -410,9 +424,16 @@ class _MapLibreViewState extends State<_MapLibreView> {
     _addLayer({'id': 'crowd-area-fill', 'type': 'fill', 'source': 'crowd-areas',
         'paint': {'fill-color': '#d04444', 'fill-opacity': ['interpolate', ['linear'], ['get', 'density'], 0, 0.08, 0.5, 0.35]}});
     _addLayer({'id': 'crowd-dots', 'type': 'circle', 'source': 'crowd', 'paint': {'circle-color': '#d04444', 'circle-opacity': 0.75, 'circle-radius': ['+', 2, ['*', 0.7, ['get', 'w']]]}});
-    _addLayer({'id': 'route-casing', 'type': 'line', 'source': 'route', 'layout': {'line-cap': 'round', 'line-join': 'round'}, 'paint': {'line-color': '#ffffff', 'line-width': 8}});
+    _addLayer({'id': 'route-casing', 'type': 'line', 'source': 'route', 'layout': {'line-cap': 'round', 'line-join': 'round'},
+        'paint': {'line-color': '#ffffff', 'line-width': 8, 'line-opacity': ['case', ['get', 'active'], 1.0, 0.5]}});
+    // Dim the rest of the route while one step is highlighted, so it reads
+    // as "walk this segment now" instead of one flat line end to end.
     _addLayer({'id': 'route-line', 'type': 'line', 'source': 'route', 'layout': {'line-cap': 'round', 'line-join': 'round'},
-        'paint': {'line-color': ['case', ['==', ['get', 'scope'], 'outdoor'], '#c77716', '#0058BC'], 'line-width': 4.5}});
+        'paint': {
+          'line-color': ['case', ['==', ['get', 'scope'], 'outdoor'], '#c77716', '#0058BC'],
+          'line-width': ['case', ['get', 'active'], 5.5, 4.5],
+          'line-opacity': ['case', ['get', 'active'], 1.0, 0.35],
+        }});
     _addLayer({'id': 'floor-change-dots', 'type': 'circle', 'source': 'floor-changes', 'paint': {'circle-color': '#FFB347', 'circle-radius': 7, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 2}});
     _addLayer({'id': 'obstacle-icons', 'type': 'symbol', 'source': 'obstacle-icons',
         'layout': {'icon-image': ['concat', 'k-', ['get', 'kind']], 'icon-size': 0.5, 'icon-allow-overlap': true, 'icon-ignore-placement': true}});

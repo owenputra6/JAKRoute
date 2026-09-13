@@ -47,7 +47,9 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     final route = widget.route, catalog = widget.catalog, mapStyleUrl = widget.mapStyleUrl;
     final floors = _routeFloors;
     final steps = routeSteps(route, catalog);
+    final stepFeatures = routeStepFeatureIndices(route, catalog);
     final current = steps.isEmpty ? null : steps[_step.clamp(0, steps.length - 1)];
+    final activeFeatures = stepFeatures.isEmpty ? null : stepFeatures[_step.clamp(0, stepFeatures.length - 1)].toSet();
     final floor = _floor ?? (current == null ? floors.first : (_floorOf(current) ?? floors.first));
     final minutes = route.durationSeconds / 60;
     final isChange = current != null && (current.startsWith('Naik') || current.startsWith('Turun'));
@@ -105,7 +107,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               borderRadius: BorderRadius.circular(Radii.lg),
               child: Stack(children: [
                 Positioned.fill(
-                  child: StationMap(styleUrl: mapStyleUrl, catalog: catalog, floor: floor, route: route),
+                  child: StationMap(styleUrl: mapStyleUrl, catalog: catalog, floor: floor, route: route, activeRouteFeatures: activeFeatures),
                 ),
                 if (floors.length > 1)
                   Positioned(

@@ -4,29 +4,39 @@ import 'models.dart';
 
 /// Turn-by-turn text derived only from the returned geometry: walking
 /// length per floor (local metres) and each real connector used.
-List<String> routeSteps(RouteOption route, Json catalog) {
+List<String> routeSteps(RouteOption route, Json catalog) => _steps(route, catalog).map((s) => s.$1).toList();
+
+/// Same steps as [routeSteps], but each one paired with the indices into
+/// [RouteOption.features] that make up that step's geometry — lets the map
+/// highlight only the segment the user is currently meant to walk.
+List<List<int>> routeStepFeatureIndices(RouteOption route, Json catalog) =>
+    _steps(route, catalog).map((s) => s.$2).toList();
+
+List<(String, List<int>)> _steps(RouteOption route, Json catalog) {
   final places = {for (final p in (catalog['places'] as List? ?? []).cast<Map>()) p['id']: p};
   final connectors = {for (final c in (catalog['connectors'] as List? ?? []).cast<Map>()) c['id']: c};
   const verbs = {'elevator': 'lift', 'escalator': 'eskalator', 'stairs': 'tangga'};
   final used = (route.data['facilities_used'] as List? ?? []).cast<String>();
-  final out = <String>[];
+  final out = <(String, List<int>)>[];
   if (used.isNotEmpty) {
     final o = places[used.first];
-    if (o != null) out.add('Mulai dari ${o['label']} (Lantai ${o['floor']})');
+    if (o != null) out.add(('Mulai dari ${o['label']} (Lantai ${o['floor']})', const []));
   }
   double walk = 0;
+  var walkIdx = <int>[];
   Object? floor;
-  for (final f in route.features) {
+  for (final (i, f) in route.features.indexed) {
     final props = f['properties'] as Map? ?? {};
     if (props['scope'] == 'outdoor') {
-      if (walk > 0) out.add('Jalan ${walk.round()} m di Lantai $floor');
+      if (walk > 0) out.add(('Jalan ${walk.round()} m di Lantai $floor', walkIdx));
       walk = 0;
+      walkIdx = [];
       final coords = ((f['geometry'] as Map?)?['coordinates'] as List? ?? []).cast<List>();
       double metres = 0;
-      for (var i = 1; i < coords.length; i++) {
-        metres += _haversine(coords[i - 1], coords[i]);
+      for (var j = 1; j < coords.length; j++) {
+        metres += _haversine(coords[j - 1], coords[j]);
       }
-      out.add('Keluar stasiun, jalan kaki ${metres.round()} m di luar (rute OpenStreetMap)');
+      out.add(('Keluar stasiun, jalan kaki ${metres.round()} m di luar (rute OpenStreetMap)', [i]));
       continue;
     }
     floor ??= props['floor'];
@@ -36,10 +46,12 @@ List<String> routeSteps(RouteOption route, Json catalog) {
         final a = xy[0] as List, b = xy[1] as List;
         walk += math.sqrt(math.pow((b[0] as num) - (a[0] as num), 2) + math.pow((b[1] as num) - (a[1] as num), 2));
       }
+      walkIdx.add(i);
       continue;
     }
-    if (walk > 0) out.add('Jalan ${walk.round()} m di Lantai $floor');
+    if (walk > 0) out.add(('Jalan ${walk.round()} m di Lantai $floor', walkIdx));
     walk = 0;
+    walkIdx = [];
     final c = connectors[props['resource_id']];
     final to = props['to_floor'];
     final up = to is num && floor is num && to > floor;
@@ -48,13 +60,13 @@ List<String> routeSteps(RouteOption route, Json catalog) {
     // physical units apart; drop it here since "Naik/Turun" already says the
     // direction and the suffix reads like a confusing version number.
     if (via is String) via = via.replaceFirst(RegExp(r'\.\d+$'), '');
-    out.add('${up ? 'Naik' : 'Turun'} $via ke Lantai $to');
+    out.add(('${up ? 'Naik' : 'Turun'} $via ke Lantai $to', [i]));
     floor = to;
   }
-  if (walk > 0) out.add('Jalan ${walk.round()} m di Lantai $floor');
+  if (walk > 0) out.add(('Jalan ${walk.round()} m di Lantai $floor', walkIdx));
   if (used.length > 1) {
     final d = places[used.last];
-    if (d != null) out.add('Tiba di ${d['label']} (Lantai ${d['floor']})');
+    if (d != null) out.add(('Tiba di ${d['label']} (Lantai ${d['floor']})', const []));
   }
   return out;
 }
