@@ -572,8 +572,35 @@ class _ComposerState extends State<_Composer> {
   }
 }
 
-class _TypingBubble extends StatelessWidget {
+class _TypingBubble extends StatefulWidget {
   const _TypingBubble();
+  @override
+  State<_TypingBubble> createState() => _TypingBubbleState();
+}
+
+class _TypingBubbleState extends State<_TypingBubble> {
+  // Mirrors the real backend pipeline (parse intent -> compute routes ->
+  // explain), so a slow AI call reads as "here's what's happening" instead
+  // of a stuck spinner with no explanation.
+  static const _messages = ['AI memahami pertanyaanmu…', 'Menghitung rute…', 'Menyusun jawaban…'];
+  int _phase = 0;
+  Timer? _ticker;
+
+  @override
+  void initState() {
+    super.initState();
+    _ticker = Timer.periodic(const Duration(milliseconds: 1800), (_) {
+      if (_phase >= _messages.length - 1) return;
+      setState(() => _phase++);
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return _AssistantRow(
@@ -582,7 +609,7 @@ class _TypingBubble extends StatelessWidget {
         children: [
           const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
           const SizedBox(width: Space.xs),
-          Text('Menghitung rute…', style: TextStyle(color: AppColors.onSurfaceVariant, fontStyle: FontStyle.italic)),
+          Text(_messages[_phase], style: const TextStyle(color: AppColors.onSurfaceVariant, fontStyle: FontStyle.italic)),
         ],
       ),
     );

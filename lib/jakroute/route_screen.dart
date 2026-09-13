@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'api_client.dart';
@@ -39,6 +41,16 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
   double _timeWeight = 1, _walkWeight = 1, _crowdWeight = 1;
   bool _prioritiesChanged = false;
   final Set<String> _via = {};
+  Timer? _busyTicker;
+  int _busyPhase = 0;
+  // Mirrors the real backend pipeline (ai_agent.parse_user_request ->
+  // execute_jobs x3 modes -> explain), so the wait reads as "here's what's
+  // actually happening" instead of a fake percentage.
+  static const _busyMessages = [
+    'AI memahami permintaanmu…',
+    'Menghitung tiga alternatif rute…',
+    'Menyusun penjelasan terbaik…',
+  ];
 
   @override
   void initState() {
@@ -83,7 +95,12 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
       return;
     }
     final generation = ++_requestGeneration;
-    setState(() { _busy = true; _error = null; _recommendation = null; _selected = null; });
+    setState(() { _busy = true; _busyPhase = 0; _error = null; _recommendation = null; _selected = null; });
+    _busyTicker?.cancel();
+    _busyTicker = Timer.periodic(const Duration(milliseconds: 1800), (_) {
+      if (!mounted || _busyPhase >= _busyMessages.length - 1) return;
+      setState(() => _busyPhase++);
+    });
     try {
       final result = await widget.api.recommend({
         'message': _message.text,
@@ -110,11 +127,14 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
         if (floors.isNotEmpty) _floor = floors.first;
       });
     } catch (e) { if (mounted) setState(() => _error = e.toString()); }
-    finally { if (mounted && generation == _requestGeneration) setState(() => _busy = false); }
+    finally {
+      _busyTicker?.cancel();
+      if (mounted && generation == _requestGeneration) setState(() => _busy = false);
+    }
   }
 
   @override
-  void dispose() { _message.dispose(); _walkLimit.dispose(); super.dispose(); }
+  void dispose() { _message.dispose(); _walkLimit.dispose(); _busyTicker?.cancel(); super.dispose(); }
 
   Map? _place(String id) {
     final places = (_catalog!['places'] as List).cast<Map>();
@@ -256,8 +276,15 @@ class _JakRouteScreenState extends State<JakRouteScreen> {
               icon: _busy
                   ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.alt_route),
-              label: Text(_busy ? 'Menghitung tiga alternatif…' : 'Bandingkan Tiga Rute'),
+              label: Text(_busy ? _busyMessages[_busyPhase] : 'Bandingkan Tiga Rute'),
             ),
+            if (_busy) ...[
+              const SizedBox(height: Space.xs),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(Radii.std),
+                child: const LinearProgressIndicator(minHeight: 3, backgroundColor: AppColors.surfaceContainer),
+              ),
+            ],
             if (_error != null)
               Padding(padding: const EdgeInsets.only(top: Space.xs), child: Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 13))),
           ]),
