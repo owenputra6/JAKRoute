@@ -33,11 +33,13 @@ class BrandBar extends StatelessWidget implements PreferredSizeWidget {
       child: Row(
         children: [
           if (leading != null) ...[leading!, const SizedBox(width: Space.xs)],
-          ClipRRect(
-            borderRadius: BorderRadius.circular(Radii.std),
-            child: Image.asset('assets/logo.png', width: 36, height: 36, fit: BoxFit.cover),
-          ),
-          const SizedBox(width: Space.sm),
+          if (leading == null) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(Radii.std),
+              child: Image.asset('assets/logo.png', width: 36, height: 36, fit: BoxFit.cover),
+            ),
+            const SizedBox(width: Space.sm),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
