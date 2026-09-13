@@ -179,8 +179,6 @@ class RouteService:
             if any(i['effect'] in ('unavailable','blocked') or i['routing_code']==-1 for i in snapshot['incidents']) and 'indoor_python_grid' in route['sources']: reasons['forum']='Akses yang dilaporkan tidak dapat digunakan tetap dikecualikan sampai ada konfirmasi petugas.'
             warnings=create_weather_warning(weather,has_outdoor)
             if route['simulated']: warnings.append('Hasil memakai denah/data simulasi; bukan petunjuk navigasi stasiun sebenarnya.')
-            elif self.site.get('routing_geometry_derived'):
-                warnings.append('Block dan titik berasal dari Supabase; batas walkable masih geometri turunan dan perlu divalidasi di stasiun.')
             if not any(scope=='indoor' for plan in plans for scope,_,_ in plan):
                 warnings.append('Perjalanan ini seluruhnya outdoor. Tiga kriteria belum dioptimalkan oleh mesin indoor; hasil mengikuti kandidat provider yang tersedia.')
             route.update(reasons=reasons,warnings=warnings,explanation=' '.join(reasons.values()))

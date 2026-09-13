@@ -345,7 +345,7 @@ class _FacilitySheet extends StatelessWidget {
     final t = Theme.of(context).textTheme;
     return DraggableScrollableSheet(
       initialChildSize: 0.34,
-      minChildSize: 0.16,
+      minChildSize: 0.34,
       maxChildSize: 0.88,
       builder: (context, controller) => MouseRegion(
         onEnter: onGestureGuard == null ? null : (_) => onGestureGuard!(true),
